@@ -89,7 +89,7 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-[#f2f4f8] flex items-center justify-center p-6">
         <div
-          className="max-w-xl w-full bg-white rounded-xl shadow-lg p-8 text-center
+          className="max-w-xl w-full bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center
           transition-all duration-500 ease-out
           opacity-100 translate-y-0"
         >
@@ -120,7 +120,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f2f4f8] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#f2f4f8] flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div
         className="max-w-6xl w-full rounded-xl shadow-lg overflow-hidden bg-white
         flex flex-col lg:flex-row
@@ -128,17 +128,17 @@ export default function RegisterPage() {
         opacity-100 translate-y-0"
       >
         {/* LEFT */}
-        <section className="w-full lg:w-1/2 p-8 lg:p-12" dir="rtl">
+        <section className="w-full lg:w-1/2 p-6 sm:p-8 lg:p-12" dir="rtl">
           <header className="flex flex-col items-center lg:items-start gap-4 mb-6">
             <div className="flex items-center gap-2">
               <div
                 className="h-10 w-10 rounded-full bg-indigo-700 flex items-center justify-center
-                text-white font-bold transition hover:scale-105"
+                text-white font-bold transition hover:scale-105 "
               >
-                م
+                M
               </div>
               <h1 className="text-xl font-semibold text-indigo-900">
-                ميد كلينك
+                Medaura
               </h1>
             </div>
 
@@ -157,7 +157,7 @@ export default function RegisterPage() {
 
           <div className="border border-zinc-100 rounded-lg p-6 shadow-sm">
             {/* ACCOUNT TYPE */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
               {[
                 { key: "clinic", label: "عيادة" },
                 { key: "doctor", label: "طبيب" },
@@ -169,13 +169,13 @@ export default function RegisterPage() {
                   onClick={() => setAccountType(item.key as any)}
                   aria-pressed={accountType === item.key}
                   aria-label={`نوع الحساب: ${item.label}`}
-                  className={`p-3 rounded-lg border flex items-center justify-center gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
+                  className={`p-2 sm:p-3 rounded-lg border flex items-center justify-center gap-2 w-full transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
                     accountType === item.key
                       ? "border-indigo-700 bg-indigo-50"
                       : "border-zinc-100 hover:border-indigo-300"
                   }`}
                 >
-                  <span className="text-sm font-medium flex items-center gap-1">
+                  <span className="text-sm md:text-base font-medium flex items-center gap-1">
                     <span>{item.label}</span>
                     {item.key === "clinic" && (
                       <img
@@ -238,7 +238,7 @@ export default function RegisterPage() {
                 onChange={(e) => setName(e.target.value)}
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? "name-error" : undefined}
-                className={`w-full border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
+                className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
                   errors.name ? "border-red-300" : "border-zinc-200"
                 }`}
               />
@@ -268,7 +268,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 aria-invalid={!!errors.email}
                 aria-describedby={errors.email ? "email-error" : undefined}
-                className={`w-full border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
+                className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
                   errors.email ? "border-red-300" : "border-zinc-200"
                 }`}
               />
@@ -282,7 +282,7 @@ export default function RegisterPage() {
                 </p>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="relative">
                   <label className="block text-sm font-medium text-zinc-700 mb-1">
                     كلمة المرور
@@ -379,23 +379,29 @@ export default function RegisterPage() {
 
               <button
                 type="submit"
-                className="w-full bg-indigo-900 text-white py-2 rounded-md transition-all duration-300 hover:bg-indigo-800 hover:shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full bg-indigo-900 text-white py-2 sm:py-2.5 rounded-md text-sm sm:text-base transition-all duration-300 hover:bg-indigo-800 hover:shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                 disabled={loading}
                 aria-busy={loading}
               >
                 {loading ? "جاري التسجيل..." : "التسجيل"}
               </button>
 
-              <div className="mt-3">
+              <div className="flex items-center gap-3 my-2 sm:my-3" aria-hidden="true">
+                <div className="h-px bg-zinc-200 flex-1" />
+                <div className="text-sm text-zinc-500">أو</div>
+                <div className="h-px bg-zinc-200 flex-1" />
+              </div>
+
+              <div className="mt-1 sm:mt-2">
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={googleLoading}
                   aria-label="التسجيل عبر جوجل"
-                  className="w-full border border-zinc-200 rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full border border-zinc-200 rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:shadow-sm disabled:opacity-60 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   <svg
-                    className="h-4 w-4"
+                    className="h-4 w-4 sm:h-5 sm:w-5" 
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -430,7 +436,7 @@ export default function RegisterPage() {
             transition-transform duration-500 hover:scale-[1.02]"
         >
           <div className="text-indigo-700 text-lg font-medium">
-            <img src="/images/register.png" alt="register" />
+            <img src="/images/register.png" alt="register" className="max-w-xs sm:max-w-sm lg:max-w-md" />
           </div>
         </aside>
       </div>
