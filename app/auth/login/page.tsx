@@ -1,25 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { EyeIcon } from "../register/utils";
+import Link from "next/link";
+import { validateEmail, validatePassword, simulateApiCall } from "../validators";
+import { ErrorAlert, PasswordInput, EmailInput } from "../components";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   function validate() {
     const e: Record<string, string> = {};
-    if (!email.trim()) e.email = "البريد الإلكتروني مطلوب";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      e.email = "صيغة البريد غير صحيحة";
-    if (!password) e.password = "كلمة المرور مطلوبة";
-    else if (password.length < 6)
-      e.password = "يجب أن تكون كلمة المرور 6 أحرف على الأقل";
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
+    if (emailError) e.email = emailError;
+    if (passwordError) e.password = passwordError;
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -29,8 +30,7 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      // simulate network call — replace with real API request later
-      await new Promise((res) => setTimeout(res, 700));
+      await simulateApiCall();
       setSubmitted(true);
     } finally {
       setLoading(false);
@@ -40,9 +40,7 @@ export default function LoginPage() {
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     try {
-      // TODO: replace with real Google OAuth (NextAuth / App Router auth route)
-      await new Promise((res) => setTimeout(res, 800));
-      // simulate success by treating it as submitted
+      await simulateApiCall(800);
       setSubmitted(true);
     } finally {
       setGoogleLoading(false);
@@ -51,11 +49,26 @@ export default function LoginPage() {
 
   if (submitted) {
     return (
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold text-indigo-900 mb-2">
-          تم تسجيل الدخول!
-        </h2>
-        <p className="text-zinc-600 mb-6">تم دخولك بنجاح (محلي فقط).</p>
+      <div className="text-center space-y-4">
+        <div className="flex justify-center mb-4">
+          <div className="h-16 w-16 rounded-full bg-green-50 flex items-center justify-center">
+            <svg
+              className="h-8 w-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+        </div>
+        <h2 className="text-2xl font-semibold text-indigo-900">تم تسجيل الدخول!</h2>
+        <p className="text-zinc-600">تم دخولك بنجاح (محلي فقط).</p>
         <button
           onClick={() => {
             setSubmitted(false);
@@ -64,8 +77,7 @@ export default function LoginPage() {
             setErrors({});
             setShowPassword(false);
           }}
-          className="px-6 py-2 bg-indigo-700 text-white rounded
-            transition hover:bg-indigo-600 active:scale-95"
+          className="inline-block w-full bg-indigo-700 text-white py-2 rounded transition hover:bg-indigo-600 active:scale-95"
         >
           تسجيل دخول آخر
         </button>
@@ -74,139 +86,88 @@ export default function LoginPage() {
   }
 
   return (
-    <>
-      {/* FORM */}
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        {Object.keys(errors).length > 0 && (
-          <div
-            className="bg-red-50 border border-red-200 text-red-800 p-3 rounded animate-[shake_0.3s_ease-in-out]"
-            role="alert"
-            aria-live="assertive"
-          >
-            <p className="font-medium">يرجى تصحيح الأخطاء التالية:</p>
-            <ul className="mt-2 list-disc list-inside">
-              {Object.values(errors).map((e, i) => (
-                <li key={i}>{e}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <ErrorAlert errors={errors} />
 
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-zinc-700 mb-1"
-        >
-          البريد الإلكتروني
+      <EmailInput
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        error={errors.email}
+      />
+
+      <PasswordInput
+        label="كلمة المرور"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        showPassword={showPassword}
+        onToggle={() => setShowPassword(!showPassword)}
+        placeholder="كلمة المرور"
+        error={errors.password}
+      />
+
+      <div className="flex items-center justify-between">
+        <label className="flex items-center gap-2 text-sm text-zinc-600">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="accent-indigo-700"
+          />
+          حفظ تسجيل الدخول
         </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="example@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? "email-error" : undefined}
-          className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
-            errors.email ? "border-red-300" : "border-zinc-200"
-          }`}
-        />
-        {errors.email && (
-          <p
-            id="email-error"
-            role="alert"
-            className="text-sm text-red-700 mt-1"
-          >
-            {errors.email}
-          </p>
-        )}
-
-        <div className="relative">
-          <label className="block text-sm font-medium text-zinc-700 mb-1">
-            كلمة المرور
-          </label>
-
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="كلمة المرور"
-              className={`w-full border rounded-md px-3 py-2 pr-12 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
-                errors.password ? "border-red-300" : "border-zinc-200"
-              }`}
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2
-             flex items-center justify-center
-             text-zinc-500 hover:text-indigo-700"
-            >
-              <EyeIcon off={showPassword} />
-            </button>
-          </div>
-
-          {errors.password && (
-            <p className="text-sm text-red-700 mt-1">{errors.password}</p>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-indigo-900 text-white py-2 sm:py-2.5 rounded-md text-sm sm:text-base transition-all duration-300 hover:bg-indigo-800 hover:shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-          disabled={loading}
-          aria-busy={loading}
+        <Link
+          href="/auth/forgot-password"
+          className="text-sm text-indigo-700 hover:text-indigo-900 transition"
         >
-          {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-        </button>
+          نسيت كلمة المرور؟
+        </Link>
+      </div>
 
-        <div
-          className="flex items-center gap-3 my-2 sm:my-3"
-          aria-hidden="true"
+      <button
+        type="submit"
+        className="w-full bg-indigo-900 text-white py-2 sm:py-2.5 rounded-md text-sm sm:text-base transition-all duration-300 hover:bg-indigo-800 hover:shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={loading}
+        aria-busy={loading}
+      >
+        {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+      </button>
+
+      <div className="flex items-center gap-3 my-2 sm:my-3" aria-hidden="true">
+        <div className="h-px bg-zinc-200 flex-1" />
+        <div className="text-sm text-zinc-500">أو</div>
+        <div className="h-px bg-zinc-200 flex-1" />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        disabled={googleLoading}
+        aria-label="تسجيل الدخول عبر جوجل"
+        className="w-full border border-zinc-200 rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:shadow-sm disabled:opacity-60 disabled:cursor-not-allowed text-sm sm:text-base"
+      >
+        <svg
+          className="h-4 w-4 sm:h-5 sm:w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <div className="h-px bg-zinc-200 flex-1" />
-          <div className="text-sm text-zinc-500">أو</div>
-          <div className="h-px bg-zinc-200 flex-1" />
-        </div>
+          <path d="M21.35 11.1h-9.18v2.92h5.28c-.23 1.61-1.33 2.95-2.84 3.63v3.02h4.6c2.69-2.49 4.21-6.14 3.14-10.57-.18-.68-.46-1.32-.99-1.9z" fill="#4285F4" />
+          <path d="M12.17 22c2.78 0 5.12-.92 6.82-2.5l-4.6-3.02c-1.1.74-2.5 1.18-4.22 1.18-3.26 0-6.02-2.2-7.01-5.15H.68v3.23C2.38 19.9 6.8 22 12.17 22z" fill="#34A853" />
+          <path d="M5.16 13.51c-.24-.72-.38-1.49-.38-2.28 0-.79.14-1.56.38-2.28V5.72H.68A11.99 11.99 0 0 0 0 11.23c0 1.86.4 3.63 1.12 5.24l4.04-2.96z" fill="#FBBC05" />
+          <path d="M12.17 4.44c1.9 0 3.58.66 4.92 1.96l3.67-3.67C17.28.75 14.95 0 12.17 0 6.8 0 2.38 2.1.68 5.72l4.48 3.44c.99-2.95 3.75-5.15 7.01-5.15z" fill="#EA4335" />
+        </svg>
+        {googleLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول عبر جوجل"}
+      </button>
 
-        <div className="mt-1 sm:mt-2">
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={googleLoading}
-            aria-label="تسجيل الدخول عبر جوجل"
-            className="w-full border border-zinc-200 rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:shadow-sm disabled:opacity-60 disabled:cursor-not-allowed text-sm sm:text-base"
-          >
-            <svg
-              className="h-4 w-4 sm:h-5 sm:w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M21.35 11.1h-9.18v2.92h5.28c-.23 1.61-1.33 2.95-2.84 3.63v3.02h4.6c2.69-2.49 4.21-6.14 3.14-10.57-.18-.68-.46-1.32-.99-1.9z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12.17 22c2.78 0 5.12-.92 6.82-2.5l-4.6-3.02c-1.1.74-2.5 1.18-4.22 1.18-3.26 0-6.02-2.2-7.01-5.15H.68v3.23C2.38 19.9 6.8 22 12.17 22z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.16 13.51c-.24-.72-.38-1.49-.38-2.28 0-.79.14-1.56.38-2.28V5.72H.68A11.99 11.99 0 0 0 0 11.23c0 1.86.4 3.63 1.12 5.24l4.04-2.96z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12.17 4.44c1.9 0 3.58.66 4.92 1.96l3.67-3.67C17.28.75 14.95 0 12.17 0 6.8 0 2.38 2.1.68 5.72l4.48 3.44c.99-2.95 3.75-5.15 7.01-5.15z"
-                fill="#EA4335"
-              />
-            </svg>
-            {googleLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول عبر جوجل"}
-          </button>
-        </div>
-      </form>
-    </>
+      <p className="text-center text-sm text-zinc-600 mt-4">
+        ليس لديك حساب بعد؟{" "}
+        <Link
+          href="/auth/register"
+          className="text-indigo-700 font-medium hover:text-indigo-900 transition"
+        >
+          سجل الآن
+        </Link>
+      </p>
+    </form>
   );
 }
