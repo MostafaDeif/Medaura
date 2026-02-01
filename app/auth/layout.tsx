@@ -43,6 +43,11 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const activeType = getActiveType();
   const isRegisterPage = activeNav === "register";
 
+  // If we are on the doctor documents page, do not render the auth layout wrapper
+  if (pathname.startsWith("/auth/doctorDocument")) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-[#f2f4f8] flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl w-full rounded-xl shadow-lg overflow-hidden bg-white flex flex-col lg:flex-row transition-all duration-500 ease-out">
