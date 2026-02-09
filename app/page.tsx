@@ -1,5 +1,12 @@
+// import Hero from "@/components/home/hero";
+
+import Specialties from "@/components/home/specialties";
+
 export default function Home() {
   return (
+    <>
+      {/* <Hero /> */}
+      <Specialties />
     <main className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
       <div className="max-w-3xl w-full bg-white rounded-lg shadow p-8 text-center">
         <h1 className="text-3xl font-bold text-indigo-900 mb-4">
@@ -17,5 +24,6 @@ export default function Home() {
         </a>
       </div>
     </main>
+    </>
   );
 }
