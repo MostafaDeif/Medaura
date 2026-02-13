@@ -1,4 +1,6 @@
 import React from "react";
+import { ChevronLeft } from "lucide-react";
+
 import {
   HeartPulse,
   Bone,
@@ -7,7 +9,7 @@ import {
   Ear,
   Eye,
   Stethoscope,
-//   Tooth,
+  //   Tooth,
   Droplets,
   Scan,
   Syringe,
@@ -30,7 +32,7 @@ const specialties: Specialty[] = [
   { title: "كلى", doctors: 100, icon: <Droplets size={28} /> },
   { title: "الأورام", doctors: 80, icon: <Scan size={28} /> },
   { title: "طب الأذن والأنف والحنجرة", doctors: 120, icon: <Ear size={28} /> },
-//   { title: "أسنان", doctors: 200, icon: <Tooth size={28} /> },
+  //   { title: "أسنان", doctors: 200, icon: <Tooth size={28} /> },
   { title: "جلدية", doctors: 100, icon: <Droplet size={28} /> },
   { title: "نساء وتوليد", doctors: 80, icon: <Syringe size={28} /> },
   { title: "طب العيون", doctors: 120, icon: <Eye size={28} /> },
@@ -38,22 +40,22 @@ const specialties: Specialty[] = [
 
 const Specialties = () => {
   return (
-    
     <section className="py-16 bg-white">
-        
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            التخصصات
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">التخصصات</h2>
           <p className="text-gray-500 text-sm">
-            مش متأكد تختار التخصص أو تستخدم المساعد الذكي للمساعدة.
+            مش متأكد؟ اختار التخصص أو تستخدم المساعد الذكي للمساعدة.
           </p>
         </div>
         <div className="mb-10 text-left">
-          <Link href="/site/specialties" className="text-blue-700 text-sm hover:underline flex items-center gap-1">
+          <Link
+            href="/site/specialties"
+            className="flex items-center gap-2 text-[#001A6E] font-medium hover:opacity-70 transition"
+          >
             عرض الكل
+            <ChevronLeft size={20} />
           </Link>
         </div>
         {/* Grid */}
@@ -67,11 +69,13 @@ const Specialties = () => {
                          py-6 cursor-pointer"
             >
               {/* Icon */}
-              <div className="w-14 h-14 flex items-center justify-center
+              <div
+                className="w-14 h-14 flex items-center justify-center
                               rounded-xl border border-blue-300
                               text-blue-700 mb-4
                               group-hover:bg-blue-700 group-hover:text-white
-                              transition">
+                              transition"
+              >
                 {item.icon}
               </div>
 
@@ -81,15 +85,12 @@ const Specialties = () => {
               </h3>
 
               {/* Doctors count */}
-              <p className="text-xs text-blue-700">
-                {item.doctors} طبيب
-              </p>
+              <p className="text-xs text-blue-700">{item.doctors} طبيب</p>
             </div>
           ))}
         </div>
 
         {/* Show all */}
-
       </div>
     </section>
   );

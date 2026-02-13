@@ -34,7 +34,9 @@ export default function RootLayout({
         className={`${cairo.className} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Navbar />
-        {children}
+        <div className="lg:px-12 xl:px-24">
+          {children}
+        </div>
       </body>
     </html>
   );
