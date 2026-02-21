@@ -1,31 +1,23 @@
-// import Hero from "@/components/home/hero";
-
+import BestClinics from "@/components/home/bestClinics";
 import BestDoctors from "@/components/home/bestDoctors";
+import Footer from "@/components/footer/footer";
+import Hero from "@/components/home/hero";
+import HowItWorks from "@/components/home/howItWorks";
+import SalesSection from "@/components/home/sales/sales";
 import Specialties from "@/components/home/specialties";
+import WhatClientSay from "@/components/home/whatClientSay";
 
 export default function Home() {
   return (
-    <>
-      {/* <Hero /> */}
+    <main className="space-y-16 pb-16 pt-6 sm:pt-8">
+      <Hero />
+      <SalesSection />
       <Specialties />
+      <HowItWorks />
       <BestDoctors />
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-8 m-8">
-      <div className="max-w-3xl w-full bg-white rounded-lg shadow p-12 text-center">
-        <h1 className="text-3xl font-bold text-indigo-900 mb-4">
-          مرحبًا بكم في ميد كلينك
-        </h1>
-        <p className="text-zinc-600 mb-6">
-          واجهة أمامية ثابتة — لا يوجد خادم. اضغط "إنشاء حساب" للانتقال إلى صفحة
-          التسجيل.
-        </p>
-        <a
-          href="/auth/register"
-          className="inline-block bg-indigo-700 text-white px-6 py-2 rounded-md"
-        >
-          إنشاء حساب
-        </a>
-      </div>
+      <BestClinics />
+      <WhatClientSay />
+      <Footer />
     </main>
-    </>
   );
 }

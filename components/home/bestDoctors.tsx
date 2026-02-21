@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import DoctorCard from "@/components/doctorCard/doctorCard";
+import DoctorCard from "@/components/home/doctorCard/doctorCard";
+import { useEffect, useState } from "react";
+import { t } from "@/i18n";
 
 type Doctor = {
   name: string;
@@ -9,67 +12,82 @@ type Doctor = {
   rating: number;
   price: number;
   experience: number;
+  imageSrc: string;
 };
 
 const bestDoctors: Doctor[] = [
   {
-    name: "د. صالح محمود",
-    specialty: "جراحة القلب",
+    name: "Dr. Saleh Mahmoud",
+    specialty: "Cardiology",
     rating: 4.9,
     price: 350,
     experience: 8,
+    imageSrc: "/images/doc1.jpg",
   },
   {
-    name: "د. كريم محمد",
-    specialty: "جراحة القلب",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
+    name: "Dr. Karim Mohamed",
+    specialty: "Internal Medicine",
+    rating: 4.8,
+    price: 320,
+    experience: 10,
+    imageSrc: "/images/doc2.jpg",
   },
   {
-    name: "د. محمود صالح",
-    specialty: "جراحة القلب",
+    name: "Dr. Nadine Adel",
+    specialty: "Dermatology",
     rating: 4.9,
-    price: 350,
-    experience: 8,
+    price: 280,
+    experience: 7,
+    imageSrc: "/images/doc3.jpg",
   },
 ];
 
 export default function BestDoctors() {
+  const [locale, setLocale] = useState(() => {
+    try {
+      return document.documentElement.lang || localStorage.getItem("locale") || "en";
+    } catch (e) {
+      return "en";
+    }
+  });
+
+  useEffect(() => {
+    function onLocale(e: any) {
+      setLocale(e?.detail || document.documentElement.lang || "en");
+    }
+    window.addEventListener("localeChange", onLocale as EventListener);
+    return () => window.removeEventListener("localeChange", onLocale as EventListener);
+  }, []);
+
   return (
-    <section dir="rtl" className=" py-16">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-[#001A6E] mb-2">
-            الأطباء الأكثر اختياراً
-          </h2>
-          <p className="text-gray-500">
-            متخصرو الرعاية الصحية ذوي تقييم عالي
-          </p>
-        </div>
+    <section className="rounded-[30px] border border-[#d8e3ff] bg-white px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mb-10 text-center">
+        <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">{t("bestDoctors.title", locale)}</h2>
+        <p className="mt-2 text-sm text-[#6d7da7]">{t("bestDoctors.subtitle", locale)}</p>
+      </div>
 
-        {/* View All Button */}
-        <div className="flex justify-start mb-8">
-          <button className="flex items-center gap-2 text-[#001A6E] font-medium hover:opacity-70 transition">
-            عرض الكل
-            <ChevronLeft size={20} />
-          </button>
-        </div>
+      <div className="mb-8 flex justify-start">
+        <Link
+          href="/site/specialties"
+          className="inline-flex items-center gap-2 rounded-full border border-[#d1ddff] px-4 py-2 text-sm font-semibold text-[#001a6e] transition hover:bg-[#f4f7ff]"
+        >
+          {t("bestDoctors.viewAll", locale)}
+          <ChevronLeft size={18} />
+        </Link>
+      </div>
 
-        {/* Doctors Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bestDoctors.map((doc, index) => (
-            <DoctorCard
-              key={index}
-              name={doc.name}
-              specialty={doc.specialty}
-              rating={doc.rating}
-              price={doc.price}
-              experience={doc.experience}
-            />
-          ))}
-        </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {bestDoctors.map((doc) => (
+          <DoctorCard
+            key={doc.name}
+            name={doc.name}
+            specialty={doc.specialty}
+            rating={doc.rating}
+            price={doc.price}
+            experience={doc.experience}
+            imageSrc={doc.imageSrc}
+          />
+        ))}
       </div>
     </section>
   );

@@ -1,21 +1,10 @@
-import React from "react";
-import { ChevronLeft } from "lucide-react";
+"use client";
 
-import {
-  HeartPulse,
-  Bone,
-  Baby,
-  Brain,
-  Ear,
-  Eye,
-  Stethoscope,
-  //   Tooth,
-  Droplets,
-  Scan,
-  Syringe,
-  Droplet,
-} from "lucide-react";
+import React from "react";
 import Link from "next/link";
+import { ChevronLeft, HeartPulse, Bone, Baby, Brain, Ear, Eye, Stethoscope, Droplets, Scan, Syringe, Droplet } from "lucide-react";
+import { useEffect, useState } from "react";
+import { t } from "@/i18n";
 
 type Specialty = {
   title: string;
@@ -24,73 +13,66 @@ type Specialty = {
 };
 
 const specialties: Specialty[] = [
-  { title: "عظام", doctors: 200, icon: <Bone size={28} /> },
-  { title: "مخ وأعصاب", doctors: 100, icon: <Brain size={28} /> },
-  { title: "طب الأطفال", doctors: 80, icon: <Baby size={28} /> },
-  { title: "قلب وأوعية دموية", doctors: 120, icon: <HeartPulse size={28} /> },
-  { title: "صدر وجهاز تنفسي", doctors: 200, icon: <Stethoscope size={28} /> },
-  { title: "كلى", doctors: 100, icon: <Droplets size={28} /> },
-  { title: "الأورام", doctors: 80, icon: <Scan size={28} /> },
-  { title: "طب الأذن والأنف والحنجرة", doctors: 120, icon: <Ear size={28} /> },
-  //   { title: "أسنان", doctors: 200, icon: <Tooth size={28} /> },
-  { title: "جلدية", doctors: 100, icon: <Droplet size={28} /> },
-  { title: "نساء وتوليد", doctors: 80, icon: <Syringe size={28} /> },
-  { title: "طب العيون", doctors: 120, icon: <Eye size={28} /> },
+  { title: "Orthopedics", doctors: 200, icon: <Bone size={24} /> },
+  { title: "Neurology", doctors: 100, icon: <Brain size={24} /> },
+  { title: "Pediatrics", doctors: 80, icon: <Baby size={24} /> },
+  { title: "Cardiology", doctors: 120, icon: <HeartPulse size={24} /> },
+  { title: "Pulmonology", doctors: 200, icon: <Stethoscope size={24} /> },
+  { title: "Nephrology", doctors: 100, icon: <Droplets size={24} /> },
+  { title: "Oncology", doctors: 80, icon: <Scan size={24} /> },
+  { title: "ENT", doctors: 120, icon: <Ear size={24} /> },
+  { title: "Dermatology", doctors: 100, icon: <Droplet size={24} /> },
+  { title: "OB-GYN", doctors: 80, icon: <Syringe size={24} /> },
+  { title: "Ophthalmology", doctors: 120, icon: <Eye size={24} /> },
 ];
 
 const Specialties = () => {
+  const [locale, setLocale] = useState(() => {
+    try {
+      return document.documentElement.lang || localStorage.getItem("locale") || "en";
+    } catch (e) {
+      return "en";
+    }
+  });
+
+  useEffect(() => {
+    function onLocale(e: any) {
+      setLocale(e?.detail || document.documentElement.lang || "en");
+    }
+    window.addEventListener("localeChange", onLocale as EventListener);
+    return () => window.removeEventListener("localeChange", onLocale as EventListener);
+  }, []);
+
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">التخصصات</h2>
-          <p className="text-gray-500 text-sm">
-            مش متأكد؟ اختار التخصص أو تستخدم المساعد الذكي للمساعدة.
-          </p>
-        </div>
-        <div className="mb-10 text-left">
+    <section className="rounded-[30px] border border-[#d8e3ff] bg-white px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mb-10 text-center">
+        <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">{t("specialties.title", locale)}</h2>
+        <p className="mt-2 text-sm text-[#6d7da7]">{t("specialties.description", locale)}</p>
+      </div>
+
+      <div className="mb-8 flex justify-start">
           <Link
             href="/site/specialties"
-            className="flex items-center gap-2 text-[#001A6E] font-medium hover:opacity-70 transition"
+            className="inline-flex items-center gap-2 rounded-full border border-[#d1ddff] px-4 py-2 text-sm font-semibold text-[#001a6e] transition hover:bg-[#f4f7ff]"
           >
-            عرض الكل
-            <ChevronLeft size={20} />
+            {t("specialties.viewAll", locale)}
+            <ChevronLeft size={18} />
           </Link>
-        </div>
-        {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {specialties.map((item, index) => (
-            <div
-              key={index}
-              className="group bg-white border border-blue-200 rounded-2xl
-                         shadow-sm hover:shadow-md transition-all duration-300
-                         flex flex-col items-center justify-center
-                         py-6 cursor-pointer"
-            >
-              {/* Icon */}
-              <div
-                className="w-14 h-14 flex items-center justify-center
-                              rounded-xl border border-blue-300
-                              text-blue-700 mb-4
-                              group-hover:bg-blue-700 group-hover:text-white
-                              transition"
-              >
-                {item.icon}
-              </div>
+      </div>
 
-              {/* Title */}
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                {item.title}
-              </h3>
-
-              {/* Doctors count */}
-              <p className="text-xs text-blue-700">{item.doctors} طبيب</p>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {specialties.map((item) => (
+          <div
+            key={item.title}
+            className="group rounded-2xl border border-[#dbe4ff] bg-[#f9fbff] px-3 py-5 text-center transition hover:-translate-y-1 hover:border-[#9db4ff] hover:shadow-[0_14px_30px_rgba(18,57,173,0.15)]"
+          >
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#e7eeff] text-[#1742c7] transition group-hover:bg-[#1c3faa] group-hover:text-white">
+              {item.icon}
             </div>
-          ))}
-        </div>
-
-        {/* Show all */}
+            <h3 className="text-sm font-bold text-[#0f1a4f]">{item.title}</h3>
+            <p className="mt-1 text-xs text-[#4f66a7]">{item.doctors} doctors</p>
+          </div>
+        ))}
       </div>
     </section>
   );

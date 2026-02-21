@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Search } from "lucide-react";
-import DoctorCard from "@/components/doctorCard/doctorCard";
+import DoctorCard from "@/components/home/doctorCard/doctorCard";
 
 type Specialty = {
   title: string;
