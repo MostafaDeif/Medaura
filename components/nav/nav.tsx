@@ -9,20 +9,24 @@ import { t } from "@/i18n";
 const Navbar: FC = () => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const [locale, setLocale] = useState<string>(() => {
-    try {
-      return localStorage.getItem("locale") || "en";
-    } catch (e) {
-      return "en";
-    }
-  });
+  const [locale, setLocale] = useState<string>("en");
 
+  // On mount, read stored locale (client-only) and apply it.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("locale");
+      if (stored) setLocale(stored);
+    } catch (e) {
+      // noop
+    }
+  }, []);
+
+  // Persist & apply locale whenever it changes (runs on client)
   useEffect(() => {
     try {
       localStorage.setItem("locale", locale);
       document.documentElement.lang = locale;
       document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
-      // notify other components about locale change
       try {
         window.dispatchEvent(new CustomEvent("localeChange", { detail: locale }));
       } catch (e) {
@@ -35,7 +39,7 @@ const Navbar: FC = () => {
 
   const navItems = [
     { href: "/", label: t("nav.home", locale) },
-    { href: "/site/specialties", label: t("nav.specialties", locale) },
+    { href: "/specialties", label: t("nav.specialties", locale) },
     { href: "/doctors", label: t("nav.doctors", locale) },
     { href: "/clinics", label: t("nav.clinics", locale) },
     { href: "/appointments", label: t("nav.appointments", locale) },
@@ -51,15 +55,20 @@ const Navbar: FC = () => {
   };
 
   return (
-    <nav className="w-full border-b border-[#d9e3ff] bg-[#edf2ff]">
-      <div
-        className="container relative mx-auto flex items-center justify-between px-6 py-4"
-        dir={locale === "ar" ? "rtl" : "ltr"}
-      >
+    <nav className="fixed top-0 left-0 w-full border-b border-[#d9e3ff] bg-[#edf2ff] z-50">
+      <div className="container relative mx-auto flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
           <Image src="/images/LOGO.png" alt="logo" width={32} height={32} />
           <span className="text-xl font-bold text-[#0f1a4f]">Medaura</span>
         </div>
+
+        <button
+          onClick={() => setLocale(locale === "en" ? "ar" : "en")}
+          aria-label="Toggle language"
+          className="md:hidden ml-3 rounded-full border px-2 py-1 text-sm font-medium text-[#0f1a4f] hover:opacity-80"
+        >
+          {locale === "en" ? "ع" : "EN"}
+        </button>
 
         <button
           onClick={() => setIsOpen(!isOpen)}

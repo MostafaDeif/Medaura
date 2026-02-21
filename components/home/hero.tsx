@@ -30,7 +30,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden rounded-4xl bg-[#f4f7ff] px-4 pb-8 pt-6 sm:px-8 sm:pt-10">
+    <section className="relative overflow-hidden rounded-4xl bg-[#f4f7ff] px-4 pb-8 pt-20 sm:px-8 sm:pt-24">
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/landingbackground.png"
