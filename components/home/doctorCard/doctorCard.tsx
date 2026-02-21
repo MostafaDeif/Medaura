@@ -24,7 +24,9 @@ export default function DoctorCard({
 }: DoctorCardProps) {
   const [locale, setLocale] = useState(() => {
     try {
-      return document.documentElement.lang || localStorage.getItem("locale") || "en";
+      return (
+        document.documentElement.lang || localStorage.getItem("locale") || "en"
+      );
     } catch (e) {
       return "en";
     }
@@ -35,7 +37,8 @@ export default function DoctorCard({
       setLocale(e?.detail || document.documentElement.lang || "en");
     }
     window.addEventListener("localeChange", onLocale as EventListener);
-    return () => window.removeEventListener("localeChange", onLocale as EventListener);
+    return () =>
+      window.removeEventListener("localeChange", onLocale as EventListener);
   }, []);
   return (
     <article className="rounded-3xl border border-[#d9e3ff] bg-white p-4 shadow-[0_10px_25px_rgba(20,61,180,0.08)] transition hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(20,61,180,0.14)]">
@@ -50,7 +53,9 @@ export default function DoctorCard({
       </div>
 
       <h4 className="text-base font-extrabold text-[#001a6e]">{name}</h4>
-      <p className="mt-1 text-sm text-[#53679f]">{t("doctorCard.consultant", locale)} {specialty}</p>
+      <p className="mt-1 text-sm text-[#53679f]">
+        {t("doctorCard.consultant", locale)} {specialty}
+      </p>
 
       <div className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#fff4d9] px-3 py-1 text-sm font-semibold text-[#8d5a00]">
         <Star className="h-4 w-4 fill-current" />
@@ -59,12 +64,18 @@ export default function DoctorCard({
 
       <div className="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-[#f5f8ff] p-3 text-sm text-[#2a3f78]">
         <div>
-          <p className="text-xs text-[#6c7ba4]">{t("doctorCard.sessionFee", locale)}</p>
+          <p className="text-xs text-[#6c7ba4]">
+            {t("doctorCard.sessionFee", locale)}
+          </p>
           <p className="font-bold">{price} EGP</p>
         </div>
         <div>
-          <p className="text-xs text-[#6c7ba4]">{t("doctorCard.experience", locale)}</p>
-          <p className="font-bold">{experience} {locale === "ar" ? "سنة" : "years"}</p>
+          <p className="text-xs text-[#6c7ba4]">
+            {t("doctorCard.experience", locale)}
+          </p>
+          <p className="font-bold">
+            {experience} {locale === "ar" ? "سنة" : "years"}
+          </p>
         </div>
       </div>
 

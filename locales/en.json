@@ -62,9 +62,18 @@
     "description": "Three simple steps to find the right doctor and schedule your visit.",
     "stepLabel": "Step",
     "steps": [
-      { "title": "Search by specialty", "description": "Browse specialties and filter doctors based on your exact medical need." },
-      { "title": "Choose your doctor", "description": "Compare ratings, fees, and clinic locations before selecting the doctor." },
-      { "title": "Book instantly", "description": "Reserve your appointment in seconds and receive confirmation right away." }
+      {
+        "title": "Search by specialty",
+        "description": "Browse specialties and filter doctors based on your exact medical need."
+      },
+      {
+        "title": "Choose your doctor",
+        "description": "Compare ratings, fees, and clinic locations before selecting the doctor."
+      },
+      {
+        "title": "Book instantly",
+        "description": "Reserve your appointment in seconds and receive confirmation right away."
+      }
     ]
   },
 
@@ -81,9 +90,18 @@
     "startNow": "Start now",
     "claimOffer": "Claim offer",
     "offers": [
-      { "title": "Free follow-up call", "description": "Book an appointment this week and get one follow-up call at no extra cost." },
-      { "title": "Family package", "description": "Save up to 20% when booking checkups for 3 or more family members." },
-      { "title": "Online consultation", "description": "Get priority online consultations with selected specialists." }
+      {
+        "title": "Free follow-up call",
+        "description": "Book an appointment this week and get one follow-up call at no extra cost."
+      },
+      {
+        "title": "Family package",
+        "description": "Save up to 20% when booking checkups for 3 or more family members."
+      },
+      {
+        "title": "Online consultation",
+        "description": "Get priority online consultations with selected specialists."
+      }
     ]
   },
 
@@ -91,9 +109,21 @@
     "title": "What clients say",
     "description": "Real feedback from patients who booked through Medaura.",
     "testimonials": [
-      { "name": "Amira Nabil", "text": "Booking was smooth, and I found the right doctor quickly. The clinic experience was excellent.", "image": "/images/chosenDoc.png" },
-      { "name": "Karim Adel", "text": "I compared doctors by rating and fee in minutes. The appointment confirmation was instant.", "image": "/images/chosenDoc2.png" },
-      { "name": "Mona Saad", "text": "Great platform for family appointments. Clear info, responsive support, and trusted clinics.", "image": "/images/chosenDoc3.png" }
+      {
+        "name": "Amira Nabil",
+        "text": "Booking was smooth, and I found the right doctor quickly. The clinic experience was excellent.",
+        "image": "/images/chosenDoc.png"
+      },
+      {
+        "name": "Karim Adel",
+        "text": "I compared doctors by rating and fee in minutes. The appointment confirmation was instant.",
+        "image": "/images/chosenDoc2.png"
+      },
+      {
+        "name": "Mona Saad",
+        "text": "Great platform for family appointments. Clear info, responsive support, and trusted clinics.",
+        "image": "/images/chosenDoc3.png"
+      }
     ]
   },
 

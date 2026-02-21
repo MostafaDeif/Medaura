@@ -2,7 +2,20 @@
 
 import React from "react";
 import Link from "next/link";
-import { ChevronLeft, HeartPulse, Bone, Baby, Brain, Ear, Eye, Stethoscope, Droplets, Scan, Syringe, Droplet } from "lucide-react";
+import {
+  ChevronLeft,
+  HeartPulse,
+  Bone,
+  Baby,
+  Brain,
+  Ear,
+  Eye,
+  Stethoscope,
+  Droplets,
+  Scan,
+  Syringe,
+  Droplet,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { t } from "@/i18n";
 
@@ -29,7 +42,9 @@ const specialties: Specialty[] = [
 const Specialties = () => {
   const [locale, setLocale] = useState(() => {
     try {
-      return document.documentElement.lang || localStorage.getItem("locale") || "en";
+      return (
+        document.documentElement.lang || localStorage.getItem("locale") || "en"
+      );
     } catch (e) {
       return "en";
     }
@@ -40,24 +55,29 @@ const Specialties = () => {
       setLocale(e?.detail || document.documentElement.lang || "en");
     }
     window.addEventListener("localeChange", onLocale as EventListener);
-    return () => window.removeEventListener("localeChange", onLocale as EventListener);
+    return () =>
+      window.removeEventListener("localeChange", onLocale as EventListener);
   }, []);
 
   return (
     <section className="rounded-[30px] border border-[#d8e3ff] bg-white px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-10 text-center">
-        <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">{t("specialties.title", locale)}</h2>
-        <p className="mt-2 text-sm text-[#6d7da7]">{t("specialties.description", locale)}</p>
+        <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">
+          {t("specialties.title", locale)}
+        </h2>
+        <p className="mt-2 text-sm text-[#6d7da7]">
+          {t("specialties.description", locale)}
+        </p>
       </div>
 
       <div className="mb-8 flex justify-start">
-          <Link
-            href="/site/specialties"
-            className="inline-flex items-center gap-2 rounded-full border border-[#d1ddff] px-4 py-2 text-sm font-semibold text-[#001a6e] transition hover:bg-[#f4f7ff]"
-          >
-            {t("specialties.viewAll", locale)}
-            <ChevronLeft size={18} />
-          </Link>
+        <Link
+          href="/site/specialties"
+          className="inline-flex items-center gap-2 rounded-full border border-[#d1ddff] px-4 py-2 text-sm font-semibold text-[#001a6e] transition hover:bg-[#f4f7ff]"
+        >
+          {t("specialties.viewAll", locale)}
+          <ChevronLeft size={18} />
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -70,7 +90,9 @@ const Specialties = () => {
               {item.icon}
             </div>
             <h3 className="text-sm font-bold text-[#0f1a4f]">{item.title}</h3>
-            <p className="mt-1 text-xs text-[#4f66a7]">{item.doctors} doctors</p>
+            <p className="mt-1 text-xs text-[#4f66a7]">
+              {item.doctors} doctors
+            </p>
           </div>
         ))}
       </div>

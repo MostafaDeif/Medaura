@@ -52,7 +52,9 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
         <h2 className="text-2xl font-semibold text-indigo-900">تم الإرسال!</h2>
-        <p className="text-zinc-600">تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.</p>
+        <p className="text-zinc-600">
+          تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.
+        </p>
         <Link
           href="/auth/login"
           className="inline-block w-full bg-indigo-900 text-white py-2 sm:py-2.5 rounded-md text-sm sm:text-base transition-all duration-300 hover:bg-indigo-800 hover:shadow-lg active:scale-95"
@@ -65,8 +67,12 @@ export default function ForgotPasswordPage() {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold text-indigo-900 mb-2">نسيت كلمة المرور</h2>
-      <p className="text-zinc-600 mb-6 text-sm">لا تقلق، سنرسل لك تعليمات لاعادة الضبط</p>
+      <h2 className="text-2xl font-bold text-indigo-900 mb-2">
+        نسيت كلمة المرور
+      </h2>
+      <p className="text-zinc-600 mb-6 text-sm">
+        لا تقلق، سنرسل لك تعليمات لاعادة الضبط
+      </p>
 
       <ErrorAlert errors={errors} />
 

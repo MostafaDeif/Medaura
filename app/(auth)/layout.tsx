@@ -17,9 +17,24 @@ const NAV_ITEMS = [
 
 // Register account types
 const REGISTER_TYPES = [
-  { key: "patient", label: "مريض", href: "/auth/register", icon: "customer-icon" },
-  { key: "clinic", label: "عيادة", href: "/auth/register/clinic", icon: "clinic-icon" },
-  { key: "doctor", label: "طبيب", href: "/auth/register/doctor", icon: "doctor-icon" },
+  {
+    key: "patient",
+    label: "مريض",
+    href: "/auth/register",
+    icon: "customer-icon",
+  },
+  {
+    key: "clinic",
+    label: "عيادة",
+    href: "/auth/register/clinic",
+    icon: "clinic-icon",
+  },
+  {
+    key: "doctor",
+    label: "طبيب",
+    href: "/auth/register/doctor",
+    icon: "doctor-icon",
+  },
 ];
 
 export default function AuthLayout({ children }: AuthLayoutProps) {

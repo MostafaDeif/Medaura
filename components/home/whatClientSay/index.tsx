@@ -7,7 +7,9 @@ import { t } from "@/i18n";
 export default function WhatClientSay() {
   const [locale, setLocale] = useState(() => {
     try {
-      return document.documentElement.lang || localStorage.getItem("locale") || "en";
+      return (
+        document.documentElement.lang || localStorage.getItem("locale") || "en"
+      );
     } catch (e) {
       return "en";
     }
@@ -18,7 +20,8 @@ export default function WhatClientSay() {
       setLocale(e?.detail || document.documentElement.lang || "en");
     }
     window.addEventListener("localeChange", onLocale as EventListener);
-    return () => window.removeEventListener("localeChange", onLocale as EventListener);
+    return () =>
+      window.removeEventListener("localeChange", onLocale as EventListener);
   }, []);
 
   const testimonials = t("whatClientSay.testimonials", locale) as any[];
@@ -26,8 +29,12 @@ export default function WhatClientSay() {
   return (
     <section className="rounded-[30px] border border-[#d8e3ff] bg-[#f5f8ff] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-10 text-center">
-        <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">{t("whatClientSay.title", locale)}</h2>
-        <p className="mt-2 text-sm text-[#6b7aa4]">{t("whatClientSay.description", locale)}</p>
+        <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">
+          {t("whatClientSay.title", locale)}
+        </h2>
+        <p className="mt-2 text-sm text-[#6b7aa4]">
+          {t("whatClientSay.description", locale)}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -38,12 +45,21 @@ export default function WhatClientSay() {
           >
             <div className="mb-4 flex items-center gap-3">
               <div className="relative h-12 w-12 overflow-hidden rounded-full border border-[#d6e1ff]">
-                <Image src={item.image} alt={item.name} fill className="object-cover" />
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <h3 className="text-sm font-extrabold text-[#14245a]">{item.name}</h3>
+              <h3 className="text-sm font-extrabold text-[#14245a]">
+                {item.name}
+              </h3>
             </div>
 
-            <p className="text-sm leading-7 text-[#566a9c]">&quot;{item.text}&quot;</p>
+            <p className="text-sm leading-7 text-[#566a9c]">
+              &quot;{item.text}&quot;
+            </p>
           </article>
         ))}
       </div>

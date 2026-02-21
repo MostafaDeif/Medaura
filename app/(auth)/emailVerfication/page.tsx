@@ -30,7 +30,10 @@ export default function EmailVerificationPage() {
     }
   }
 
-  function handleKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleKeyDown(
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       const prevInput = document.getElementById(`otp-${index - 1}`);
       prevInput?.focus();
@@ -78,7 +81,9 @@ export default function EmailVerificationPage() {
             </svg>
           </div>
         </div>
-        <h2 className="text-2xl font-semibold text-indigo-900">تم التحقق بنجاح!</h2>
+        <h2 className="text-2xl font-semibold text-indigo-900">
+          تم التحقق بنجاح!
+        </h2>
         <p className="text-zinc-600">تم تفعيل حسابك بنجاح</p>
         <Link
           href="/auth/login"
@@ -92,8 +97,12 @@ export default function EmailVerificationPage() {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold text-indigo-900 mb-2">التحقق من البريد الإلكتروني</h2>
-      <p className="text-sm text-zinc-600 mb-4">إرسلنا الرمز إلى info@example.com</p>
+      <h2 className="text-2xl font-bold text-indigo-900 mb-2">
+        التحقق من البريد الإلكتروني
+      </h2>
+      <p className="text-sm text-zinc-600 mb-4">
+        إرسلنا الرمز إلى info@example.com
+      </p>
 
       <ErrorAlert errors={errors} />
 

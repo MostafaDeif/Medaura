@@ -24,7 +24,9 @@ export default function PasswordResetSentPage() {
       </div>
 
       <h2 className="text-2xl font-semibold text-indigo-900">تم الإرسال!</h2>
-      <p className="text-zinc-600">تحقق من بريدك الإلكتروني وقم بتغيير كلمة المرور</p>
+      <p className="text-zinc-600">
+        تحقق من بريدك الإلكتروني وقم بتغيير كلمة المرور
+      </p>
 
       <Link
         href="/auth/login"

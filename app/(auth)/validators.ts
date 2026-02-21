@@ -11,7 +11,10 @@ export function validatePassword(password: string): string | null {
   return null;
 }
 
-export function validateConfirmPassword(password: string, confirm: string): string | null {
+export function validateConfirmPassword(
+  password: string,
+  confirm: string,
+): string | null {
   if (password !== confirm) return "كلمات المرور غير متطابقة";
   return null;
 }

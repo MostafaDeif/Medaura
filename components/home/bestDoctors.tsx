@@ -45,7 +45,9 @@ const bestDoctors: Doctor[] = [
 export default function BestDoctors() {
   const [locale, setLocale] = useState(() => {
     try {
-      return document.documentElement.lang || localStorage.getItem("locale") || "en";
+      return (
+        document.documentElement.lang || localStorage.getItem("locale") || "en"
+      );
     } catch (e) {
       return "en";
     }
@@ -56,14 +58,19 @@ export default function BestDoctors() {
       setLocale(e?.detail || document.documentElement.lang || "en");
     }
     window.addEventListener("localeChange", onLocale as EventListener);
-    return () => window.removeEventListener("localeChange", onLocale as EventListener);
+    return () =>
+      window.removeEventListener("localeChange", onLocale as EventListener);
   }, []);
 
   return (
     <section className="rounded-[30px] border border-[#d8e3ff] bg-white px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-10 text-center">
-        <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">{t("bestDoctors.title", locale)}</h2>
-        <p className="mt-2 text-sm text-[#6d7da7]">{t("bestDoctors.subtitle", locale)}</p>
+        <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">
+          {t("bestDoctors.title", locale)}
+        </h2>
+        <p className="mt-2 text-sm text-[#6d7da7]">
+          {t("bestDoctors.subtitle", locale)}
+        </p>
       </div>
 
       <div className="mb-8 flex justify-start">

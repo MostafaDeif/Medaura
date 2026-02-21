@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { validatePassword, validateConfirmPassword, simulateApiCall } from "../validators";
+import {
+  validatePassword,
+  validateConfirmPassword,
+  simulateApiCall,
+} from "../validators";
 import { ErrorAlert, PasswordInput } from "../components";
 
 export default function ResetPasswordPage() {
@@ -56,7 +60,9 @@ export default function ResetPasswordPage() {
             </svg>
           </div>
         </div>
-        <h2 className="text-2xl font-semibold text-indigo-900">تم تعيين كلمة المرور!</h2>
+        <h2 className="text-2xl font-semibold text-indigo-900">
+          تم تعيين كلمة المرور!
+        </h2>
         <p className="text-zinc-600">تم تعيين كلمة المرور الجديدة بنجاح</p>
         <Link
           href="/auth/login"
@@ -70,9 +76,12 @@ export default function ResetPasswordPage() {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold text-indigo-900 mb-2">إعادة تعيين كلمة المرور</h2>
+      <h2 className="text-2xl font-bold text-indigo-900 mb-2">
+        إعادة تعيين كلمة المرور
+      </h2>
       <p className="text-zinc-600 mb-6 text-sm">
-        يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمات المرور التي استخدمتها سابقاً
+        يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمات المرور التي استخدمتها
+        سابقاً
       </p>
 
       <ErrorAlert errors={errors} />

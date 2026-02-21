@@ -7,15 +7,29 @@ import { useEffect, useState } from "react";
 import { t } from "@/i18n";
 
 const stats = (locale: string) => [
-  { value: "+10k", label: t("hero.stats.happyPatients", locale), icon: <Users className="h-5 w-5" /> },
-  { value: "+500", label: t("hero.stats.licensedDoctors", locale), icon: <Stethoscope className="h-5 w-5" /> },
-  { value: "24/7", label: t("hero.stats.alwaysAvailable", locale), icon: <ShieldCheck className="h-5 w-5" /> },
+  {
+    value: "+10k",
+    label: t("hero.stats.happyPatients", locale),
+    icon: <Users className="h-5 w-5" />,
+  },
+  {
+    value: "+500",
+    label: t("hero.stats.licensedDoctors", locale),
+    icon: <Stethoscope className="h-5 w-5" />,
+  },
+  {
+    value: "24/7",
+    label: t("hero.stats.alwaysAvailable", locale),
+    icon: <ShieldCheck className="h-5 w-5" />,
+  },
 ];
 
 export default function Hero() {
   const [locale, setLocale] = useState(() => {
     try {
-      return document.documentElement.lang || localStorage.getItem("locale") || "en";
+      return (
+        document.documentElement.lang || localStorage.getItem("locale") || "en"
+      );
     } catch (e) {
       return "en";
     }
@@ -26,7 +40,8 @@ export default function Hero() {
       setLocale(e?.detail || document.documentElement.lang || "en");
     }
     window.addEventListener("localeChange", onLocale as EventListener);
-    return () => window.removeEventListener("localeChange", onLocale as EventListener);
+    return () =>
+      window.removeEventListener("localeChange", onLocale as EventListener);
   }, []);
 
   return (
@@ -50,7 +65,9 @@ export default function Hero() {
 
             <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl">
               {t("hero.title", locale)}
-              <span className="block text-[#1c4fe0]">{t("hero.subtitle", locale)}</span>
+              <span className="block text-[#1c4fe0]">
+                {t("hero.subtitle", locale)}
+              </span>
             </h1>
 
             <p className="max-w-xl text-sm leading-7 text-[#4a5b88] sm:text-base">

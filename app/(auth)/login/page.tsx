@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { validateEmail, validatePassword, simulateApiCall } from "../validators";
+import {
+  validateEmail,
+  validatePassword,
+  simulateApiCall,
+} from "../validators";
 import { ErrorAlert, PasswordInput, EmailInput } from "../components";
 
 export default function LoginPage() {
@@ -67,7 +71,9 @@ export default function LoginPage() {
             </svg>
           </div>
         </div>
-        <h2 className="text-2xl font-semibold text-indigo-900">تم تسجيل الدخول!</h2>
+        <h2 className="text-2xl font-semibold text-indigo-900">
+          تم تسجيل الدخول!
+        </h2>
         <p className="text-zinc-600">تم دخولك بنجاح (محلي فقط).</p>
         <button
           onClick={() => {
@@ -151,10 +157,22 @@ export default function LoginPage() {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path d="M21.35 11.1h-9.18v2.92h5.28c-.23 1.61-1.33 2.95-2.84 3.63v3.02h4.6c2.69-2.49 4.21-6.14 3.14-10.57-.18-.68-.46-1.32-.99-1.9z" fill="#4285F4" />
-          <path d="M12.17 22c2.78 0 5.12-.92 6.82-2.5l-4.6-3.02c-1.1.74-2.5 1.18-4.22 1.18-3.26 0-6.02-2.2-7.01-5.15H.68v3.23C2.38 19.9 6.8 22 12.17 22z" fill="#34A853" />
-          <path d="M5.16 13.51c-.24-.72-.38-1.49-.38-2.28 0-.79.14-1.56.38-2.28V5.72H.68A11.99 11.99 0 0 0 0 11.23c0 1.86.4 3.63 1.12 5.24l4.04-2.96z" fill="#FBBC05" />
-          <path d="M12.17 4.44c1.9 0 3.58.66 4.92 1.96l3.67-3.67C17.28.75 14.95 0 12.17 0 6.8 0 2.38 2.1.68 5.72l4.48 3.44c.99-2.95 3.75-5.15 7.01-5.15z" fill="#EA4335" />
+          <path
+            d="M21.35 11.1h-9.18v2.92h5.28c-.23 1.61-1.33 2.95-2.84 3.63v3.02h4.6c2.69-2.49 4.21-6.14 3.14-10.57-.18-.68-.46-1.32-.99-1.9z"
+            fill="#4285F4"
+          />
+          <path
+            d="M12.17 22c2.78 0 5.12-.92 6.82-2.5l-4.6-3.02c-1.1.74-2.5 1.18-4.22 1.18-3.26 0-6.02-2.2-7.01-5.15H.68v3.23C2.38 19.9 6.8 22 12.17 22z"
+            fill="#34A853"
+          />
+          <path
+            d="M5.16 13.51c-.24-.72-.38-1.49-.38-2.28 0-.79.14-1.56.38-2.28V5.72H.68A11.99 11.99 0 0 0 0 11.23c0 1.86.4 3.63 1.12 5.24l4.04-2.96z"
+            fill="#FBBC05"
+          />
+          <path
+            d="M12.17 4.44c1.9 0 3.58.66 4.92 1.96l3.67-3.67C17.28.75 14.95 0 12.17 0 6.8 0 2.38 2.1.68 5.72l4.48 3.44c.99-2.95 3.75-5.15 7.01-5.15z"
+            fill="#EA4335"
+          />
         </svg>
         {googleLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول عبر جوجل"}
       </button>

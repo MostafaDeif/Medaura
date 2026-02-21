@@ -28,7 +28,9 @@ const Navbar: FC = () => {
       document.documentElement.lang = locale;
       document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
       try {
-        window.dispatchEvent(new CustomEvent("localeChange", { detail: locale }));
+        window.dispatchEvent(
+          new CustomEvent("localeChange", { detail: locale }),
+        );
       } catch (e) {
         // noop
       }
@@ -75,9 +77,15 @@ const Navbar: FC = () => {
           className="z-20 flex flex-col gap-1 md:hidden"
           aria-label="Open menu"
         >
-          <span className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "translate-y-2 rotate-45" : ""}`} />
-          <span className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "opacity-0" : ""}`} />
-          <span className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "-translate-y-2 -rotate-45" : ""}`} />
+          <span
+            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "translate-y-2 rotate-45" : ""}`}
+          />
+          <span
+            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "opacity-0" : ""}`}
+          />
+          <span
+            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "-translate-y-2 -rotate-45" : ""}`}
+          />
         </button>
 
         <ul
@@ -86,7 +94,10 @@ const Navbar: FC = () => {
           } absolute inset-x-0 top-16 z-10 w-full flex-col gap-2 border-t border-[#d6e0ff] bg-[#edf2ff] p-4 text-[#0f1a4f] shadow-md md:relative md:inset-x-auto md:top-auto md:flex md:w-auto md:flex-row md:items-center md:gap-8 md:border-t-0 md:bg-transparent md:p-0 md:shadow-none`}
         >
           {navItems.map((item) => (
-            <li key={item.href} className="relative transition hover:opacity-70">
+            <li
+              key={item.href}
+              className="relative transition hover:opacity-70"
+            >
               <Link
                 href={item.href}
                 onClick={() => setIsOpen(false)}
@@ -107,7 +118,10 @@ const Navbar: FC = () => {
             {locale === "en" ? "ع" : "EN"}
           </button>
 
-          <Link href="/auth/login" className="font-medium text-[#0f1a4f] hover:opacity-70">
+          <Link
+            href="/auth/login"
+            className="font-medium text-[#0f1a4f] hover:opacity-70"
+          >
             {t("nav.login", locale)}
           </Link>
 
