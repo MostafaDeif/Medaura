@@ -17,7 +17,6 @@ export default function Home() {
       <BestDoctors />
       <BestClinics />
       <WhatClientSay />
-      <Footer />
     </main>
   );
 }
