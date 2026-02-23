@@ -54,7 +54,10 @@
     "title": "التخصصات",
     "description": "اختر التخصص المناسب واعثر على أطباء ذوي خبرة لحالتك.",
     "doctors": "أطباء",
-    "viewAll": "عرض الكل"
+    "viewAll": "عرض الكل",
+    "chooseSpecialty": "اختر تخصصك لحالتك",
+    "searchPlaceholder": "ابحث عن تخصص...",
+    "availableDoctors": "الأطباء المتاحون في {specialty}"
   },
 
   "howItWorks": {
@@ -81,7 +84,8 @@
     "consultant": "استشاري",
     "sessionFee": "سعر الجلسة",
     "experience": "الخبرة",
-    "bookNow": "احجز الآن"
+    "bookNow": "احجز الآن",
+    "years": "سنة"
   },
 
   "sales": {
@@ -132,6 +136,8 @@
     "description": "منصة ذكية لحجز الرعاية الصحية تربط المرضى بأفضل الأطباء والعيادات.",
     "quickLinks": "روابط سريعة",
     "contact": "اتصل",
+    "support": "الدعم",
+    "team": "الفريق",
     "email": "support@medaura.com",
     "phone": "+20 100 000 0000",
     "searchBy": "ابحث عبر",
@@ -142,7 +148,6 @@
     "contactUs": "تواصل معنا",
     "privacy": "سياسة الخصوصية",
     "terms": "شروط الخدمة",
-    "team": "الفريق",
     "joinTeam": "انضم للفريق",
     "teamApp": "التقديم للفريق",
     "teamHelp": "دعم الفريق",
@@ -166,5 +171,73 @@
       "noAccount": "ليس لديك حساب بعد؟",
       "registerNow": "سجل الآن"
     }
+  },
+  "clinics": {
+    "title": "العيادات",
+    "subtitle": "أفضل العيادات حسب آراء وتجارب المستخدمين",
+    "loadMore": "عرض المزيد",
+    "viewDetails": "عرض التفاصيل",
+    "aboutClinic": "عن العيادة",
+    "medicalSpecialties": "التخصصات الطبية",
+    "doctors": "الأطباء",
+    "selectSpecialty": "اختر التخصص",
+    "gender": "النوع",
+    "male": "ذكر",
+    "female": "أنثى",
+    "search": "ابحث",
+    "moreDoctors": "المزيد من الأطباء",
+    "clinicLocation": "موقع العيادة",
+    "patientReviews": "تقييمات المرضى",
+    "overallRating": "التقييم العام",
+    "fromVisitors": "من {count} زائر للعيادة",
+    "notFound": "لا توجد بيانات متاحة حالياً."
+  },
+  "booking": {
+    "back": "السابق",
+    "sessionFee": "سعر الجلسة",
+    "city": "مدينة",
+    "datePlaceholder": "تاريخ الكشف",
+    "timePlaceholder": "توقيت الكشف",
+    "bookNow": "احجز الآن",
+    "sendMessage": "إرسال رسالة",
+    "aboutDoctor": "عن الطبيب",
+    "specializedIn": "متخصص في",
+    "more": "المزيد",
+    "clinicInfo": "معلومات العيادة",
+    "workingHours": "ساعات العمل",
+    "patientReviews": "تقييمات المرضى",
+    "overallRating": "التقييم العام",
+    "fromVisitors": "من 200 زائر للدكتور",
+    "selectTime": "اختر الوقت",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "validation": {
+      "alreadyBooked": {
+        "title": "تم الحجز بالفعل",
+        "message": "لقد قمت بحجز موعد مع هذا الطبيب مسبقاً."
+      },
+      "selectDateTime": {
+        "title": "يرجي اختيار الوقت والتاريخ",
+        "message": "الرجاء اختيار التاريخ والوقت قبل الحجز"
+      },
+      "selectTimeOnly": {
+        "title": "يرجي اختيار الوقت أولا",
+        "message": "الرجاء اختيار وقت الكشف قبل الحجز"
+      },
+      "selectDateOnly": {
+        "title": "يرجي اختيار التاريخ أولا",
+        "message": "الرجاء اختيار تاريخ الكشف قبل الحجز"
+      },
+      "success": {
+        "title": "تم حجز الكشف بنجاح",
+        "message": "تم حجز موعدك مع د. {doctorName} في {date} الساعة {time}"
+      },
+      "ok": "حسناً"
+    }
+  },
+  "doctors": {
+    "title": "الأطباء",
+    "notFound": "عذراً، صفحة الأطباء غير متوفرة حالياً.",
+    "backHome": "العودة للرئيسية"
   }
 }

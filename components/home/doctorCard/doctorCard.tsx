@@ -4,24 +4,32 @@ import Image from "next/image";
 import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { t } from "@/i18n";
+import { useRouter } from "next/navigation";
 
 type DoctorCardProps = {
+  id: number;
+  clinicId?: number;
   name: string;
   specialty: string;
   rating: number;
   price: number;
   experience: number;
   imageSrc?: string;
+  isFromHome?: boolean;
 };
 
 export default function DoctorCard({
+  id,
+  clinicId,
   name,
   specialty,
   rating,
   price,
   experience,
   imageSrc = "/images/DOC.png",
+  isFromHome = false,
 }: DoctorCardProps) {
+  const router = useRouter();
   const [locale, setLocale] = useState(() => {
     try {
       return (
@@ -40,6 +48,18 @@ export default function DoctorCard({
     return () =>
       window.removeEventListener("localeChange", onLocale as EventListener);
   }, []);
+
+  const handleBookNow = () => {
+    if (clinicId) {
+      const url = `/clinics/${clinicId}/book/${id}`;
+      if (isFromHome) {
+        router.push(`${url}?from=home`);
+      } else {
+        router.push(url);
+      }
+    }
+  };
+
   return (
     <article className="rounded-3xl border border-[#d9e3ff] bg-white p-4 shadow-[0_10px_25px_rgba(20,61,180,0.08)] transition hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(20,61,180,0.14)]">
       <div className="mb-4 overflow-hidden rounded-2xl">
@@ -67,19 +87,24 @@ export default function DoctorCard({
           <p className="text-xs text-[#6c7ba4]">
             {t("doctorCard.sessionFee", locale)}
           </p>
-          <p className="font-bold">{price} EGP</p>
+          <p className="font-bold">
+            {price} {locale === "ar" ? "ج.م" : "EGP"}
+          </p>
         </div>
         <div>
           <p className="text-xs text-[#6c7ba4]">
             {t("doctorCard.experience", locale)}
           </p>
           <p className="font-bold">
-            {experience} {locale === "ar" ? "سنة" : "years"}
+            {experience} {t("doctorCard.years", locale)}
           </p>
         </div>
       </div>
 
-      <button className="mt-4 w-full rounded-xl bg-[#1c3faa] py-2.5 text-sm font-bold text-white transition hover:bg-[#162f80]">
+      <button
+        onClick={handleBookNow}
+        className="mt-4 w-full rounded-xl bg-[#1c3faa] py-2.5 text-sm font-bold text-white transition hover:bg-[#162f80]"
+      >
         {t("doctorCard.bookNow", locale)}
       </button>
     </article>

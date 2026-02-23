@@ -1,46 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import DoctorCard from "@/components/home/doctorCard/doctorCard";
 import { useEffect, useState } from "react";
 import { t } from "@/i18n";
-
-type Doctor = {
-  name: string;
-  specialty: string;
-  rating: number;
-  price: number;
-  experience: number;
-  imageSrc: string;
-};
-
-const bestDoctors: Doctor[] = [
-  {
-    name: "Dr. Saleh Mahmoud",
-    specialty: "Cardiology",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc1.jpg",
-  },
-  {
-    name: "Dr. Karim Mohamed",
-    specialty: "Internal Medicine",
-    rating: 4.8,
-    price: 320,
-    experience: 10,
-    imageSrc: "/images/doc2.jpg",
-  },
-  {
-    name: "Dr. Nadine Adel",
-    specialty: "Dermatology",
-    rating: 4.9,
-    price: 280,
-    experience: 7,
-    imageSrc: "/images/doc3.jpg",
-  },
-];
+import { bestDoctors as bestDoctorsData } from "@/constants/clinics";
 
 export default function BestDoctors() {
   const [locale, setLocale] = useState(() => {
@@ -73,26 +38,35 @@ export default function BestDoctors() {
         </p>
       </div>
 
-      <div className="mb-8 flex justify-start">
+      <div
+        className={`mb-8 flex ${locale === "ar" ? "justify-start" : "justify-end"}`}
+      >
         <Link
-          href="/site/specialties"
+          href="/specialties"
           className="inline-flex items-center gap-2 rounded-full border border-[#d1ddff] px-4 py-2 text-sm font-semibold text-[#001a6e] transition hover:bg-[#f4f7ff]"
         >
           {t("bestDoctors.viewAll", locale)}
-          <ChevronLeft size={18} />
+          {locale === "ar" ? (
+            <ChevronLeft size={18} />
+          ) : (
+            <ChevronRight size={18} />
+          )}
         </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {bestDoctors.map((doc) => (
+        {bestDoctorsData.map((doc) => (
           <DoctorCard
-            key={doc.name}
+            key={`${doc.clinicId}-${doc.id}`}
+            id={doc.id}
+            clinicId={doc.clinicId}
             name={doc.name}
             specialty={doc.specialty}
             rating={doc.rating}
             price={doc.price}
             experience={doc.experience}
             imageSrc={doc.imageSrc}
+            isFromHome={true}
           />
         ))}
       </div>

@@ -11,6 +11,7 @@ type Specialty = {
 };
 
 type Doctor = {
+  id: number;
   name: string;
   specialty: string;
   rating: number;
@@ -27,6 +28,7 @@ const specialties: Specialty[] = [
 
 const doctors: Doctor[] = [
   {
+    id: 1,
     name: "د. أحمد محمود",
     specialty: "قلب وأوعية",
     rating: 4.9,
@@ -34,6 +36,7 @@ const doctors: Doctor[] = [
     experience: 8,
   },
   {
+    id: 2,
     name: "د. محمد حسن",
     specialty: "قلب وأوعية",
     rating: 4.8,
@@ -41,6 +44,7 @@ const doctors: Doctor[] = [
     experience: 6,
   },
   {
+    id: 3,
     name: "د. محمود علي",
     specialty: "عظام",
     rating: 4.7,
@@ -48,6 +52,7 @@ const doctors: Doctor[] = [
     experience: 5,
   },
   {
+    id: 4,
     name: "د. كريم يوسف",
     specialty: "طب الأطفال",
     rating: 4.9,
@@ -125,9 +130,10 @@ export default function Specialties() {
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {filteredDoctors.map((doc, index) => (
+              {filteredDoctors.map((doc) => (
                 <DoctorCard
-                  key={index}
+                  key={doc.id}
+                  id={doc.id}
                   name={doc.name}
                   specialty={doc.specialty}
                   rating={doc.rating}
