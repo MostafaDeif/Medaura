@@ -54,10 +54,7 @@
     "title": "Specialties",
     "description": "Choose the right specialty and find experienced doctors for your case.",
     "doctors": "doctors",
-    "viewAll": "View all",
-    "chooseSpecialty": "Choose the right specialty for your case",
-    "searchPlaceholder": "Search for a specialty...",
-    "availableDoctors": "Available doctors in {specialty}"
+    "viewAll": "View all"
   },
 
   "howItWorks": {
@@ -84,8 +81,7 @@
     "consultant": "Consultant",
     "sessionFee": "Session fee",
     "experience": "Experience",
-    "bookNow": "Book now",
-    "years": "years"
+    "bookNow": "Book now"
   },
 
   "sales": {
@@ -136,8 +132,6 @@
     "description": "Smart healthcare booking platform connecting patients with top doctors and clinics.",
     "quickLinks": "Quick links",
     "contact": "Contact",
-    "support": "Support",
-    "team": "Team",
     "email": "support@medaura.com",
     "phone": "+20 100 000 0000",
     "searchBy": "Search by",
@@ -148,6 +142,7 @@
     "contactUs": "Contact us",
     "privacy": "Privacy policy",
     "terms": "Terms of service",
+    "team": "Team",
     "joinTeam": "Join our team",
     "teamApp": "Apply to join",
     "teamHelp": "Team support",
@@ -171,73 +166,5 @@
       "noAccount": "Don't have an account?",
       "registerNow": "Register now"
     }
-  },
-  "clinics": {
-    "title": "Clinics",
-    "subtitle": "Best clinics based on user reviews and experiences",
-    "loadMore": "Load More",
-    "viewDetails": "View Details",
-    "aboutClinic": "About Clinic",
-    "medicalSpecialties": "Medical Specialties",
-    "doctors": "Doctors",
-    "selectSpecialty": "Select Specialty",
-    "gender": "Gender",
-    "male": "Male",
-    "female": "Female",
-    "search": "Search",
-    "moreDoctors": "More Doctors",
-    "clinicLocation": "Clinic Location",
-    "patientReviews": "Patient Reviews",
-    "overallRating": "Overall Rating",
-    "fromVisitors": "From {count} visitors",
-    "notFound": "No data available at the moment."
-  },
-  "booking": {
-    "back": "Back",
-    "sessionFee": "Session Fee",
-    "city": "City",
-    "datePlaceholder": "Booking Date",
-    "timePlaceholder": "Booking Time",
-    "bookNow": "Book Now",
-    "sendMessage": "Send Message",
-    "aboutDoctor": "About Doctor",
-    "specializedIn": "Specialized In",
-    "more": "More",
-    "clinicInfo": "Clinic Info",
-    "workingHours": "Working Hours",
-    "patientReviews": "Patient Reviews",
-    "overallRating": "Overall Rating",
-    "fromVisitors": "From 200 visitors",
-    "selectTime": "Select Time",
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "validation": {
-      "alreadyBooked": {
-        "title": "Already Booked",
-        "message": "You have already booked an appointment with this doctor."
-      },
-      "selectDateTime": {
-        "title": "Please select time and date",
-        "message": "Please select both date and time before booking"
-      },
-      "selectTimeOnly": {
-        "title": "Please select time first",
-        "message": "Please select a booking time before proceeding"
-      },
-      "selectDateOnly": {
-        "title": "Please select date first",
-        "message": "Please select a booking date before proceeding"
-      },
-      "success": {
-        "title": "Booking Successful",
-        "message": "Your appointment with Dr. {doctorName} has been booked for {date} at {time}"
-      },
-      "ok": "OK"
-    }
-  },
-  "doctors": {
-    "title": "Doctors",
-    "notFound": "Sorry, the doctors page is currently unavailable.",
-    "backHome": "Back Home"
   }
 }
