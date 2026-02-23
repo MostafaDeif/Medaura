@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import DoctorCard from "@/components/home/doctorCard/doctorCard";
 import { useEffect, useState } from "react";
 import { t } from "@/i18n";
 
 type Doctor = {
+  id: number;
+  clinicId: number;
   name: string;
   specialty: string;
   rating: number;
@@ -17,6 +19,8 @@ type Doctor = {
 
 const bestDoctors: Doctor[] = [
   {
+    id: 1,
+    clinicId: 1,
     name: "Dr. Saleh Mahmoud",
     specialty: "Cardiology",
     rating: 4.9,
@@ -25,6 +29,8 @@ const bestDoctors: Doctor[] = [
     imageSrc: "/images/doc1.jpg",
   },
   {
+    id: 2,
+    clinicId: 1,
     name: "Dr. Karim Mohamed",
     specialty: "Internal Medicine",
     rating: 4.8,
@@ -33,6 +39,8 @@ const bestDoctors: Doctor[] = [
     imageSrc: "/images/doc2.jpg",
   },
   {
+    id: 3,
+    clinicId: 2,
     name: "Dr. Nadine Adel",
     specialty: "Dermatology",
     rating: 4.9,
@@ -73,26 +81,29 @@ export default function BestDoctors() {
         </p>
       </div>
 
-      <div className="mb-8 flex justify-start">
+      <div className={`mb-8 flex ${locale === 'ar' ? 'justify-start' : 'justify-end'}`}>
         <Link
-          href="/site/specialties"
+          href="/specialties"
           className="inline-flex items-center gap-2 rounded-full border border-[#d1ddff] px-4 py-2 text-sm font-semibold text-[#001a6e] transition hover:bg-[#f4f7ff]"
         >
           {t("bestDoctors.viewAll", locale)}
-          <ChevronLeft size={18} />
+          {locale === 'ar' ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
         </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {bestDoctors.map((doc) => (
           <DoctorCard
-            key={doc.name}
+            key={`${doc.clinicId}-${doc.id}`}
+            id={doc.id}
+            clinicId={doc.clinicId}
             name={doc.name}
             specialty={doc.specialty}
             rating={doc.rating}
             price={doc.price}
             experience={doc.experience}
             imageSrc={doc.imageSrc}
+            isFromHome={true}
           />
         ))}
       </div>
