@@ -8,19 +8,11 @@ import { t } from "@/i18n";
 import { bestDoctors as bestDoctorsData } from "@/constants/clinics";
 
 export default function BestDoctors() {
-  const [locale, setLocale] = useState(() => {
-    try {
-      return (
-        document.documentElement.lang || localStorage.getItem("locale") || "en"
-      );
-    } catch (e) {
-      return "en";
-    }
-  });
+  const [locale, setLocale] = useState("ar");
 
   useEffect(() => {
     function onLocale(e: any) {
-      setLocale(e?.detail || document.documentElement.lang || "en");
+      setLocale(e?.detail || "ar");
     }
     window.addEventListener("localeChange", onLocale as EventListener);
     return () =>
