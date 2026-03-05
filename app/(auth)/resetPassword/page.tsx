@@ -65,7 +65,7 @@ export default function ResetPasswordPage() {
         </h2>
         <p className="text-zinc-600">تم تعيين كلمة المرور الجديدة بنجاح</p>
         <Link
-          href="/auth/login"
+          href="/login"
           className="inline-block w-full bg-indigo-900 text-white py-2 sm:py-2.5 rounded-md text-sm sm:text-base transition-all duration-300 hover:bg-indigo-800 hover:shadow-lg active:scale-95"
         >
           الذهاب إلى تسجيل الدخول
@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
 
       <div className="text-center mt-4">
         <Link
-          href="/auth/login"
+          href="/login"
           className="text-sm text-indigo-700 hover:text-indigo-900 transition"
         >
           العودة إلى تسجيل الدخول

@@ -42,26 +42,152 @@ type Doctor = {
 };
 
 const specialties: Specialty[] = [
-  { key: "cardio", titleAr: "قلبي و أوعية", titleEn: "Cardiology", count: 120, icon: <HeartPulse size={24} /> },
-  { key: "pediatrics", titleAr: "طب الأطفال", titleEn: "Pediatrics", count: 80, icon: <Baby size={24} /> },
-  { key: "neuro", titleAr: "مخ و أعصاب", titleEn: "Neurology", count: 100, icon: <Brain size={24} /> },
-  { key: "ortho", titleAr: "عظام", titleEn: "Orthopedics", count: 200, icon: <Bone size={24} /> },
-  { key: "pulmo", titleAr: "صدر و جهاز تنفسي", titleEn: "Pulmonology", count: 200, icon: <Stethoscope size={24} /> },
-  { key: "nephro", titleAr: "كلى", titleEn: "Nephrology", count: 100, icon: <Droplets size={24} /> },
-  { key: "oncology", titleAr: "الأورام", titleEn: "Oncology", count: 80, icon: <Scan size={24} /> },
-  { key: "ent", titleAr: "الاذن والانف والحنجرة", titleEn: "ENT", count: 120, icon: <Ear size={24} /> },
-  { key: "ophtha", titleAr: "طب العيون", titleEn: "Ophthalmology", count: 120, icon: <Eye size={24} /> },
-  { key: "obgyn", titleAr: "نسا و توليد", titleEn: "OB-GYN", count: 80, icon: <Syringe size={24} /> },
-  { key: "derma", titleAr: "جلدية", titleEn: "Dermatology", count: 100, icon: <Droplet size={24} /> },
+  {
+    key: "cardio",
+    titleAr: "قلبي و أوعية",
+    titleEn: "Cardiology",
+    count: 120,
+    icon: <HeartPulse size={24} />,
+  },
+  {
+    key: "pediatrics",
+    titleAr: "طب الأطفال",
+    titleEn: "Pediatrics",
+    count: 80,
+    icon: <Baby size={24} />,
+  },
+  {
+    key: "neuro",
+    titleAr: "مخ و أعصاب",
+    titleEn: "Neurology",
+    count: 100,
+    icon: <Brain size={24} />,
+  },
+  {
+    key: "ortho",
+    titleAr: "عظام",
+    titleEn: "Orthopedics",
+    count: 200,
+    icon: <Bone size={24} />,
+  },
+  {
+    key: "pulmo",
+    titleAr: "صدر و جهاز تنفسي",
+    titleEn: "Pulmonology",
+    count: 200,
+    icon: <Stethoscope size={24} />,
+  },
+  {
+    key: "nephro",
+    titleAr: "كلى",
+    titleEn: "Nephrology",
+    count: 100,
+    icon: <Droplets size={24} />,
+  },
+  {
+    key: "oncology",
+    titleAr: "الأورام",
+    titleEn: "Oncology",
+    count: 80,
+    icon: <Scan size={24} />,
+  },
+  {
+    key: "ent",
+    titleAr: "الاذن والانف والحنجرة",
+    titleEn: "ENT",
+    count: 120,
+    icon: <Ear size={24} />,
+  },
+  {
+    key: "ophtha",
+    titleAr: "طب العيون",
+    titleEn: "Ophthalmology",
+    count: 120,
+    icon: <Eye size={24} />,
+  },
+  {
+    key: "obgyn",
+    titleAr: "نسا و توليد",
+    titleEn: "OB-GYN",
+    count: 80,
+    icon: <Syringe size={24} />,
+  },
+  {
+    key: "derma",
+    titleAr: "جلدية",
+    titleEn: "Dermatology",
+    count: 100,
+    icon: <Droplet size={24} />,
+  },
 ];
 
 const doctors: Doctor[] = [
-  { id: 1, name: "د. صلاح محمود", specialtyKey: "cardio", specialtyAr: "استشاري جراحة القلب", specialtyEn: "Cardiac Surgery Consultant", rating: 4.9, price: 350, experience: 8, imageSrc: "/images/doc1.jpg" },
-  { id: 2, name: "د. كريم محمد", specialtyKey: "cardio", specialtyAr: "استشاري جراحة القلب", specialtyEn: "Cardiac Surgery Consultant", rating: 4.9, price: 350, experience: 8, imageSrc: "/images/doc2.jpg" },
-  { id: 3, name: "د. أحمد محمود", specialtyKey: "cardio", specialtyAr: "استشاري جراحة القلب", specialtyEn: "Cardiac Surgery Consultant", rating: 4.9, price: 350, experience: 8, imageSrc: "/images/doc3.jpg" },
-  { id: 4, name: "أميرة صابرين", specialtyKey: "cardio", specialtyAr: "استشاري جراحة القلب", specialtyEn: "Cardiac Surgery Consultant", rating: 4.9, price: 350, experience: 8, imageSrc: "/images/doc1.jpg" },
-  { id: 5, name: "د. محمود محمد", specialtyKey: "cardio", specialtyAr: "استشاري جراحة القلب", specialtyEn: "Cardiac Surgery Consultant", rating: 4.9, price: 350, experience: 8, imageSrc: "/images/doc2.jpg" },
-  { id: 6, name: "د. محسن محسن", specialtyKey: "cardio", specialtyAr: "بروفيسور", specialtyEn: "Professor", rating: 4.9, price: 350, experience: 8, imageSrc: "/images/doc3.jpg" },
+  {
+    id: 1,
+    name: "د. صلاح محمود",
+    specialtyKey: "cardio",
+    specialtyAr: "استشاري جراحة القلب",
+    specialtyEn: "Cardiac Surgery Consultant",
+    rating: 4.9,
+    price: 350,
+    experience: 8,
+    imageSrc: "/images/doc1.jpg",
+  },
+  {
+    id: 2,
+    name: "د. كريم محمد",
+    specialtyKey: "cardio",
+    specialtyAr: "استشاري جراحة القلب",
+    specialtyEn: "Cardiac Surgery Consultant",
+    rating: 4.9,
+    price: 350,
+    experience: 8,
+    imageSrc: "/images/doc2.jpg",
+  },
+  {
+    id: 3,
+    name: "د. أحمد محمود",
+    specialtyKey: "cardio",
+    specialtyAr: "استشاري جراحة القلب",
+    specialtyEn: "Cardiac Surgery Consultant",
+    rating: 4.9,
+    price: 350,
+    experience: 8,
+    imageSrc: "/images/doc3.jpg",
+  },
+  {
+    id: 4,
+    name: "أميرة صابرين",
+    specialtyKey: "cardio",
+    specialtyAr: "استشاري جراحة القلب",
+    specialtyEn: "Cardiac Surgery Consultant",
+    rating: 4.9,
+    price: 350,
+    experience: 8,
+    imageSrc: "/images/doc1.jpg",
+  },
+  {
+    id: 5,
+    name: "د. محمود محمد",
+    specialtyKey: "cardio",
+    specialtyAr: "استشاري جراحة القلب",
+    specialtyEn: "Cardiac Surgery Consultant",
+    rating: 4.9,
+    price: 350,
+    experience: 8,
+    imageSrc: "/images/doc2.jpg",
+  },
+  {
+    id: 6,
+    name: "د. محسن محسن",
+    specialtyKey: "cardio",
+    specialtyAr: "بروفيسور",
+    specialtyEn: "Professor",
+    rating: 4.9,
+    price: 350,
+    experience: 8,
+    imageSrc: "/images/doc3.jpg",
+  },
 ];
 
 export default function SpecialtiesPage() {
@@ -168,7 +294,9 @@ export default function SpecialtiesPage() {
       </div>
 
       <div className="mt-12">
-        <h3 className="text-2xl font-bold text-[#0f1a4f]">{availableDoctorsTitle}</h3>
+        <h3 className="text-2xl font-bold text-[#0f1a4f]">
+          {availableDoctorsTitle}
+        </h3>
         <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filteredDoctors.map((doc) => (
             <article

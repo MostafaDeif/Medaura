@@ -1,6 +1,5 @@
 import BestClinics from "@/components/home/bestClinics";
 import BestDoctors from "@/components/home/bestDoctors";
-import Footer from "@/components/footer/footer";
 import Hero from "@/components/home/hero";
 import HowItWorks from "@/components/home/howItWorks";
 import SalesSection from "@/components/home/sales/sales";

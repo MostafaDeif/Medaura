@@ -49,7 +49,7 @@ export default function ClinicDetailsPage() {
               <img
                 src={clinic.image}
                 alt={clinic.name}
-                className="w-full h-[350px] object-cover"
+                className="w-full h-87.5 object-cover"
               />
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function ClinicDetailsPage() {
 
           {/* Filter Bar */}
           <div className="flex flex-wrap gap-4 mb-12 justify-center">
-            <div className="relative min-w-[200px]">
+            <div className="relative min-w-50">
               <select
                 className={`appearance-none w-full border border-gray-200 rounded-full ${locale === "ar" ? "px-6" : "px-10"} py-2.5 text-gray-400 text-sm focus:outline-none focus:border-[#001A6E]`}
                 value={selectedSpecialty}
@@ -139,7 +139,7 @@ export default function ClinicDetailsPage() {
               />
             </div>
 
-            <div className="relative min-w-[150px]">
+            <div className="relative min-w-37.5">
               <select
                 className={`appearance-none w-full border border-gray-200 rounded-full ${locale === "ar" ? "px-6" : "px-10"} py-2.5 text-gray-400 text-sm focus:outline-none focus:border-[#001A6E]`}
                 value={selectedGender}
@@ -195,7 +195,7 @@ export default function ClinicDetailsPage() {
           <h2 className="text-2xl font-bold mb-10 text-[#001A6E]">
             {t("clinics.clinicLocation", locale)}
           </h2>
-          <div className="rounded-3xl overflow-hidden h-[400px] border border-gray-100 shadow-sm relative">
+          <div className="rounded-3xl overflow-hidden h-96 border border-gray-100 shadow-sm relative">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.1594251121!2d31.2357116!3d30.0444196!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x145840c611843949%3A0x63346f0474665f80!2sCairo%20Opera%20House!5e0!3m2!1sen!2seg!4v1708612345678!5m2!1sen!2seg"
               width="100%"
@@ -237,7 +237,7 @@ export default function ClinicDetailsPage() {
             {clinic.reviews.slice(0, 4).map((review) => (
               <div
                 key={review.id}
-                className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
+                className="bg-linear-to-br from-blue-50 to-white border border-blue-100 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex gap-0.5 mb-3">
                   {[...Array(5)].map((_, i) => (

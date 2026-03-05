@@ -11,8 +11,8 @@ interface AuthLayoutProps {
 
 // Navigation items
 const NAV_ITEMS = [
-  { label: "إنشاء حساب", href: "/auth/register", key: "register" },
-  { label: "تسجيل الدخول", href: "/auth/login", key: "login" },
+  { label: "إنشاء حساب", href: "/register", key: "register" },
+  { label: "تسجيل الدخول", href: "/login", key: "login" },
 ];
 
 // Register account types
@@ -20,19 +20,19 @@ const REGISTER_TYPES = [
   {
     key: "patient",
     label: "مريض",
-    href: "/auth/register",
+    href: "/register",
     icon: "customer-icon",
   },
   {
     key: "clinic",
     label: "عيادة",
-    href: "/auth/register/clinic",
+    href: "/register/clinic",
     icon: "clinic-icon",
   },
   {
     key: "doctor",
     label: "طبيب",
-    href: "/auth/register/doctor",
+    href: "/register/doctor",
     icon: "doctor-icon",
   },
 ];
@@ -59,7 +59,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const isRegisterPage = activeNav === "register";
 
   // If we are on the doctor documents page, do not render the auth layout wrapper
-  if (pathname.startsWith("/auth/doctorDocument")) {
+  if (pathname.startsWith("/doctorDocument")) {
     return <>{children}</>;
   }
 

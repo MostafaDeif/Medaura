@@ -119,14 +119,14 @@ const Navbar: FC = () => {
           </button>
 
           <Link
-            href="/auth/login"
+            href={`/login`}
             className="font-medium text-[#0f1a4f] hover:opacity-70"
           >
             {t("nav.login", locale)}
           </Link>
 
           <Link
-            href="/auth/register"
+            href="/register"
             className="rounded-full bg-[#0f1a4f] px-4 py-2 font-medium text-white transition hover:bg-[#1b2773]"
           >
             {t("nav.createAccount", locale)}

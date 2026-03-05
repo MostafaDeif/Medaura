@@ -122,7 +122,7 @@ export default function LoginPage() {
           حفظ تسجيل الدخول
         </label>
         <Link
-          href="/auth/forgot-password"
+          href="/forgot-password"
           className="text-sm text-indigo-700 hover:text-indigo-900 transition"
         >
           نسيت كلمة المرور؟
@@ -180,7 +180,7 @@ export default function LoginPage() {
       <p className="text-center text-sm text-zinc-600 mt-4">
         ليس لديك حساب بعد؟{" "}
         <Link
-          href="/auth/register"
+          href="/register"
           className="text-indigo-700 font-medium hover:text-indigo-900 transition"
         >
           سجل الآن
