@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Baby,
   Bone,
-  Brain,
+  Brain ,
   ChevronDown,
   ChevronLeft,
   Droplet,
