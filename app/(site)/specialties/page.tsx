@@ -44,7 +44,7 @@ type Doctor = {
 const specialties: Specialty[] = [
   {
     key: "cardio",
-    titleAr: "قلبي و أوعية",
+    titleAr: "قلب و أوعية",
     titleEn: "Cardiology",
     count: 120,
     icon: <HeartPulse size={24} />,
