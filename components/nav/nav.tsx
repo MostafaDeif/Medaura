@@ -60,7 +60,7 @@ const Navbar: FC = () => {
     <nav className="fixed top-0 left-0 w-full border-b border-[#d9e3ff] bg-[#edf2ff] z-50">
       <div className="container relative mx-auto flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
-          <Image src="/images/LOGO.png" alt="logo" width={32} height={32} />
+          <Image src="/images/Logo1.png" alt="logo" width={48} height={48} />
           <span className="text-xl font-bold text-[#0f1a4f]">Medaura</span>
         </div>
 
