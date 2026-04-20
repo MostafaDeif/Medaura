@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  validateEmail,
-  validatePassword,
-  simulateApiCall,
-} from "../validators";
+import { validateEmail, validatePassword } from "../validators";
 import { ErrorAlert, PasswordInput, EmailInput } from "../components";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -34,8 +34,12 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await simulateApiCall();
+      await login({ email, password });
       setSubmitted(true);
+      router.push("/");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "فشل تسجيل الدخول";
+      setErrors({ form: message });
     } finally {
       setLoading(false);
     }
@@ -44,8 +48,7 @@ export default function LoginPage() {
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     try {
-      await simulateApiCall(800);
-      setSubmitted(true);
+      setErrors({ form: "تسجيل الدخول عبر جوجل غير متاح حاليًا." });
     } finally {
       setGoogleLoading(false);
     }
@@ -74,7 +77,7 @@ export default function LoginPage() {
         <h2 className="text-2xl font-semibold text-indigo-900">
           تم تسجيل الدخول!
         </h2>
-        <p className="text-zinc-600">تم دخولك بنجاح (محلي فقط).</p>
+        <p className="text-zinc-600">تم دخولك بنجاح.</p>
         <button
           onClick={() => {
             setSubmitted(false);

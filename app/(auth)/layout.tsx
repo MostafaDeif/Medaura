@@ -25,7 +25,7 @@ const REGISTER_TYPES = [
   },
   {
     key: "clinic",
-    label: "عيادة",
+    label: "موظف",
     href: "/register/clinic",
     icon: "clinic-icon",
   },

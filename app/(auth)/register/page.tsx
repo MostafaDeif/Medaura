@@ -1,14 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { EyeIcon } from "./utils";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function PatientRegisterPage() {
+  const router = useRouter();
+  const { signup } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [gender, setGender] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bloodType, setBloodType] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [terms, setTerms] = useState(false);
@@ -22,6 +30,12 @@ export default function PatientRegisterPage() {
     if (!email.trim()) e.email = "البريد الإلكتروني مطلوب";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       e.email = "صيغة البريد غير صحيحة";
+    if (!dateOfBirth) e.date_of_birth = "تاريخ الميلاد مطلوب";
+    if (!gender) e.gender = "النوع مطلوب";
+    if (!phone.trim()) e.phone = "رقم الهاتف مطلوب";
+    else if (!/^[0-9+\-()\s]{8,20}$/.test(phone))
+      e.phone = "رقم الهاتف غير صحيح";
+    if (!bloodType) e.blood_type = "فصيلة الدم مطلوبة";
     if (!password) e.password = "كلمة المرور مطلوبة";
     else if (password.length < 6)
       e.password = "يجب أن تكون كلمة المرور 6 أحرف على الأقل";
@@ -36,9 +50,23 @@ export default function PatientRegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      // simulate network call — replace with real API request later
-      await new Promise((res) => setTimeout(res, 700));
+      await signup({
+        email,
+        password,
+        user_type: "patient",
+        profile: {
+          full_name: name,
+          date_of_birth: dateOfBirth,
+          gender,
+          phone,
+          blood_type: bloodType,
+        },
+      });
       setSubmitted(true);
+      router.push("/");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "فشل إنشاء الحساب";
+      setErrors({ form: message });
     } finally {
       setLoading(false);
     }
@@ -47,10 +75,7 @@ export default function PatientRegisterPage() {
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     try {
-      // TODO: replace with real Google OAuth (NextAuth / App Router auth route)
-      await new Promise((res) => setTimeout(res, 800));
-      // simulate success by treating it as submitted
-      setSubmitted(true);
+      setErrors({ form: "التسجيل عبر جوجل غير متاح حاليًا." });
     } finally {
       setGoogleLoading(false);
     }
@@ -62,12 +87,16 @@ export default function PatientRegisterPage() {
         <h2 className="text-2xl font-semibold text-indigo-900 mb-2">
           تم إنشاء الحساب!
         </h2>
-        <p className="text-zinc-600 mb-6">تم التسجيل بنجاح (محلي فقط).</p>
+        <p className="text-zinc-600 mb-6">تم التسجيل بنجاح.</p>
         <button
           onClick={() => {
             setSubmitted(false);
             setName("");
             setEmail("");
+            setDateOfBirth("");
+            setGender("");
+            setPhone("");
+            setBloodType("");
             setPassword("");
             setConfirm("");
             setTerms(false);
@@ -87,6 +116,15 @@ export default function PatientRegisterPage() {
     <>
       {/* FORM */}
       <form className="space-y-4" onSubmit={handleSubmit}>
+        {errors.form && (
+          <div
+            className="bg-red-50 border border-red-200 text-red-800 p-3 rounded"
+            role="alert"
+          >
+            {errors.form}
+          </div>
+        )}
+
         {Object.keys(errors).length > 0 && (
           <div
             className="bg-red-50 border border-red-200 text-red-800 p-3 rounded animate-[shake_0.3s_ease-in-out]"
@@ -95,9 +133,11 @@ export default function PatientRegisterPage() {
           >
             <p className="font-medium">يرجى تصحيح الأخطاء التالية:</p>
             <ul className="mt-2 list-disc list-inside">
-              {Object.values(errors).map((e, i) => (
-                <li key={i}>{e}</li>
-              ))}
+              {Object.entries(errors)
+                .filter(([key]) => key !== "form")
+                .map(([, e], i) => (
+                  <li key={i}>{e}</li>
+                ))}
             </ul>
           </div>
         )}
@@ -154,6 +194,128 @@ export default function PatientRegisterPage() {
             className="text-sm text-red-700 mt-1"
           >
             {errors.email}
+          </p>
+        )}
+
+        <label
+          htmlFor="date_of_birth"
+          className="block text-sm font-medium text-zinc-700 mb-1"
+        >
+          تاريخ الميلاد
+        </label>
+        <input
+          id="date_of_birth"
+          name="date_of_birth"
+          type="date"
+          value={dateOfBirth}
+          onChange={(e) => setDateOfBirth(e.target.value)}
+          aria-invalid={!!errors.date_of_birth}
+          aria-describedby={errors.date_of_birth ? "dob-error" : undefined}
+          className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
+            errors.date_of_birth ? "border-red-300" : "border-zinc-200"
+          }`}
+        />
+        {errors.date_of_birth && (
+          <p id="dob-error" role="alert" className="text-sm text-red-700 mt-1">
+            {errors.date_of_birth}
+          </p>
+        )}
+
+        <label
+          htmlFor="gender"
+          className="block text-sm font-medium text-zinc-700 mb-1"
+        >
+          النوع
+        </label>
+        <select
+          id="gender"
+          name="gender"
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
+          aria-invalid={!!errors.gender}
+          aria-describedby={errors.gender ? "gender-error" : undefined}
+          className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 ${
+            errors.gender ? "border-red-300" : "border-zinc-200"
+          }`}
+        >
+          <option value="">اختر النوع</option>
+          <option value="male">ذكر</option>
+          <option value="female">أنثى</option>
+        </select>
+        {errors.gender && (
+          <p
+            id="gender-error"
+            role="alert"
+            className="text-sm text-red-700 mt-1"
+          >
+            {errors.gender}
+          </p>
+        )}
+
+        <label
+          htmlFor="phone"
+          className="block text-sm font-medium text-zinc-700 mb-1"
+        >
+          رقم الهاتف
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          autoComplete="tel"
+          placeholder="01000000000"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          aria-invalid={!!errors.phone}
+          aria-describedby={errors.phone ? "phone-error" : undefined}
+          className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
+            errors.phone ? "border-red-300" : "border-zinc-200"
+          }`}
+        />
+        {errors.phone && (
+          <p
+            id="phone-error"
+            role="alert"
+            className="text-sm text-red-700 mt-1"
+          >
+            {errors.phone}
+          </p>
+        )}
+
+        <label
+          htmlFor="blood_type"
+          className="block text-sm font-medium text-zinc-700 mb-1"
+        >
+          فصيلة الدم
+        </label>
+        <select
+          id="blood_type"
+          name="blood_type"
+          value={bloodType}
+          onChange={(e) => setBloodType(e.target.value)}
+          aria-invalid={!!errors.blood_type}
+          aria-describedby={errors.blood_type ? "blood-error" : undefined}
+          className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 ${
+            errors.blood_type ? "border-red-300" : "border-zinc-200"
+          }`}
+        >
+          <option value="">اختر فصيلة الدم</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+        </select>
+        {errors.blood_type && (
+          <p
+            id="blood-error"
+            role="alert"
+            className="text-sm text-red-700 mt-1"
+          >
+            {errors.blood_type}
           </p>
         )}
 

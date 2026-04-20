@@ -1,5 +1,9 @@
 import { useState, useCallback, useEffect } from "react";
-import type { AuthResponse, LoginRequest, SignupRequest } from "@/lib/types/api";
+import type {
+  AuthResponse,
+  LoginRequest,
+  SignupRequest,
+} from "@/lib/types/api";
 
 export interface UseAuthResult {
   user: AuthResponse | null;
@@ -81,6 +85,7 @@ export function useAuth(): UseAuthResult {
         const response = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(credentials),
         });
 
@@ -98,7 +103,7 @@ export function useAuth(): UseAuthResult {
         setLoading(false);
       }
     },
-    [saveAuth]
+    [saveAuth],
   );
 
   const signup = useCallback(
@@ -110,6 +115,7 @@ export function useAuth(): UseAuthResult {
         const response = await fetch("/api/auth/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(data),
         });
 
@@ -127,7 +133,7 @@ export function useAuth(): UseAuthResult {
         setLoading(false);
       }
     },
-    [saveAuth]
+    [saveAuth],
   );
 
   const logout = useCallback(async () => {
@@ -135,6 +141,7 @@ export function useAuth(): UseAuthResult {
       if (token) {
         await fetch("/api/auth/logout", {
           method: "POST",
+          credentials: "include",
           headers: { Authorization: `Bearer ${token}` },
         });
       }
