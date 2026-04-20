@@ -8,7 +8,9 @@
     "about": "من نحن",
     "contact": "اتصل بنا",
     "login": "تسجيل الدخول",
-    "createAccount": "إنشاء حساب"
+    "createAccount": "إنشاء حساب",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل الخروج"
   },
 
   "hero": {

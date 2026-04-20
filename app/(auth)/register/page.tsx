@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { EyeIcon } from "./utils";
 
 export default function PatientRegisterPage() {
+  const router = useRouter();
+  const { signup } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,24 +39,29 @@ export default function PatientRegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      // simulate network call — replace with real API request later
-      await new Promise((res) => setTimeout(res, 700));
-      setSubmitted(true);
+      await signup({
+        email,
+        password,
+        user_type: "patient",
+        profile: {
+          full_name: name,
+        },
+      });
+      router.push("/");
+    } catch (error) {
+      setErrors({
+        form:
+          error instanceof Error
+            ? error.message
+            : "تعذر إنشاء الحساب، حاول مرة أخرى",
+      });
     } finally {
       setLoading(false);
     }
   }
 
   async function handleGoogleSignIn() {
-    setGoogleLoading(true);
-    try {
-      // TODO: replace with real Google OAuth (NextAuth / App Router auth route)
-      await new Promise((res) => setTimeout(res, 800));
-      // simulate success by treating it as submitted
-      setSubmitted(true);
-    } finally {
-      setGoogleLoading(false);
-    }
+    setErrors({ form: "التسجيل عبر جوجل غير متاح حاليا" });
   }
 
   if (submitted) {
@@ -270,7 +278,7 @@ export default function PatientRegisterPage() {
           <button
             type="button"
             onClick={handleGoogleSignIn}
-            disabled={googleLoading}
+            disabled
             aria-label="التسجيل عبر جوجل"
             className="w-full border border-zinc-200 rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:shadow-sm disabled:opacity-60 disabled:cursor-not-allowed text-sm sm:text-base"
           >
@@ -297,7 +305,7 @@ export default function PatientRegisterPage() {
                 fill="#EA4335"
               />
             </svg>
-            {googleLoading ? "جاري تسجيل الدخول..." : "التسجيل عبر جوجل"}
+            التسجيل عبر جوجل
           </button>
         </div>
       </form>

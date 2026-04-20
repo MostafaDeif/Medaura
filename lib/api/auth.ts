@@ -26,8 +26,8 @@ export const authService = {
     return apiClient.post<AuthResponse>("/api/auth/refresh", data);
   },
 
-  async getProfile(token: string) {
-    return apiClient.get("/api/user/me", { token });
+  async getProfile(token?: string) {
+    return apiClient.get("/api/user/me", token ? { token } : {});
   },
 
   async updateProfile(token: string, body: any) {

@@ -15,7 +15,11 @@ export interface AuthResponse {
   id: number;
   email: string;
   user_type: string;
-  token: string;
+  token?: string;
+  access_token?: string;
+  accessToken?: string;
+  refresh_token?: string;
+  refreshToken?: string;
   profile?: Record<string, any>;
 }
 
@@ -24,8 +28,10 @@ export interface LogoutRequest {
 }
 
 export interface RefreshTokenRequest {
-  email: string;
-  password: string;
+  email?: string;
+  password?: string;
+  refresh_token?: string;
+  refreshToken?: string;
 }
 
 // User Types

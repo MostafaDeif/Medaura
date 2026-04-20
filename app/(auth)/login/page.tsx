@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   validateEmail,
   validatePassword,
-  simulateApiCall,
 } from "../validators";
 import { ErrorAlert, PasswordInput, EmailInput } from "../components";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -34,21 +36,22 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await simulateApiCall();
-      setSubmitted(true);
+      await login({ email, password });
+      router.push("/");
+    } catch (error) {
+      setErrors({
+        form:
+          error instanceof Error
+            ? error.message
+            : "تعذر تسجيل الدخول، حاول مرة أخرى",
+      });
     } finally {
       setLoading(false);
     }
   }
 
   async function handleGoogleSignIn() {
-    setGoogleLoading(true);
-    try {
-      await simulateApiCall(800);
-      setSubmitted(true);
-    } finally {
-      setGoogleLoading(false);
-    }
+    setErrors({ form: "تسجيل الدخول عبر جوجل غير متاح حاليا" });
   }
 
   if (submitted) {
@@ -147,7 +150,7 @@ export default function LoginPage() {
       <button
         type="button"
         onClick={handleGoogleSignIn}
-        disabled={googleLoading}
+        disabled
         aria-label="تسجيل الدخول عبر جوجل"
         className="w-full border border-zinc-200 rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:shadow-sm disabled:opacity-60 disabled:cursor-not-allowed text-sm sm:text-base"
       >
@@ -174,7 +177,7 @@ export default function LoginPage() {
             fill="#EA4335"
           />
         </svg>
-        {googleLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول عبر جوجل"}
+        تسجيل الدخول عبر جوجل
       </button>
 
       <p className="text-center text-sm text-zinc-600 mt-4">

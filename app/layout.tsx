@@ -3,6 +3,7 @@ import { Cairo, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/nav/nav";
 import Footer from "@/components/footer/footer";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +36,11 @@ export default function RootLayout({
       <body
         className={`${cairo.className} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
-        <div className="lg:px-12 xl:px-24">{children}</div>
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <div className="lg:px-12 xl:px-24">{children}</div>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

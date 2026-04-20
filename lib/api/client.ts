@@ -46,6 +46,7 @@ export class ApiClient {
         ...fetchOptions,
         headers,
         signal: controller.signal,
+        credentials: 'include',
       });
       return response;
     } finally {
@@ -129,6 +130,22 @@ export class ApiClient {
       ...options,
     });
     return this.handleResponse<T>(response);
+  }
+
+  // Method to get raw response with headers (for capturing Set-Cookie, etc.)
+  public async getRawResponse(
+    endpoint: string,
+    method: string,
+    body?: any,
+    options?: FetchOptions
+  ): Promise<Response> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const response = await this.fetchWithTimeout(url, {
+      method,
+      body: this.serializeBody(body),
+      ...options,
+    });
+    return response;
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {

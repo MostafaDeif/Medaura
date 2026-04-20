@@ -19,10 +19,16 @@ export async function POST(request: NextRequest) {
 
     await authService.logout({ token });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       message: "Logged out successfully",
     });
+
+    // Clear cookies
+    res.cookies.set("jwt", "", { maxAge: 0 });
+    res.cookies.set("refresh_token", "", { maxAge: 0 });
+
+    return res;
   } catch (error: any) {
     console.error("Logout error:", error);
     return NextResponse.json(

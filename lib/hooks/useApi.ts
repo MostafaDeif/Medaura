@@ -55,6 +55,7 @@ export function useApi<T = any>(
             "Content-Type": "application/json",
             ...fetchOptions?.headers,
           },
+          credentials: "include",
         });
 
         const result = await response.json();

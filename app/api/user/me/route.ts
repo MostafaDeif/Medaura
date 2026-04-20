@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/lib/api/auth";
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function getErrorStatus(error: unknown) {
+  return typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    typeof error.status === "number"
+    ? error.status
+    : 500;
+}
+
 // GET /api/user/me
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
+    // Extract JWT from cookies and forward to backend
+    const token = request.cookies.get("jwt")?.value;
 
     if (!token) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing authorization token",
+          error: "Not authenticated",
         },
         { status: 401 }
       );
@@ -20,14 +33,14 @@ export async function GET(request: NextRequest) {
     const response = await authService.getProfile(token);
 
     return NextResponse.json({ success: true, data: response });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Get profile error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch profile",
+        error: getErrorMessage(error, "Failed to fetch profile"),
       },
-      { status: error.status || 500 }
+      { status: getErrorStatus(error) }
     );
   }
 }
@@ -36,13 +49,13 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
+    const token = request.cookies.get("jwt")?.value || authHeader?.replace("Bearer ", "");
 
     if (!token) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing authorization token",
+          error: "Not authenticated",
         },
         { status: 401 }
       );
@@ -56,14 +69,14 @@ export async function PATCH(request: NextRequest) {
     const response = await authService.updateProfile(token, body);
 
     return NextResponse.json({ success: true, data: response });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Update profile error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to update profile",
+        error: getErrorMessage(error, "Failed to update profile"),
       },
-      { status: error.status || 500 }
+      { status: getErrorStatus(error) }
     );
   }
 }

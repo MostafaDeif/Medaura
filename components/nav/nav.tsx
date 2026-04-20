@@ -4,10 +4,12 @@ import Link from "next/link";
 import { FC, useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { t } from "@/i18n";
 
 const Navbar: FC = () => {
   const pathname = usePathname();
+  const { isAuthenticated, logout, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [locale, setLocale] = useState<string>("en");
 
@@ -118,19 +120,43 @@ const Navbar: FC = () => {
             {locale === "en" ? "ع" : "EN"}
           </button>
 
-          <Link
-            href={`/login`}
-            className="font-medium text-[#0f1a4f] hover:opacity-70"
-          >
-            {t("nav.login", locale)}
-          </Link>
+          {loading ? (
+            <div className="flex items-center gap-3">
+              {/* Loading state - prevents hydration mismatch */}
+            </div>
+          ) : isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/patientProfile"
+                className="rounded-full bg-[#0f1a4f] px-4 py-2 font-medium text-white transition hover:bg-[#1b2773]"
+              >
+                {t("nav.profile", locale)}
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-full border border-[#0f1a4f] px-4 py-2 text-sm font-medium text-[#0f1a4f] transition hover:bg-[#d9e3ff]"
+              >
+                {t("nav.logout", locale)}
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link
+                href={`/login`}
+                className="font-medium text-[#0f1a4f] hover:opacity-70"
+              >
+                {t("nav.login", locale)}
+              </Link>
 
-          <Link
-            href="/register"
-            className="rounded-full bg-[#0f1a4f] px-4 py-2 font-medium text-white transition hover:bg-[#1b2773]"
-          >
-            {t("nav.createAccount", locale)}
-          </Link>
+              <Link
+                href="/register"
+                className="rounded-full bg-[#0f1a4f] px-4 py-2 font-medium text-white transition hover:bg-[#1b2773]"
+              >
+                {t("nav.createAccount", locale)}
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

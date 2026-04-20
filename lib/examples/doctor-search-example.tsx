@@ -17,7 +17,7 @@ import { useAuth, useApi } from "@/lib/hooks";
 import type { DoctorProfile, BookingSlot } from "@/lib/types/api";
 
 export default function DoctorSearchExample() {
-  const { token, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [specialty, setSpecialty] = useState("عظام");
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile | null>(
     null
@@ -61,7 +61,7 @@ export default function DoctorSearchExample() {
   }, [selectedDoctor, bookingDate, fetchSlots]);
 
   const handleBooking = async (time: string) => {
-    if (!isAuthenticated || !token || !selectedDoctor) {
+    if (!isAuthenticated || !selectedDoctor) {
       alert("Please login first");
       return;
     }
@@ -71,7 +71,6 @@ export default function DoctorSearchExample() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           doctor_id: selectedDoctor.id,
@@ -212,7 +211,7 @@ export default function DoctorSearchExample() {
  * Another Example: Using useAuth Hook
  */
 export function LoginExample() {
-  const { user, token, loading, error, login, logout, isAuthenticated } =
+  const { user, loading, error, login, logout, isAuthenticated } =
     useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -232,9 +231,6 @@ export function LoginExample() {
       {isAuthenticated ? (
         <div>
           <h2 className="text-xl font-bold mb-4">Welcome, {user?.email}</h2>
-          <p className="text-gray-600 mb-4">
-            Token: {token?.substring(0, 20)}...
-          </p>
           <button
             onClick={logout}
             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"

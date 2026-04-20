@@ -8,7 +8,9 @@
     "about": "About",
     "contact": "Contact",
     "login": "Login",
-    "createAccount": "Create account"
+    "createAccount": "Create account",
+    "profile": "Profile",
+    "logout": "Logout"
   },
 
   "hero": {
