@@ -1,9 +1,29 @@
 // Auth Types
+export type UserType = "staff" | "doctor" | "patient" | "clinic" | "admin";
+
+export interface PatientSignupProfile {
+  full_name: string;
+}
+
+export interface DoctorSignupProfile {
+  full_name: string;
+  license_number: string;
+  specialist: string;
+  work_days: string;
+  work_from: string;
+  work_to: string;
+  consultation_price: number;
+}
+
+export interface ClinicSignupProfile {
+  [key: string]: unknown;
+}
+
 export interface SignupRequest {
   email: string;
   password: string;
-  user_type: "staff" | "doctor" | "patient" | "clinic" | "admin";
-  profile: Record<string, any>;
+  user_type: UserType;
+  profile: PatientSignupProfile | DoctorSignupProfile | ClinicSignupProfile;
 }
 
 export interface LoginRequest {
@@ -20,7 +40,7 @@ export interface AuthResponse {
   accessToken?: string;
   refresh_token?: string;
   refreshToken?: string;
-  profile?: Record<string, any>;
+  profile?: Record<string, unknown>;
 }
 
 export interface LogoutRequest {
@@ -39,7 +59,7 @@ export interface UserProfile {
   id: number;
   email: string;
   user_type: string;
-  profile: Record<string, any>;
+  profile: Record<string, unknown>;
 }
 
 // Clinic Types

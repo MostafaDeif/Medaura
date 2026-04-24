@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiClient } from "@/lib/api/client";
-import type { SignupRequest } from "@/lib/types/api";
+import type { DoctorSignupProfile, SignupRequest } from "@/lib/types/api";
 
 // POST /api/auth/signup
 export async function POST(request: NextRequest) {
@@ -16,6 +16,29 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    if (body.user_type === "doctor") {
+      const profile = body.profile as Partial<DoctorSignupProfile> | undefined;
+
+      if (
+        !profile?.full_name ||
+        !profile.license_number ||
+        !profile.specialist ||
+        !profile.work_days ||
+        !profile.work_from ||
+        !profile.work_to ||
+        profile.consultation_price === undefined
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Missing required doctor profile fields: full_name, license_number, specialist, work_days, work_from, work_to, consultation_price",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Get raw response to capture Set-Cookie headers from backend
@@ -81,14 +104,23 @@ export async function POST(request: NextRequest) {
     }
 
     return res;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Signup failed";
+    const status =
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      typeof error.status === "number"
+        ? error.status
+        : 500;
+
     console.error("Signup error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Signup failed",
+        error: message,
       },
-      { status: error.status || 500 }
+      { status }
     );
   }
 }

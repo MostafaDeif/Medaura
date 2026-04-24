@@ -23,12 +23,12 @@ const REGISTER_TYPES = [
     href: "/register",
     icon: "customer-icon",
   },
-  {
-    key: "clinic",
-    label: "عيادة",
-    href: "/register/clinic",
-    icon: "clinic-icon",
-  },
+  // {
+  //   key: "clinic",
+  //   label: "عيادة",
+  //   href: "/register/clinic",
+  //   icon: "clinic-icon",
+  // },
   {
     key: "doctor",
     label: "طبيب",
