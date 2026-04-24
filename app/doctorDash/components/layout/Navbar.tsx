@@ -8,7 +8,9 @@ import { useAuth } from "@/context/AuthContext";
 
 function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { darkMode, toggleTheme } = useContext(DashboardThemeContext);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const fullName = (user?.profile?.full_name as string) || "د.محمد إسماعيل";
+  const specialist = (user?.profile?.specialist as string) || "طبيب قلب";
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([
@@ -330,28 +332,19 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   </div>
                 )}
               </div>
-
-              <div
-                className="relative flex items-center gap-3 bg-(--card-bg) border border-(--card-border) rounded-full px-3 py-1.5 cursor-pointer"
-                ref={profileRef}
-              >
-                <div
-                  className="text-right"
+              <div className="relative" ref={profileRef}>
+                <button
                   onClick={() => setProfileOpen((v) => !v)}
+                  aria-haspopup="true"
+                  aria-expanded={profileOpen}
+                  className="w-10 h-10 flex items-center justify-center rounded-xl border border-(--card-border) bg-(--card-bg) hover:bg-(--semi-card-bg) transition cursor-pointer"
                 >
-                  <p className="text-sm font-medium text-(--text-primary)">
-                    د.محمد إسماعيل
-                  </p>
-                  <p className="text-xs text-(--text-secondary)">طبيب قلب</p>
-                </div>
-                <img
-                  src={img}
-                  alt="user"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                  onClick={() => setProfileOpen((v) => !v)}
-                />
+                  <img
+                    src={img}
+                    alt="user"
+                    className="rounded-full"
+                  />
+                </button>
 
                 {profileOpen && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white/90 dark:bg-slate-900/80 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 backdrop-blur-sm transform origin-top-right transition-all duration-150">
@@ -365,9 +358,9 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                       />
                       <div className="flex-1 text-sm">
                         <div className="font-medium text-slate-800 dark:text-slate-100">
-                          Admin
+                          {fullName}
                         </div>
-                        <div className="text-xs text-slate-400">Signed in</div>
+                        <div className="text-xs text-slate-400">{specialist}</div>
                       </div>
                     </div>
                     <div className="border-t mt-1" />

@@ -9,8 +9,13 @@ import {
   BadgeCheck,
   User
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DoctorProfile() {
+  const { user } = useAuth();
+  const fullName = (user?.profile?.full_name as string) || "د.محمد إسماعيل";
+  const specialist = (user?.profile?.specialist as string) || "طبيب قلب";
+
   return (
     <div className="space-y-4 flex flex-col items-center gap-10">
 
@@ -29,8 +34,8 @@ export default function DoctorProfile() {
           {/* Doctor Info */}
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <h2 className="font-semibold text-2xl text-(--text-primary)">د.محمد إسماعيل</h2>
-              <p className="text-xl text-(--text-secondary)">طبيب قلب</p>
+              <h2 className="font-semibold text-2xl text-(--text-primary)">{fullName}</h2>
+              <p className="text-xl text-(--text-secondary)">{specialist}</p>
             </div>
 
             <img
