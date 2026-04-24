@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getDashboardPathByUserType } from "@/lib/utils/redirect";
 import { EyeIcon } from "./utils";
 
 export default function PatientRegisterPage() {
@@ -39,7 +40,7 @@ export default function PatientRegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await signup({
+      const response = await signup({
         email,
         password,
         user_type: "patient",
@@ -47,7 +48,9 @@ export default function PatientRegisterPage() {
           full_name: name,
         },
       });
-      router.push("/");
+      // Redirect based on user type
+      const redirectPath = getDashboardPathByUserType(response.user_type);
+      router.push(redirectPath);
     } catch (error) {
       setErrors({
         form:

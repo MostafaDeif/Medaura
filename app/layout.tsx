@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Cairo, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/nav/nav";
-import Footer from "@/components/footer/footer";
 import { AuthProvider } from "@/context/AuthContext";
+import ThemeProvider from "./providers/ThemeProvider";
+import AppChrome from "./AppChrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,11 +36,11 @@ export default function RootLayout({
       <body
         className={`${cairo.className} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <Navbar />
-          <div className="lg:px-12 xl:px-24">{children}</div>
-          <Footer />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <AppChrome>{children}</AppChrome>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

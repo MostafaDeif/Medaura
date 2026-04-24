@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getDashboardPathByUserType } from "@/lib/utils/redirect";
 import {
   validateEmail,
   validatePassword,
@@ -36,8 +37,10 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await login({ email, password });
-      router.push("/");
+      const response = await login({ email, password });
+      // Redirect based on user type/role
+      const redirectPath = getDashboardPathByUserType(response.user_type);
+      router.push(redirectPath);
     } catch (error) {
       setErrors({
         form:

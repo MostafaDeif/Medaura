@@ -5,11 +5,12 @@ import { FC, useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getDashboardPathByUserType } from "@/lib/utils/redirect";
 import { t } from "@/i18n";
 
 const Navbar: FC = () => {
   const pathname = usePathname();
-  const { isAuthenticated, logout, loading } = useAuth();
+  const { user, isAuthenticated, logout, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [locale, setLocale] = useState<string>("en");
 
@@ -57,6 +58,11 @@ const Navbar: FC = () => {
     }
     return pathname.startsWith(href);
   };
+
+  const profileHref =
+    user?.user_type?.toLowerCase() === "patient"
+      ? "/patientProfile"
+      : getDashboardPathByUserType(user?.user_type);
 
   return (
     <nav className="fixed top-0 left-0 w-full border-b border-[#d9e3ff] bg-[#edf2ff] z-50">
@@ -127,7 +133,7 @@ const Navbar: FC = () => {
           ) : isAuthenticated ? (
             <div className="flex items-center gap-3">
               <Link
-                href="/patientProfile"
+                href={profileHref}
                 className="rounded-full bg-[#0f1a4f] px-4 py-2 font-medium text-white transition hover:bg-[#1b2773]"
               >
                 {t("nav.profile", locale)}

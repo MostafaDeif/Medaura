@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getDashboardPathByUserType } from "@/lib/utils/redirect";
 import type { DoctorSignupProfile } from "@/lib/types/api";
 import { EyeIcon } from "../utils";
 
@@ -115,14 +116,16 @@ export default function DoctorRegisterPage() {
         consultation_price: Number(consultationPrice),
       };
 
-      await signup({
+      const response = await signup({
         email: email.trim(),
         password,
         user_type: "doctor",
         profile,
       });
 
-      router.push("/");
+      // Redirect based on user type
+      const redirectPath = getDashboardPathByUserType(response.user_type);
+      router.push(redirectPath);
     } catch (error) {
       setErrors({
         form:

@@ -1,4 +1,25 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Medaura - Healthcare Booking Platform
+
+**Medaura** is a comprehensive healthcare booking platform built with Next.js 16, featuring patient and provider dashboards, clinic management, and appointment scheduling.
+
+## 🎯 Project Overview
+
+- **Admin Dashboard**: `/dashboard` - Comprehensive system overview and management
+- **Doctor Dashboard**: `/doctorDash` - Doctor-specific appointments and patient management  
+- **Patient Portal**: Home page and clinic/doctor discovery
+- **Appointment System**: Full booking and scheduling functionality
+
+## 🚀 Recent Updates (Dashboard Integration)
+
+✨ Successfully integrated **medurapro** dashboard into the main project:
+- ✅ Admin Dashboard (Admin Panel)
+- ✅ Doctor Dashboard (Provider Panel)
+- ✅ Dark/Light Theme System with localStorage persistence
+- ✅ Advanced charting with ApexCharts & Recharts
+- ✅ Responsive Sidebar & Navbar components
+- ✅ RTL (Right-to-Left) Arabic support
+
+**See [DASHBOARD_GUIDE.md](./DASHBOARD_GUIDE.md) for detailed dashboard documentation.**
 
 ## Getting Started
 

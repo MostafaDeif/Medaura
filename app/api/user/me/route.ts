@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/lib/api/auth";
+import { applyAuthCookies, getServerAccessToken } from "@/lib/api/server-auth";
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -14,13 +15,16 @@ function getErrorStatus(error: unknown) {
     : 500;
 }
 
+function isUnauthorized(error: unknown) {
+  return getErrorStatus(error) === 401;
+}
+
 // GET /api/user/me
 export async function GET(request: NextRequest) {
   try {
-    // Extract JWT from cookies and forward to backend
-    const token = request.cookies.get("jwt")?.value;
+    let auth = await getServerAccessToken(request);
 
-    if (!token) {
+    if (!auth.token) {
       return NextResponse.json(
         {
           success: false,
@@ -30,9 +34,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await authService.getProfile(token);
+    let response;
+    try {
+      response = await authService.getProfile(auth.token);
+    } catch (error: unknown) {
+      if (!isUnauthorized(error)) throw error;
 
-    return NextResponse.json({ success: true, data: response });
+      auth = await getServerAccessToken(request, { forceRefresh: true });
+      if (!auth.token) throw error;
+      response = await authService.getProfile(auth.token);
+    }
+
+    return applyAuthCookies(
+      NextResponse.json({ success: true, data: response }),
+      auth
+    );
   } catch (error: unknown) {
     console.error("Get profile error:", error);
     return NextResponse.json(
@@ -49,7 +65,8 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
-    const token = request.cookies.get("jwt")?.value || authHeader?.replace("Bearer ", "");
+    let auth = await getServerAccessToken(request);
+    const token = auth.token || authHeader?.replace("Bearer ", "");
 
     if (!token) {
       return NextResponse.json(
@@ -66,9 +83,21 @@ export async function PATCH(request: NextRequest) {
       ? await request.formData()
       : await request.json();
 
-    const response = await authService.updateProfile(token, body);
+    let response;
+    try {
+      response = await authService.updateProfile(token, body);
+    } catch (error: unknown) {
+      if (!isUnauthorized(error)) throw error;
 
-    return NextResponse.json({ success: true, data: response });
+      auth = await getServerAccessToken(request, { forceRefresh: true });
+      if (!auth.token) throw error;
+      response = await authService.updateProfile(auth.token, body);
+    }
+
+    return applyAuthCookies(
+      NextResponse.json({ success: true, data: response }),
+      auth
+    );
   } catch (error: unknown) {
     console.error("Update profile error:", error);
     return NextResponse.json(
