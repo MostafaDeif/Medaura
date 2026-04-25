@@ -8,9 +8,10 @@ import { useAuth } from "@/context/AuthContext";
 
 function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { darkMode, toggleTheme } = useContext(DashboardThemeContext);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const adminName = (user?.profile?.full_name as string) || "إسلام";
   const [notifications, setNotifications] = useState<any[]>([
     {
       id: "1",
@@ -335,7 +336,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   onClick={() => setProfileOpen((v) => !v)}
                 >
                   <p className="text-sm font-medium text-(--text-primary)">
-                    مرحباً إسلام
+                    مرحباً {adminName}
                   </p>
                   <p className="text-xs text-(--text-secondary)">اَدمن</p>
                 </div>
@@ -359,7 +360,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                       />
                       <div className="flex-1 text-sm">
                         <div className="font-medium text-slate-800 dark:text-slate-100">
-                          Admin
+                          {adminName}
                         </div>
                         <div className="text-xs text-slate-400">Signed in</div>
                       </div>

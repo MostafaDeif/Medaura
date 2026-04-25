@@ -4,70 +4,29 @@ import React from "react";
 
 type Patient = {
   name: string;
+  full_name?: string;
   gender: string;
-  department: string;
+  department?: string;
+  specialist?: string;
   date: string;
 };
 
-const data: Patient[] = [
-  {
-    name: "محمد خالد",
-    gender: "ذكر",
-    department: "عظام",
-    date: "17 Jun 2026",
-  },
-  {
-    name: "ريم السيد",
-    gender: "أنثى",
-    department: "قلب",
-    date: "10 Dec 2025",
-  },
-  {
-    name: "احمد محمد",
-    gender: "ذكر",
-    department: "جلدية",
-    date: "22 Dec 2025",
-  },
-  {
-    name: "ليلى محمد",
-    gender: "أنثى",
-    department: "عظام",
-    date: "22 Dec 2025",
-  },
-  {
-    name: "عمر محمد",
-    gender: "ذكر",
-    department: "قلب",
-    date: "15 Jun 2025",
-  },
-  {
-    name: "احمد السيد",
-    gender: "ذكر",
-    department: "جلدية",
-    date: "30 Dec 2025",
-  },
-  {
-    name: "محمد السيد",
-    gender: "ذكر",
-    department: "عظام",
-    date: "30 Dec 2025",
-  },
-];
+export default function PatientsTable({ patients: patientsProp }: { patients?: Patient[] }) {
+  const data = patientsProp || [];
 
-const getDeptColor = (dept: string) => {
-  switch (dept) {
-    case "عظام":
-      return "bg-orange-100 text-orange-600";
-    case "قلب":
-      return "bg-blue-100 text-blue-600";
-    case "جلدية":
-      return "bg-purple-100 text-purple-600";
-    default:
-      return "bg-gray-100 text-gray-600";
-  }
-};
+  const getDeptColor = (dept: string) => {
+    switch (dept) {
+      case "عظام":
+        return "bg-orange-100 text-orange-600";
+      case "قلب":
+        return "bg-blue-100 text-blue-600";
+      case "جلدية":
+        return "bg-purple-100 text-purple-600";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
 
-export default function PatientsTable() {
   return (
     <div className=" rounded-2xl shadow-sm bg-(--card-bg) border border-(--card-border) w-full">
 
@@ -98,15 +57,15 @@ export default function PatientsTable() {
                   
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-(--text-primary)">
-                      {item.name}
+                      {item.name || item.full_name}
                     </p>
 
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getDeptColor(
-                        item.department
+                        item.department || item.specialist || ""
                       )}`}
                     >
-                      {item.department}
+                      {item.department || item.specialist || "عام"}
                     </span>
                   </div>
 
@@ -154,10 +113,10 @@ export default function PatientsTable() {
                     <td className="px-4 py-3">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${getDeptColor(
-                          item.department
+                          item.department || item.specialist || ""
                         )}`}
                       >
-                        {item.department}
+                        {item.department || item.specialist || "عام"}
                       </span>
                     </td>
 
@@ -166,7 +125,7 @@ export default function PatientsTable() {
                     </td>
 
                     <td className="px-4 py-3 font-medium text-(--text-primary)">
-                      {item.name}
+                      {item.name || item.full_name}
                     </td>
                   </tr>
                 ))}

@@ -110,29 +110,24 @@ const getStatusColor = (status: string) => {
 };
 
 export default function Appointments() {
-  const [appointments, setAppointments] = useState<Appointment[]>(data);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
-  const [limit] = useState<number>(10);
-  const [total, setTotal] = useState<number>(data.length);
+  const [total, setTotal] = useState<number>(0);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
-  const [detailModal, setDetailModal] = useState<Appointment | null>(null);
-  const [editModal, setEditModal] = useState<Appointment | null>(null);
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   const router = useRouter();
 
-  const loadAppointments = async (pg = 1) => {
+  const loadAppointments = async () => {
     setLoading(true);
     try {
-      const res = await fetchAppointmentsFromApi(
-        "/api/appointments",
-        pg,
-        limit
-      );
-      if (res && Array.isArray(res.items)) {
-        setAppointments(res.items);
-        setTotal(res.total ?? res.items.length);
+      const res = await fetch("/api/admin/bookings", {
+        credentials: "include",
+      });
+      const result = await res.json();
+      if (result.success && Array.isArray(result.data)) {
+        setAppointments(result.data);
+        setTotal(result.data.length);
       }
     } catch (err) {
       console.error("Error loading appointments", err);
@@ -142,27 +137,21 @@ export default function Appointments() {
   };
 
   useEffect(() => {
-    loadAppointments(page);
-  }, [page]);
+    loadAppointments();
+  }, []);
 
-  const pageCount = Math.max(1, Math.ceil(total / limit));
+  const pageSize = 15;
+  const totalPages = Math.ceil(appointments.length / pageSize);
+  const paginated = appointments.slice((page - 1) * pageSize, page * pageSize);
 
-  const openMenu = (id: string) => {
-    setMenuOpenId((prev) => (prev === id ? null : id));
-  };
-    const pageSize = 15;
-    const totalPages = Math.ceil(appointments.length / pageSize);
-    const getPages = () => {
+  const getPages = () => {
     const pages: (number | string)[] = [];
-
     if (totalPages <= 3) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-
     if (page <= 2) {
       return [1, 2, 3, ...(totalPages > 3 ? ["..."] : [])];
     }
-
     if (page >= totalPages - 1) {
       return [
         ...(totalPages > 3 ? ["..."] : []),
@@ -171,13 +160,12 @@ export default function Appointments() {
         totalPages,
       ];
     }
-
     return ["...", page - 1, page, page + 1, "..."];
   };
-  const datas = useMemo(()=>{
-      return data
-  }, [data ])
-    const paginated = datas.slice((page - 1) * pageSize, page * pageSize);
+
+  if (loading) {
+    return <div className="p-6 text-center">جاري التحميل...</div>;
+  }
 
   return (
     <div className="bg-(--card-bg) rounded-2xl p-5 shadow-sm border border-(--card-border) w-full">
@@ -222,7 +210,7 @@ export default function Appointments() {
                   </td>
 
                   <td className="px-4 py-3 text-(--text-secondary)">
-                    {item.date}
+                    {item.date || item.booking_date}
                   </td>
 
                   <td className="px-4 py-3">
@@ -235,18 +223,18 @@ export default function Appointments() {
                     </span>
                   </td>
 
-                  <td className="px-4 py-3 text-(--text-secondary) flex items-center gap-2">
-                    {item.doctor}
-                    <img src={`https://i.pravatar.cc?img=${paginated.length - 1 - index}`} className=" w-9 h-9 rounded-full object-cover" alt="" />
+                  <td className="px-4 py-3 text-(--text-secondary) flex items-center gap-2 justify-center">
+                    {item.doctor || item.doctor_name}
+                    <img src={item.doctor_image || `https://i.pravatar.cc?u=${item.id}`} className=" w-9 h-9 rounded-full object-cover" alt="" />
                   </td>
 
                   <td className="px-4 py-3 text-(--text-secondary)">
-                    {item.type}
+                    {item.type || "زيارة"}
                   </td>
 
-                  <td className="px-4 py-3 font-medium text-(--text-primary) flex items-center gap-2">
-                    {item.name}
-                    <img src={`https://i.pravatar.cc/100?img=${index}`} className=" w-9 h-9 rounded-full object-cover" alt="" />
+                  <td className="px-4 py-3 font-medium text-(--text-primary) flex items-center gap-2 justify-center">
+                    {item.name || item.patient_name || item.full_name}
+                    <img src={item.patient_image || item.image || `https://i.pravatar.cc/100?u=${item.id}`} className=" w-9 h-9 rounded-full object-cover" alt="" />
                   </td>
 
                   <td className="px-4 py-3 text-(--text-secondary)">
@@ -254,6 +242,13 @@ export default function Appointments() {
                   </td>
                 </tr>
               ))}
+              {appointments.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-(--text-secondary)">
+                    لا يوجد مواعيد حالياً
+                  </td>
+                </tr>
+              )}
             </tbody>
 
           </table>
@@ -261,44 +256,46 @@ export default function Appointments() {
       </div>
 
       {/* Pagination */}
-      <div className="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-            <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className=" cursor-pointer text-2xl flex items-center justify-center border border-(--input-border) rounded-md p-1 hover:bg-(--semi-card-bg) transition"
-          >
-            <ChevronLeft size={19} />
-          </button>
-
-          {getPages().map((p, i) => (
-            <button
-              key={i}
-              onClick={() => typeof p === "number" && setPage(p)}
-              disabled={p === "..."}
-              className={`px-2 py-1 rounded cursor-pointer ${
-                p === page
-                  ? "bg-[#1F2B6C] text-white"
-                  : p === "..."
-                    ? "cursor-default text-gray-400"
-                    : "border border-(--input-border) hover:bg-(--semi-card-bg)"
-              }`}
+      {appointments.length > 0 && (
+        <div className="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+              <button
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              className=" cursor-pointer text-2xl flex items-center justify-center border border-(--input-border) rounded-md p-1 hover:bg-(--semi-card-bg) transition"
             >
-              {p}
+              <ChevronLeft size={19} />
             </button>
-          ))}
 
-         <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-            className=" cursor-pointer text-2xl flex items-center justify-center border border-(--input-border) rounded-md p-1 hover:bg-(--semi-card-bg) transition"
-          >
-            <ChevronRight size={19} />
-          </button>
+            {getPages().map((p, i) => (
+              <button
+                key={i}
+                onClick={() => typeof p === "number" && setPage(p)}
+                disabled={p === "..."}
+                className={`px-2 py-1 rounded cursor-pointer ${
+                  p === page
+                    ? "bg-[#1F2B6C] text-white"
+                    : p === "..."
+                      ? "cursor-default text-gray-400"
+                      : "border border-(--input-border) hover:bg-(--semi-card-bg)"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+
+          <button
+              onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+              className=" cursor-pointer text-2xl flex items-center justify-center border border-(--input-border) rounded-md p-1 hover:bg-(--semi-card-bg) transition"
+            >
+              <ChevronRight size={19} />
+            </button>
+          </div>
+
+          <p className="text-sm text-(--text-secondary)">
+            عرض {page} - {totalPages} من أصل {appointments.length} موعد
+          </p>
         </div>
-
-        <p className="text-sm text-(--text-secondary)">
-          عرض {page} -{" "} {totalPages} من أصل {data.length} مريض
-        </p>
-      </div>
+      )}
     </div>
   );
 }

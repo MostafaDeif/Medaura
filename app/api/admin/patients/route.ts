@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminService } from "@/lib/api/admin";
 import { getServerAccessToken, applyAuthCookies } from "@/lib/api/server-auth";
 
-// GET /api/admin/staff
+// GET /api/admin/patients
 export async function GET(request: NextRequest) {
   let auth = await getServerAccessToken(request);
 
@@ -14,18 +14,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await adminService.listStaff(auth.token);
+    const response = await adminService.listPatients(auth.token);
 
     return applyAuthCookies(
       NextResponse.json({ success: true, data: response }),
       auth
     );
   } catch (error: any) {
-    console.error("List staff error:", error);
+    console.error("List patients error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch staff",
+        error: error.message || "Failed to fetch patients",
       },
       { status: error.status || 500 }
     );

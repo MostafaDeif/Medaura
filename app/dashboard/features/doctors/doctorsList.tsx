@@ -1,73 +1,50 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { Check, X } from "lucide-react";
+
 interface Doctor {
   id: number;
-  name: string;
-  specialty: string;
-  image: string;
-  status: "available" | "busy";
+  name?: string;
+  full_name?: string;
+  specialty?: string;
+  specialist?: string;
+  image?: string;
+  status?: "available" | "busy";
+  verified?: boolean;
 }
 
-const doctors: Doctor[] = [
-  {
-    id: 1,
-    name: "محمد خالد",
-    specialty: "مخ واعصاب",
-    image: "https://i.pravatar.cc/40?img=1",
-    status: "available",
-  },
-  {
-    id: 2,
-    name: "محمد خالد",
-    specialty: "مخ واعصاب",
-    image: "https://i.pravatar.cc/40?img=1",
-    status: "available",
-  },
-  {
-    id: 3,
-    name: "محمد خالد",
-    specialty: "مخ واعصاب",
-    image: "https://i.pravatar.cc/40?img=1",
-    status: "available",
-  },
-  {
-    id: 4,
-    name: "محمد خالد",
-    specialty: "مخ واعصاب",
-    image: "https://i.pravatar.cc/40?img=1",
-    status: "busy",
-  },
-  {
-    id: 5,
-    name: "محمد خالد",
-    specialty: "مخ واعصاب",
-    image: "https://i.pravatar.cc/40?img=1",
-    status: "busy",
-  },
-  {
-    id: 6,
-    name: "محمد خالد",
-    specialty: "مخ واعصاب",
-    image: "https://i.pravatar.cc/40?img=1",
-    status: "busy",
-  },
-  {
-    id: 7,
-    name: "محمد خالد",
-    specialty: "مخ واعصاب",
-    image: "https://i.pravatar.cc/40?img=1",
-    status: "busy",
-  },
-  {
-    id: 8,
-    name: "محمد خالد",
-    specialty: "مخ واعصاب",
-    image: "https://i.pravatar.cc/40?img=1",
-    status: "busy",
-  },
-];
+export default function doctorsList({ doctors: doctorsProp }: { doctors?: Doctor[] }) {
+  const [doctors, setDoctors] = useState<Doctor[]>(doctorsProp || []);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
-export default function doctorsList() {
+  useEffect(() => {
+    if (doctorsProp) {
+      setDoctors(doctorsProp);
+    }
+  }, [doctorsProp]);
+
+  const handleVerify = async (id: number, verify: boolean) => {
+    setLoadingId(id);
+    try {
+      const endpoint = verify ? `/api/admin/${id}/verify` : `/api/admin/${id}/unverify`;
+      const response = await fetch(endpoint, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      const result = await response.json();
+      if (result.success) {
+        setDoctors((prev) =>
+          prev.map((d) => (d.id === id ? { ...d, verified: verify } : d))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update doctor verification:", error);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   return (
     <div className=" bg-(--card-bg) border border-(--card-border) h-max rounded-xl shadow-sm">
 
@@ -95,32 +72,47 @@ export default function doctorsList() {
             <div className="flex items-center gap-3 flex-1 min-w-0">
               
               <img
-                src={doctor.image}
+                src={doctor.image || `https://i.pravatar.cc/40?u=${doctor.id}`}
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shrink-0"
-                alt={doctor.name}
+                alt={doctor.name || doctor.full_name}
               />
 
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-(--text-primary) text-sm sm:text-base truncate">
-                  {doctor.name}
+                  {doctor.name || doctor.full_name}
                 </p>
 
                 <p className="text-xs sm:text-sm text-(--text-secondary) truncate">
-                  {doctor.specialty}
+                  {doctor.specialty || doctor.specialist}
                 </p>
               </div>
             </div>
 
-            {/* Status Badge */}
-            <span
-              className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                doctor.status === "available"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {doctor.status === "available" ? "متاح" : "غير متاح"}
-            </span>
+            {/* Status Badge & Actions */}
+            <div className="flex items-center gap-2">
+              <span
+                className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                  doctor.verified
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {doctor.verified ? "مفعل" : "غير مفعل"}
+              </span>
+
+              <button
+                onClick={() => handleVerify(doctor.id, !doctor.verified)}
+                disabled={loadingId === doctor.id}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  doctor.verified
+                    ? "bg-red-50 text-red-600 hover:bg-red-100"
+                    : "bg-green-50 text-green-600 hover:bg-green-100"
+                } disabled:opacity-50`}
+                title={doctor.verified ? "إلغاء التفعيل" : "تفعيل"}
+              >
+                {doctor.verified ? <X size={16} /> : <Check size={16} />}
+              </button>
+            </div>
 
           </div>
         ))}

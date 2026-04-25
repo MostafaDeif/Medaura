@@ -11,7 +11,7 @@ import DepartmentsChart from "./components/charts/DepartmentsChart";
 import PatientsTable from "./features/patient/PatientTaple";
 import AppointmentsTable from "./features/appointments/AppointmentsTable";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Stethoscope,
   Users,
@@ -24,6 +24,28 @@ import {
 
 function Dashboard({ childern }: { childern: React.ReactNode }) {
   const [range, setRange] = useState<any>();
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+      try {
+        const response = await fetch("/api/admin/dashboard", {
+          credentials: "include",
+        });
+        const result = await response.json();
+        if (result.success) {
+          setDashboardData(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDashboardData();
+  }, []);
 
   const weeklyData = [
     { date: "2026-01-25", exixiting: 40, new: 20 },
@@ -55,7 +77,7 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
             
             <StatsCard
               title="المعاملات"
-              value={5052455}
+              value={dashboardData?.stats?.totalStaff ?? 0}
               percentage={12}
               icon={<Wallet size={20} strokeWidth={2} className="text-white" />}
               iconBg="bg-[#CC25B0]"
@@ -71,7 +93,7 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
 
             <StatsCard
               title=" إجمالي الأطباء"
-              value={565}
+              value={dashboardData?.stats?.totalDoctors ?? 0}
               percentage={18}
               icon={<Stethoscope size={20} strokeWidth={2} className="text-white" />}
               iconBg="bg-[#6A1B9A]"
@@ -87,7 +109,7 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
 
             <StatsCard
               title="إجمالي المرضى"
-              value={108}
+              value={dashboardData?.stats?.totalPatients ?? 0}
               percentage={20}
               icon={<User size={20} strokeWidth={2} className="text-white" />}
               iconBg="bg-[#1F6DB2]"
@@ -102,8 +124,8 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
             />
 
             <StatsCard
-              title="المواعيد"
-              value={659}
+              title="إجمالي العيادات"
+              value={dashboardData?.stats?.totalClinics ?? 0}
               percentage={-15}
               icon={<Calendar size={20} strokeWidth={2} className="text-white" />}
               iconBg="bg-[#E65100]"
@@ -126,22 +148,22 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
               <ChartBar data={filteredData} />
             </div>
 
-            <AppointsmentRequests />
+            <AppointsmentRequests requests={dashboardData?.pendingRequests} />
 
           </div>
 
           {/* Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
             <VisitsGauge male={69} female={56} total={80} />
-            <DoctorsList />
-            <ClinicsList />
+            <DoctorsList doctors={dashboardData?.doctors} />
+            <ClinicsList clinics={dashboardData?.clinics} />
           </div>
 
           {/* Table + Pie */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
             
             <div className="lg:col-span-2">
-              <PatientsTable />
+              <PatientsTable patients={dashboardData?.patients} />
             </div>
 
             <div className="lg:col-span-1">
@@ -152,7 +174,7 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
 
           {/* Appointments */}
           <div className="grid grid-cols-1 gap-6 mb-8">
-            <AppointmentsTable />
+            <AppointmentsTable appointments={dashboardData?.recentBookings} />
           </div>
 
         </div>

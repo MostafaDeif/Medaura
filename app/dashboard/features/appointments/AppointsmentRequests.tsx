@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, X, Clock, Calendar } from "lucide-react";
 
 interface Appointment {
@@ -12,41 +12,14 @@ interface Appointment {
   status: "pending" | "approved" | "rejected";
 }
 
-export default function AppointsmentRequests() {
-  const [appointments, setAppointmets] = useState<Appointment[]>([
-    {
-      id: 1,
-      name: "محمد خالد",
-      specialty: "مخ واعصاب",
-      time: "11:35  PM - 16 Jul 2025",
-      image: "https://i.pravatar.cc/40?img=1",
-      status: "pending",
-    },
-    {
-      id: 2,
-      name: "محمد خالد",
-      specialty: "جلدية",
-      time: "11:35  PM - 16 Jul 2025",
-      image: "https://i.pravatar.cc/40?img=2",
-      status: "pending",
-    },
-    {
-      id: 3,
-      name: "محمد خالد",
-      specialty: "اسنان",
-      time: "11:35  PM - 16 Jul 2025",
-      image: "https://i.pravatar.cc/40?img=3",
-      status: "pending",
-    },
-    {
-      id: 4,
-      name: "محمد خالد",
-      specialty: "عظام",
-      time: "11:35  PM - 16 Jul 2025",
-      image: "https://i.pravatar.cc/40?img=4",
-      status: "pending",
-    },
-  ]);
+export default function AppointsmentRequests({ requests: requestsProp }: { requests?: Appointment[] }) {
+  const [appointments, setAppointmets] = useState<Appointment[]>(requestsProp || []);
+
+  useEffect(() => {
+    if (requestsProp) {
+      setAppointmets(requestsProp);
+    }
+  }, [requestsProp]);
 
   const updateStatus = (id: number, newStatus: "approved" | "rejected") => {
     setAppointmets((prev) =>

@@ -1,25 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminService } from "@/lib/api/admin";
+import { getServerAccessToken, applyAuthCookies } from "@/lib/api/server-auth";
 
 // GET /api/admin/doctors
 export async function GET(request: NextRequest) {
+  let auth = await getServerAccessToken(request);
+
+  if (!auth.token) {
+    return NextResponse.json(
+      { success: false, error: "Not authenticated" },
+      { status: 401 }
+    );
+  }
+
   try {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
+    const response = await adminService.listDoctors(auth.token);
 
-    if (!token) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Missing authorization token",
-        },
-        { status: 401 }
-      );
-    }
-
-    const response = await adminService.listDoctors(token);
-
-    return NextResponse.json({ success: true, data: response });
+    return applyAuthCookies(
+      NextResponse.json({ success: true, data: response }),
+      auth
+    );
   } catch (error: any) {
     console.error("List doctors error:", error);
     return NextResponse.json(

@@ -1,24 +1,46 @@
 "use client";
 
-import { Hospital, Download } from "lucide-react";
+import { Hospital, Download, Check, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface Clinic {
   id: number;
   name: string;
-  status: "available" | "busy";
+  status?: "available" | "busy";
+  verified?: boolean;
 }
 
-const Clinics: Clinic[] = [
-  { id: 1, name: " سيتى كلينك", status: "available" },
-  { id: 2, name: " سيتى كلينك", status: "busy" },
-  { id: 3, name: " سيتى كلينك", status: "available" },
-  { id: 4, name: " سيتى كلينك", status: "available" },
-  { id: 5, name: " سيتى كلينك", status: "busy" },
-  { id: 6, name: " سيتى كلينك", status: "available" },
-  { id: 7, name: " سيتى كلينك", status: "available" },
-];
+export default function ClinicsList({ clinics: clinicsProp }: { clinics?: Clinic[] }) {
+  const [clinics, setClinics] = useState<Clinic[]>(clinicsProp || []);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
-export default function ClinicsList() {
+  useEffect(() => {
+    if (clinicsProp) {
+      setClinics(clinicsProp);
+    }
+  }, [clinicsProp]);
+
+  const handleApprove = async (id: number, approve: boolean) => {
+    setLoadingId(id);
+    try {
+      const endpoint = approve ? `/api/admin/clinics/${id}/approve` : `/api/admin/clinics/${id}/reject`;
+      const response = await fetch(endpoint, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      const result = await response.json();
+      if (result.success) {
+        setClinics((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, verified: approve } : c))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update clinic status:", error);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   return (
     <div className=" bg-(--card-bg) border border-(--card-border) h-auto rounded-xl shadow-sm">
 
@@ -36,7 +58,7 @@ export default function ClinicsList() {
 
       {/* clinics */}
       <div className="space-y-4 sm:space-y-2.5 px-4 sm:px-6 py-2 pb-6">
-        {Clinics.slice(0, 7).map((clinic) => (
+        {clinics.slice(0, 7).map((clinic) => (
           <div
             key={clinic.id}
             className="flex items-center justify-between p-3 sm:p-4 bg-(--semi-card-bg) rounded-lg hover:bg-(--hover-bg) transition-colors"
@@ -63,14 +85,38 @@ export default function ClinicsList() {
               </div>
             </div>
 
-            {/* Download Button */}
-            <button className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors shrink-0">
-              <Download
-                size={18}
-                strokeWidth={1.5}
-                className="text-blue-600 dark:text-blue-400"
-              />
-            </button>
+            {/* Actions */}
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => handleApprove(clinic.id, true)}
+                disabled={loadingId === clinic.id || clinic.verified}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  clinic.verified
+                    ? "bg-green-100 text-green-600"
+                    : "bg-green-50 text-green-600 hover:bg-green-100"
+                } disabled:opacity-50`}
+                title="تفعيل"
+              >
+                <Check size={18} />
+              </button>
+
+              <button
+                onClick={() => handleApprove(clinic.id, false)}
+                disabled={loadingId === clinic.id}
+                className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+                title="رفض"
+              >
+                <X size={18} />
+              </button>
+
+              <button className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors shrink-0">
+                <Download
+                  size={18}
+                  strokeWidth={1.5}
+                  className="text-blue-600 dark:text-blue-400"
+                />
+              </button>
+            </div>
 
           </div>
         ))}

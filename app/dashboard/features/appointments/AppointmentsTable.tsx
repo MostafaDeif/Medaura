@@ -252,18 +252,25 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export default function AppointmentsTable() {
-  const [appointments, setAppointments] = useState<Appointment[]>(data);
+export default function AppointmentsTable({ appointments: appointmentsProp }: { appointments?: Appointment[] }) {
+  const [appointments, setAppointments] = useState<Appointment[]>(appointmentsProp || []);
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [limit] = useState<number>(10);
-  const [total, setTotal] = useState<number>(data.length);
+  const [total, setTotal] = useState<number>(appointmentsProp?.length || data.length);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [detailModal, setDetailModal] = useState<Appointment | null>(null);
   const [editModal, setEditModal] = useState<Appointment | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (appointmentsProp) {
+      setAppointments(appointmentsProp);
+      setTotal(appointmentsProp.length);
+    }
+  }, [appointmentsProp]);
 
   const loadAppointments = async (pg = 1) => {
     setLoading(true);
