@@ -1,16 +1,22 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MoreVertical , ChevronRight , ChevronLeft } from "lucide-react";
-import { useRouter } from 'next/navigation';
 
 type Appointment = {
   id: string;
-  name: string;
-  type: string;
-  doctor: string;
+  name?: string;
+  type?: string;
+  doctor?: string;
   status: string;
-  date: string;
+  date?: string;
+  booking_date?: string;
+  doctor_name?: string;
+  doctor_image?: string;
+  patient_name?: string;
+  patient_image?: string;
+  full_name?: string;
+  image?: string;
 };
 
 type ApiListResult = {
@@ -113,10 +119,7 @@ export default function Appointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
-  const [total, setTotal] = useState<number>(0);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
-
-  const router = useRouter();
 
   const loadAppointments = async () => {
     setLoading(true);
@@ -127,7 +130,6 @@ export default function Appointments() {
       const result = await res.json();
       if (result.success && Array.isArray(result.data)) {
         setAppointments(result.data);
-        setTotal(result.data.length);
       }
     } catch (err) {
       console.error("Error loading appointments", err);
@@ -144,8 +146,11 @@ export default function Appointments() {
   const totalPages = Math.ceil(appointments.length / pageSize);
   const paginated = appointments.slice((page - 1) * pageSize, page * pageSize);
 
+  const openMenu = (id: string) => {
+    setMenuOpenId((prev) => (prev === id ? null : id));
+  };
+
   const getPages = () => {
-    const pages: (number | string)[] = [];
     if (totalPages <= 3) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
@@ -203,6 +208,7 @@ export default function Appointments() {
                   <td className="px-4 py-3 text-(--text-secondary) relative">
                     <button
                       onClick={() => openMenu(item.id)}
+                      aria-expanded={menuOpenId === item.id}
                       className="p-1 rounded hover:bg-(--hover-bg)"
                     >
                       <MoreVertical size={18} />
