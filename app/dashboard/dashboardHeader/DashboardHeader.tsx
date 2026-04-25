@@ -31,7 +31,7 @@ export default function DashboardHeader({range , setRange}:any) {
         </button>
         {
           open && (
-            <div ref={CalendarRef} className={`absolute left-0 mt-2  max-w-sm bg-(--card-bg) backdrop-blur-md shadow-2xl rounded-xl p-4 z-50 transition-all duration-300 ease-out transform origin-top-right ${open ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 pointer-events-none translate-y-2"}`}>
+            <div ref={CalendarRef} className={`absolute right-0 mt-2  max-w-sm bg-(--card-bg) backdrop-blur-md shadow-2xl rounded-xl p-4 z-50 transition-all duration-300 ease-out transform origin-top-right ${open ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 pointer-events-none translate-y-2"}`}>
               <DayPicker  mode="range"  selected={range} onSelect={setRange}  />
             </div>
           )

@@ -145,7 +145,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   aria-expanded={query.length > 0}
                   aria-controls="nav-search-list"
                   placeholder="Search patients, doctors, appointments..."
-                  className="w-full pl-10 pr-4 py-3 rounded-full border border-(--input-border) bg-(--input-bg) dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-10 pr-4 py-3 rounded-full border border-(--input-border) bg-(--input-bg) dark:bg-slate-800 placeholder-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <Search
                   size={18}
@@ -233,7 +233,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
                 )}
                 {notifOpen && (
-                  <div className="absolute -right-2 mt-2 w-96  bg-(--card-bg) border border-(--card-border) rounded-2xl shadow-2xl p-3 z-40 backdrop-blur-md transform origin-top-right transition-all duration-150 ease-out">
+                  <div className="absolute -left-2 mt-2 w-96  bg-(--card-bg) border border-(--card-border) rounded-2xl shadow-2xl p-3 z-40 backdrop-blur-md transform origin-top-left transition-all duration-150 ease-out">
                     <div className="flex items-center justify-between px-2">
                       <h4 className="font-semibold">Notifications</h4>
                       <div className="flex items-center gap-2">
@@ -348,7 +348,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   onClick={() => setProfileOpen((v) => !v)}
                 />
                 {profileOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white/90 dark:bg-slate-900/80 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 backdrop-blur-sm transform origin-top-right transition-all duration-150">
+                  <div className="absolute left-0 top-full mt-2 w-48 bg-white/90 dark:bg-slate-900/80 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 backdrop-blur-sm transform origin-top-left transition-all duration-150">
                     <div className="flex items-center gap-3 px-3 py-2">
                       <img
                         src={img}
