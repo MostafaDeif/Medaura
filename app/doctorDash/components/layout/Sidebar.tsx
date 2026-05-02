@@ -9,6 +9,7 @@ import {
   Settings,
   Send,
   LayoutDashboard,
+  Building,
 } from "lucide-react";
 import settings from "../../pages/settings/page";
 interface SidebarProps {
@@ -33,6 +34,7 @@ function Sidebar({ open, onClose }: SidebarProps) {
     {
       title: "الرعاية الصحية",
       items: [
+        { text: "العيادات", icon: <Building size={18} />, href: "/doctorDash/pages/clinics" },
         { text: "المرضى", icon: <Users size={18} />, href: "/doctorDash/pages/patients" },
         { text: "المواعيد", icon: <Calendar size={18} />, href: "/doctorDash/pages/appointments" },
       ],

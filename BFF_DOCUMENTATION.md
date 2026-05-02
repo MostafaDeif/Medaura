@@ -230,7 +230,7 @@ const stats = await clinicService.getStats(token);
 - `GET /api/doctors/dashboard` - Get doctor dashboard
 
 ### Clinics
-- `POST /api/clinic/create` - Create clinic
+- `POST /api/clinic/` - Create clinic
 - `GET /api/clinic/profile` - Get clinic profile
 - `GET /api/clinic/stats` - Get clinic statistics
 - `GET /api/clinic/staff` - Get clinic staff

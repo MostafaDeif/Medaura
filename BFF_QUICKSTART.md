@@ -104,7 +104,7 @@ fetch("/api/bookings/create", {
 const token = localStorage.getItem("token");
 
 // Create clinic
-fetch("/api/clinic/create", {
+fetch("/api/clinic/", {
   method: "POST",
   headers: { Authorization: `Bearer ${token}` },
   body: JSON.stringify({

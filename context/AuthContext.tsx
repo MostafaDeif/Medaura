@@ -57,6 +57,11 @@ function unwrapAuthResponse(authData: AuthResponseLike): AuthResponseLike {
 
 function normalizeAuthResponse(authData: AuthResponseLike): AuthResponse {
   const unwrapped = unwrapAuthResponse(authData);
+  const token =
+    unwrapped.token ||
+    unwrapped.access_token ||
+    unwrapped.accessToken ||
+    unwrapped.access;
 
   if (unwrapped.status === "success" && unwrapped.user) {
     const backendUser = unwrapped.user;
@@ -66,11 +71,13 @@ function normalizeAuthResponse(authData: AuthResponseLike): AuthResponse {
       email: backendUser.email,
       user_type: backendUser.role,
       profile: backendUser.profile,
+      token,
     };
   }
 
   return {
     ...unwrapped,
+    token,
   };
 }
 

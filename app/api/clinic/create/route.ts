@@ -1,55 +1,65 @@
-import { NextRequest, NextResponse } from "next/server";
-import { clinicService } from "@/lib/api/clinic";
-import type { ClinicRequest } from "@/lib/types/api";
+import { cookies } from "next/headers";
 
-// POST /api/clinic/create
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
+    // ✅ get token from cookies (HttpOnly)
+    const cookieStore = await cookies();
+    const token = cookieStore.get("jwt")?.value;
+
+    console.log("TOKEN:", token);
 
     if (!token) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Missing authorization token",
-        },
+      return Response.json(
+        { success: false, error: "Unauthorized - No token" },
         { status: 401 }
       );
     }
 
-    const body = (await request.json()) as ClinicRequest;
+    // ✅ get request body
+    const body = await req.json();
 
-    if (
-      !body.name ||
-      !body.address ||
-      !body.location ||
-      !body.phone ||
-      !body.email
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Missing required fields",
-        },
-        { status: 400 }
-      );
+    // ✅ IMPORTANT: تأكد من endpoint الصح
+    const backendRes = await fetch("http://127.0.0.1:3001/api/clinic", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        ...body,
+        opening_hours: body.opening_hours || "10:00 - 18:00", // fallback
+      }),
+    });
+
+    // ✅ نتعامل مع أي نوع response (JSON أو HTML)
+    const contentType = backendRes.headers.get("content-type");
+
+    let data;
+
+    if (contentType && contentType.includes("application/json")) {
+      data = await backendRes.json();
+    } else {
+      const text = await backendRes.text();
+      console.log("NON-JSON RESPONSE:", text);
+
+      data = {
+        success: false,
+        error: "Invalid response from server",
+        raw: text,
+      };
     }
 
-    const response = await clinicService.create(body, token);
+    return Response.json(data, { status: backendRes.status });
 
-    return NextResponse.json(
-      { success: true, data: response },
-      { status: 201 }
-    );
-  } catch (error: any) {
-    console.error("Create clinic error:", error);
-    return NextResponse.json(
+  } catch (error) {
+    console.error("SERVER ERROR:", error);
+
+    return Response.json(
       {
         success: false,
-        error: error.message || "Failed to create clinic",
+        error: error instanceof Error ? error.message : "Server error",
       },
-      { status: error.status || 500 }
+      { status: 500 }
     );
   }
 }
