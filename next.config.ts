@@ -1,8 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
-    root: "C:\\Projects\\Medaura",
+    root: "C:/Users/USER/Desktop/Medaura",
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:3001/api/:path*",
+      },
+    ];
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

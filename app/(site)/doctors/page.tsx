@@ -1,142 +1,87 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  BriefcaseMedical,
   ChevronDown,
   Hospital,
   MapPin,
   Stethoscope,
   UserRound,
 } from "lucide-react";
+import type { ApiResponse, DoctorProfile } from "@/lib/types/api";
 
-type Doctor = {
-  id: number;
-  name: string;
-  specialty: string;
-  rating: number;
-  price: number;
-  experience: number;
-  imageSrc: string;
+const API_BASE_URL = "http://localhost:3001/api";
+const DOCTORS_API_URL = `${API_BASE_URL}/doctors`;
+type DoctorWithClinic = DoctorProfile & {
+  clinic_id?: number;
+  photo?: string;
+  image?: string;
+  email?: string;
 };
-
-const doctors: Doctor[] = [
-  {
-    id: 1,
-    name: "د. صلاح محمود",
-    specialty: "استشاري جراحة القلب",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc1.jpg",
-  },
-  {
-    id: 2,
-    name: "د. كريم محمد",
-    specialty: "تخصص عيون",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc2.jpg",
-  },
-  {
-    id: 3,
-    name: "د. صلاح محمود",
-    specialty: "استشاري جراحة القلب",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc3.jpg",
-  },
-  {
-    id: 4,
-    name: "د. محمود صالح",
-    specialty: "استشاري جراحة القلب",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc1.jpg",
-  },
-  {
-    id: 5,
-    name: "د. كريم محمد",
-    specialty: "استشاري جراحة القلب",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc2.jpg",
-  },
-  {
-    id: 6,
-    name: "د. صلاح محمود",
-    specialty: "استشاري جراحة القلب",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc3.jpg",
-  },
-  {
-    id: 7,
-    name: "د. أحمد محمود",
-    specialty: "استشاري جراحة القلب",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc1.jpg",
-  },
-  {
-    id: 8,
-    name: "د. ندين عادل",
-    specialty: "استشاري باطنة",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc3.jpg",
-  },
-  {
-    id: 9,
-    name: "د. عمر حسين",
-    specialty: "استشاري عظام",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc2.jpg",
-  },
-];
 
 const filters = [
   { label: "الدفع", icon: <Hospital className="h-3.5 w-3.5" /> },
-  { label: "اختار رسوم الاستشارة", icon: <ChevronDown className="h-3.5 w-3.5" /> },
-  { label: "اختار تخصص", icon: <Stethoscope className="h-3.5 w-3.5" /> },
-  { label: "اختار محافظة", icon: <MapPin className="h-3.5 w-3.5" /> },
+  { label: "اختر رسوم الاستشارة", icon: <ChevronDown className="h-3.5 w-3.5" /> },
+  { label: "اختر تخصص", icon: <Stethoscope className="h-3.5 w-3.5" /> },
+  { label: "اختر محافظة", icon: <MapPin className="h-3.5 w-3.5" /> },
   { label: "النوع", icon: <UserRound className="h-3.5 w-3.5" /> },
 ];
 
-function DoctorCard({ doctor }: { doctor: Doctor }) {
+function getDoctorImage(doctor: DoctorWithClinic) {
+  return doctor.photo || doctor.image || "/images/doctor-icon.png";
+}
+
+async function getDoctors(specialist?: string) {
+  try {
+    let url = DOCTORS_API_URL;
+
+    if (specialist) {
+      url += `?specialist=${encodeURIComponent(specialist)}`;
+    }
+
+    const response = await fetch(url);
+    const data = (await response.json()) as {
+      doctors?: DoctorWithClinic[];
+    };
+
+    console.log("API:", data);
+
+    return data.doctors || [];
+  } catch (error) {
+    console.log("Error:", error);
+    return [];
+  }
+}
+
+function DoctorCard({ doctor }: { doctor: DoctorWithClinic }) {
+  const clinicId = doctor.clinic_id ?? 1;
+  const rating = doctor.rating ?? 0;
+
   return (
     <article className="w-full">
       <div className="flex items-start gap-5">
-        <div className="relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-sm bg-[#edf2ff]">
+        <div className="relative shrink-0 overflow-hidden rounded-sm bg-[#edf2ff]" style={{ height: 86, width: 86 }}>
           <Image
-            src={doctor.imageSrc}
-            alt={doctor.name}
+            src={getDoctorImage(doctor)}
+            alt={doctor.full_name}
             width={86}
             height={86}
             className="h-full w-full object-cover"
           />
           <div className="absolute left-0 top-0 flex h-5 items-center gap-0.5 bg-[#001a8d] px-1.5 text-[11px] font-bold leading-none text-white">
-            {doctor.rating}
+            {rating.toFixed(1)}
             <span className="text-[9px] text-[#ffd84d]">★</span>
           </div>
         </div>
 
         <div className="min-w-0 flex-1 pt-2 text-right">
           <h2 className="text-[14px] font-bold leading-5 text-[#111827]">
-            {doctor.name}
+            {doctor.full_name}
           </h2>
           <p className="mt-1 text-[13px] font-medium leading-5 text-[#001a6e]">
-            {doctor.specialty}
+            {doctor.specialist}
           </p>
         </div>
       </div>
@@ -145,19 +90,19 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
         <div>
           <p className="text-[13px] font-medium text-[#1f2937]">سعر الجلسة</p>
           <p className="mt-2 text-[13px] font-bold text-[#001a6e]">
-            {doctor.price} ج.م
+            {doctor.consultation_price} ج.م
           </p>
         </div>
         <div>
-          <p className="text-[13px] font-medium text-[#1f2937]">الخبرة</p>
+          <p className="text-[13px] font-medium text-[#1f2937]">مواعيد العمل</p>
           <p className="mt-2 text-[13px] font-bold text-[#001a6e]">
-            {doctor.experience} سنوات
+            {doctor.work_from} - {doctor.work_to}
           </p>
         </div>
       </div>
 
       <Link
-        href={`/clinics/1/book/${doctor.id}`}
+        href={`/clinics/${clinicId}/book/${doctor.id}`}
         className="mt-4 flex h-10 w-full items-center justify-center rounded-[5px] border border-[#001a6e] text-[19px] font-medium leading-none text-[#001a6e] transition hover:bg-[#f3f6ff]"
       >
         عرض الملف الشخصي
@@ -167,9 +112,31 @@ function DoctorCard({ doctor }: { doctor: Doctor }) {
 }
 
 export default function DoctorsPage() {
+  const [doctors, setDoctors] = useState<DoctorWithClinic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadDoctors() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const doctorsData = await getDoctors();
+        setDoctors(doctorsData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch doctors");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDoctors();
+  }, []);
+
   return (
     <main dir="rtl" className="min-h-screen bg-white pb-16 pt-28">
-      <section className="mx-auto w-full max-w-[980px] px-4">
+      <section className="mx-auto w-full max-w-245 px-4">
         <header className="text-center">
           <h1 className="text-[32px] font-bold leading-tight text-[#111827] sm:text-[40px]">
             الأطباء الأكثر حجزا في التخصصات
@@ -183,7 +150,7 @@ export default function DoctorsPage() {
           <div className="flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
             <button
               type="button"
-              className="flex h-7 min-w-[68px] items-center justify-center rounded-[3px] bg-[#001a6e] px-5 text-[12px] font-medium text-white"
+              className="flex h-7 min-w-17 items-center justify-center rounded-[3px] bg-[#001a6e] px-5 text-[12px] font-medium text-white"
             >
               ابحث
             </button>
@@ -203,21 +170,31 @@ export default function DoctorsPage() {
           </div>
         </div>
 
-        <div className="mt-24 grid grid-cols-1 gap-x-[52px] gap-y-[54px] sm:grid-cols-2 lg:grid-cols-3">
-          {doctors.map((doctor) => (
-            <DoctorCard key={doctor.id} doctor={doctor} />
-          ))}
-        </div>
+        {loading && (
+          <p className="mt-24 text-center text-[16px] font-semibold text-[#001a6e]">
+            جاري تحميل الأطباء...
+          </p>
+        )}
 
-        <div className="mt-12 flex justify-center">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 text-[16px] font-bold text-[#001a6e] transition hover:opacity-75"
-          >
-            <BriefcaseMedical className="h-4 w-4" />
-            المزيد من الأطباء
-          </button>
-        </div>
+        {!loading && error && (
+          <p className="mt-24 text-center text-[16px] font-semibold text-red-600">
+            {error}
+          </p>
+        )}
+
+        {!loading && !error && doctors.length === 0 && (
+          <p className="mt-24 text-center text-[16px] font-semibold text-[#001a6e]">
+            لا يوجد أطباء متاحون حاليا
+          </p>
+        )}
+
+        {!loading && !error && doctors.length > 0 && (
+          <div className="mt-24 grid grid-cols-1 gap-x-13 gap-y-13.5 sm:grid-cols-2 lg:grid-cols-3">
+            {doctors.map((doctor) => (
+              <DoctorCard key={doctor.id} doctor={doctor} />
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
