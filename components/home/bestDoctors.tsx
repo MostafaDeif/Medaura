@@ -6,6 +6,7 @@ import DoctorCard from "@/components/home/doctorCard/doctorCard";
 import { useEffect, useState } from "react";
 import { t } from "@/i18n";
 import { bestDoctors as bestDoctorsData } from "@/constants/clinics";
+import { motion } from "framer-motion";
 
 export default function BestDoctors() {
   const [locale, setLocale] = useState("ar");
@@ -20,18 +21,37 @@ export default function BestDoctors() {
   }, []);
 
   return (
-    <section className="rounded-[30px] border border-[#d8e3ff] bg-white px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-10 text-center">
+    <motion.section
+      initial={{ opacity: 0, y: 60 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.9, ease: "easeOut" }}
+      className="rounded-[30px] border border-[#d8e3ff] bg-white px-4 py-10 sm:px-6 lg:px-8"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8 }}
+        className="mb-10 text-center"
+      >
         <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">
           {t("bestDoctors.title", locale)}
         </h2>
+
         <p className="mt-2 text-sm text-[#6d7da7]">
           {t("bestDoctors.subtitle", locale)}
         </p>
-      </div>
+      </motion.div>
 
-      <div
-        className={`mb-8 flex ${locale === "ar" ? "justify-start" : "justify-end"}`}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.7, delay: 0.1 }}
+        className={`mb-8 flex ${
+          locale === "ar" ? "justify-start" : "justify-end"
+        }`}
       >
         <Link
           href="/specialties"
@@ -44,24 +64,35 @@ export default function BestDoctors() {
             <ChevronRight size={18} />
           )}
         </Link>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {bestDoctorsData.map((doc) => (
-          <DoctorCard
+        {bestDoctorsData.map((doc, i) => (
+          <motion.div
             key={`${doc.clinicId}-${doc.id}`}
-            id={doc.id}
-            clinicId={doc.clinicId}
-            name={doc.name}
-            specialty={doc.specialty}
-            rating={doc.rating}
-            price={doc.price}
-            experience={doc.experience}
-            imageSrc={doc.imageSrc}
-            isFromHome={true}
-          />
+            initial={{ opacity: 0, y: 60 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{
+              duration: 0.7,
+              delay: i * 0.12,
+              ease: "easeOut",
+            }}
+          >
+            <DoctorCard
+              id={doc.id}
+              clinicId={doc.clinicId}
+              name={doc.name}
+              specialty={doc.specialty}
+              rating={doc.rating}
+              price={doc.price}
+              experience={doc.experience}
+              imageSrc={doc.imageSrc}
+              isFromHome={true}
+            />
+          </motion.div>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }

@@ -12,6 +12,7 @@
     "apexcharts": "^5.10.3",
     "axios": "^1.12.2",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.38.0",
     "i18next": "^25.8.13",
     "i18next-http-backend": "^3.0.2",
     "lucide-react": "^0.562.0",

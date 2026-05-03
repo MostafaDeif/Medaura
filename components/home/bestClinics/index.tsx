@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { t } from "@/i18n";
+import { motion } from "framer-motion";
 
 const clinics = [
   {
@@ -40,8 +41,21 @@ export default function BestClinics() {
   }, []);
 
   return (
-    <section className="rounded-[30px] border border-[#d8e3ff] bg-white px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <motion.section
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.6 }}
+      className="rounded-[30px] border border-[#d8e3ff] bg-white px-4 py-10 sm:px-6 lg:px-8"
+    >
+      {/* HEADER */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+        className="mb-8 flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
           <h2 className="text-2xl font-extrabold text-[#001a6e] sm:text-3xl">
             {t("bestClinics.title", locale)}
@@ -50,29 +64,58 @@ export default function BestClinics() {
             {t("bestClinics.description", locale)}
           </p>
         </div>
+
         <Link
           href="/clinics"
           className="rounded-full border border-[#d1ddff] px-4 py-2 text-sm font-semibold text-[#001a6e] transition hover:bg-[#f4f7ff]"
         >
           {t("bestClinics.viewClinics", locale)}
         </Link>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+      {/* CARDS */}
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={{
+          hidden: {},
+          show: {
+            transition: {
+              staggerChildren: 0.15,
+            },
+          },
+        }}
+        className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+      >
         {clinics.map((clinic) => (
-          <article
+          <motion.article
             key={clinic.name}
+            variants={{
+              hidden: { opacity: 0, y: 40 },
+              show: { opacity: 1, y: 0 },
+            }}
+            whileHover={{ y: -8 }}
+            transition={{ duration: 0.4 }}
             className="overflow-hidden rounded-3xl border border-[#dce6ff] bg-[#fafcff] shadow-[0_12px_30px_rgba(20,61,180,0.08)]"
           >
-            <div className="relative h-48">
-              <Image
-                src={clinic.image}
-                alt={clinic.name}
-                fill
-                className="object-cover"
-              />
+            {/* IMAGE */}
+            <div className="relative h-48 overflow-hidden">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.5 }}
+                className="h-full w-full"
+              >
+                <Image
+                  src={clinic.image}
+                  alt={clinic.name}
+                  fill
+                  className="object-cover"
+                />
+              </motion.div>
             </div>
 
+            {/* CONTENT */}
             <div className="space-y-3 p-5">
               <h3 className="text-lg font-extrabold text-[#102155]">
                 {clinic.name}
@@ -88,9 +131,9 @@ export default function BestClinics() {
                 {clinic.rating}
               </p>
             </div>
-          </article>
+          </motion.article>
         ))}
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }

@@ -5,6 +5,7 @@ import { Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { t } from "@/i18n";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 type DoctorCardProps = {
   id: number;
@@ -55,26 +56,46 @@ export default function DoctorCard({
   };
 
   return (
-    <article className="rounded-3xl border border-[#d9e3ff] bg-white p-4 shadow-[0_10px_25px_rgba(20,61,180,0.08)] transition hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(20,61,180,0.14)]">
+    <motion.article
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{
+        duration: 0.9,
+        ease: "easeOut",
+      }}
+      whileHover={{ y: -6 }}
+      className="rounded-3xl border border-[#d9e3ff] bg-white p-4 shadow-[0_10px_25px_rgba(20,61,180,0.08)] transition hover:shadow-[0_16px_32px_rgba(20,61,180,0.14)]"
+    >
       <div className="mb-4 overflow-hidden rounded-2xl">
-        <Image
-          src={imageSrc?.trim() || DOCTOR_FALLBACK_IMAGE}
-          alt={name}
-          width={640}
-          height={420}
-          className="h-52 w-full object-cover"
-        />
+        <motion.div
+          whileHover={{ scale: 1.04 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Image
+            src={imageSrc?.trim() || DOCTOR_FALLBACK_IMAGE}
+            alt={name}
+            width={640}
+            height={420}
+            className="h-52 w-full object-cover"
+          />
+        </motion.div>
       </div>
 
       <h4 className="text-base font-extrabold text-[#001a6e]">{name}</h4>
+
       <p className="mt-1 text-sm text-[#53679f]">
         {t("doctorCard.consultant", locale)} {specialty}
       </p>
 
-      <div className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#fff4d9] px-3 py-1 text-sm font-semibold text-[#8d5a00]">
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.3 }}
+        className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#fff4d9] px-3 py-1 text-sm font-semibold text-[#8d5a00]"
+      >
         <Star className="h-4 w-4 fill-current" />
         {rating}
-      </div>
+      </motion.div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-[#f5f8ff] p-3 text-sm text-[#2a3f78]">
         <div>
@@ -95,12 +116,15 @@ export default function DoctorCard({
         </div>
       </div>
 
-      <button
+      <motion.button
         onClick={handleBookNow}
+        whileTap={{ scale: 0.97 }}
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.25 }}
         className="mt-4 w-full rounded-xl bg-[#1c3faa] py-2.5 text-sm font-bold text-white transition hover:bg-[#162f80]"
       >
         {t("doctorCard.bookNow", locale)}
-      </button>
-    </article>
+      </motion.button>
+    </motion.article>
   );
 }
