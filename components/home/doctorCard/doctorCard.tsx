@@ -18,6 +18,8 @@ type DoctorCardProps = {
   isFromHome?: boolean;
 };
 
+const DOCTOR_FALLBACK_IMAGE = "/images/blank-profile-picture.png";
+
 export default function DoctorCard({
   id,
   clinicId,
@@ -26,15 +28,15 @@ export default function DoctorCard({
   rating,
   price,
   experience,
-  imageSrc = "/images/DOC.png",
+  imageSrc = DOCTOR_FALLBACK_IMAGE,
   isFromHome = false,
 }: DoctorCardProps) {
   const router = useRouter();
   const [locale, setLocale] = useState("ar");
 
   useEffect(() => {
-    function onLocale(e: any) {
-      setLocale(e?.detail || "ar");
+    function onLocale(event: Event) {
+      setLocale((event as CustomEvent<string>).detail || "ar");
     }
     window.addEventListener("localeChange", onLocale as EventListener);
     return () =>
@@ -56,7 +58,7 @@ export default function DoctorCard({
     <article className="rounded-3xl border border-[#d9e3ff] bg-white p-4 shadow-[0_10px_25px_rgba(20,61,180,0.08)] transition hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(20,61,180,0.14)]">
       <div className="mb-4 overflow-hidden rounded-2xl">
         <Image
-          src={imageSrc}
+          src={imageSrc?.trim() || DOCTOR_FALLBACK_IMAGE}
           alt={name}
           width={640}
           height={420}

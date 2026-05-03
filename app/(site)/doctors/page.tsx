@@ -10,10 +10,12 @@ import {
   Stethoscope,
   UserRound,
 } from "lucide-react";
-import type { ApiResponse, DoctorProfile } from "@/lib/types/api";
+import type { DoctorProfile } from "@/lib/types/api";
 
 const API_BASE_URL = "http://localhost:3001/api";
 const DOCTORS_API_URL = `${API_BASE_URL}/doctors`;
+const DOCTOR_FALLBACK_IMAGE = "/images/blank-profile-picture.png";
+
 type DoctorWithClinic = DoctorProfile & {
   clinic_id?: number;
   photo?: string;
@@ -30,7 +32,7 @@ const filters = [
 ];
 
 function getDoctorImage(doctor: DoctorWithClinic) {
-  return doctor.photo || doctor.image || "/images/doctor-icon.png";
+  return doctor.photo?.trim() || doctor.image?.trim() || DOCTOR_FALLBACK_IMAGE;
 }
 
 async function getDoctors(specialist?: string) {

@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 type Doctor = {
   id: number;
   image?: string;
+  photo?: string;
   name?: string;
   full_name?: string;
   specialty?: string;
@@ -28,6 +29,8 @@ type DoctorsResponse = {
   status?: string;
   doctors?: Doctor[];
 };
+
+const DOCTOR_FALLBACK_IMAGE = "/images/blank-profile-picture.png";
 
 function DoctorCard({ doc }: { doc: Doctor }) {
   const router = useRouter();
@@ -44,7 +47,7 @@ function DoctorCard({ doc }: { doc: Doctor }) {
 
       <div className="text-center">
         <img
-          src={doc.image || `https://i.pravatar.cc/100?u=${doc.id}`}
+          src={doc.photo?.trim() || doc.image?.trim() || DOCTOR_FALLBACK_IMAGE}
           className="w-20 h-20 rounded-full mx-auto mb-2 object-cover"
           alt={doc.full_name || doc.name || "Doctor"}
         />

@@ -24,6 +24,8 @@ type ApiListResult = {
   total: number;
 };
 
+const DOCTOR_FALLBACK_IMAGE = "/images/blank-profile-picture.png";
+
 const data: Appointment[] = [
   {
     id: "PT0027",
@@ -231,7 +233,7 @@ export default function Appointments() {
 
                   <td className="px-4 py-3 text-(--text-secondary) flex items-center gap-2 justify-center">
                     {item.doctor || item.doctor_name}
-                    <img src={item.doctor_image || `https://i.pravatar.cc?u=${item.id}`} className=" w-9 h-9 rounded-full object-cover" alt="" />
+                    <img src={item.doctor_image?.trim() || DOCTOR_FALLBACK_IMAGE} className=" w-9 h-9 rounded-full object-cover" alt="" />
                   </td>
 
                   <td className="px-4 py-3 text-(--text-secondary)">

@@ -10,11 +10,14 @@ interface Doctor {
   specialty?: string;
   specialist?: string;
   image?: string;
+  photo?: string;
   status?: "available" | "busy";
   verified?: boolean;
 }
 
-export default function doctorsList({ doctors: doctorsProp }: { doctors?: Doctor[] }) {
+const DOCTOR_FALLBACK_IMAGE = "/images/blank-profile-picture.png";
+
+export default function DoctorsList({ doctors: doctorsProp }: { doctors?: Doctor[] }) {
   const [doctors, setDoctors] = useState<Doctor[]>(doctorsProp || []);
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
@@ -72,7 +75,7 @@ export default function doctorsList({ doctors: doctorsProp }: { doctors?: Doctor
             <div className="flex items-center gap-3 flex-1 min-w-0">
               
               <img
-                src={doctor.image || `https://i.pravatar.cc/40?u=${doctor.id}`}
+                src={doctor.photo?.trim() || doctor.image?.trim() || DOCTOR_FALLBACK_IMAGE}
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shrink-0"
                 alt={doctor.name || doctor.full_name}
               />

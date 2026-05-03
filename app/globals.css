@@ -64,3 +64,6 @@ body {
     transform: translateY(0);
   }
 }
+.rounded-popup {
+  border-radius: 20px;
+}

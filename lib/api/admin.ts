@@ -1,6 +1,5 @@
 import { apiClient } from "./client";
 import type {
-  AdminVerifyRequest,
   AdminDoctorsList,
   AdminClinicsList,
   AdminStaffList,
@@ -11,8 +10,29 @@ import type {
 
 export const adminService = {
   async listDoctors(token: string) {
-    const res = await apiClient.get<ApiResponse<AdminDoctorsList[]>>("/api/admin/doctors", { token });
-    return res.data || [];
+    const res = await apiClient.get<
+      | ApiResponse<AdminDoctorsList[]>
+      | AdminDoctorsList[]
+      | {
+          status?: string;
+          doctors?: AdminDoctorsList[];
+          data?: AdminDoctorsList[];
+        }
+    >("/api/admin/doctors", { token });
+
+    if (Array.isArray(res)) {
+      return res;
+    }
+
+    if (Array.isArray(res.data)) {
+      return res.data;
+    }
+
+    if ("doctors" in res && Array.isArray(res.doctors)) {
+      return res.doctors;
+    }
+
+    return [];
   },
 
   async verifyDoctor(doctorId: number, token: string) {
@@ -58,17 +78,17 @@ export const adminService = {
   },
 
   async listPatients(token: string) {
-    const res = await apiClient.get<ApiResponse<any[]>>("/api/admin/patients", { token });
+    const res = await apiClient.get<ApiResponse<unknown[]>>("/api/admin/patients", { token });
     return res.data || [];
   },
 
   async listAllBookings(token: string) {
-    const res = await apiClient.get<ApiResponse<any[]>>("/api/admin/bookings", { token });
+    const res = await apiClient.get<ApiResponse<unknown[]>>("/api/admin/bookings", { token });
     return res.data || [];
   },
 
   async getDashboardStats(token: string) {
-    const res = await apiClient.get<ApiResponse<any>>("/api/admin/dashboard-stats", { token });
+    const res = await apiClient.get<ApiResponse<unknown>>("/api/admin/dashboard-stats", { token });
     return res.data;
   },
 
@@ -78,6 +98,6 @@ export const adminService = {
   },
 
   async createAdmin(data: AdminCreateRequest, token: string) {
-    return apiClient.post<any>("/api/admin/create-admin", data, { token });
+    return apiClient.post<unknown>("/api/admin/create-admin", data, { token });
   },
 };
