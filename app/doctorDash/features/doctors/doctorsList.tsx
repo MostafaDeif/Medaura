@@ -170,7 +170,7 @@ const weekDays = Array.from({ length: 7 }).map((_, i) => {
           const status = getStatus(item.time);
 
           return (
-            <div key={i} className="flex justify-between items-center">
+            <div key={item.id || i} className="flex justify-between items-center">
 
               {/* Time */}
               <div className="flex items-center gap-1 text-gray-500 text-sm">

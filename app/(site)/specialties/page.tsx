@@ -1,13 +1,11 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Baby,
   Bone,
   Brain ,
-  ChevronDown,
   ChevronLeft,
   Droplet,
   Droplets,
@@ -16,7 +14,6 @@ import {
   HeartPulse,
   Scan,
   Search,
-  Star,
   Stethoscope,
   Syringe,
 } from "lucide-react";
@@ -25,41 +22,33 @@ type Specialty = {
   key: string;
   titleAr: string;
   titleEn: string;
+  apiLabel: string;
   count: number;
   icon: ReactNode;
-};
-
-type Doctor = {
-  id: number;
-  name: string;
-  specialtyKey: string;
-  specialtyAr: string;
-  specialtyEn: string;
-  rating: number;
-  price: number;
-  experience: number;
-  imageSrc: string;
 };
 
 const specialties: Specialty[] = [
   {
     key: "cardio",
-    titleAr: "قلب و أوعية",
+    titleAr: "قلب و اوعية دموية",
     titleEn: "Cardiology",
+    apiLabel: "قلب و اوعية دموية",
     count: 120,
     icon: <HeartPulse size={24} />,
   },
   {
     key: "pediatrics",
-    titleAr: "طب الأطفال",
+    titleAr: "اطفال و حديثي الولادة",
     titleEn: "Pediatrics",
+    apiLabel: "اطفال و حديثي الولادة",
     count: 80,
     icon: <Baby size={24} />,
   },
   {
     key: "neuro",
-    titleAr: "مخ و أعصاب",
+    titleAr: "مخ واعصاب",
     titleEn: "Neurology",
+    apiLabel: "مخ واعصاب",
     count: 100,
     icon: <Brain size={24} />,
   },
@@ -67,6 +56,7 @@ const specialties: Specialty[] = [
     key: "ortho",
     titleAr: "عظام",
     titleEn: "Orthopedics",
+    apiLabel: "عظام",
     count: 200,
     icon: <Bone size={24} />,
   },
@@ -74,6 +64,7 @@ const specialties: Specialty[] = [
     key: "pulmo",
     titleAr: "صدر و جهاز تنفسي",
     titleEn: "Pulmonology",
+    apiLabel: "صدر و جهاز تنفسي",
     count: 200,
     icon: <Stethoscope size={24} />,
   },
@@ -81,6 +72,7 @@ const specialties: Specialty[] = [
     key: "nephro",
     titleAr: "كلى",
     titleEn: "Nephrology",
+    apiLabel: "كلى",
     count: 100,
     icon: <Droplets size={24} />,
   },
@@ -88,13 +80,15 @@ const specialties: Specialty[] = [
     key: "oncology",
     titleAr: "الأورام",
     titleEn: "Oncology",
+    apiLabel: "الأورام",
     count: 80,
     icon: <Scan size={24} />,
   },
   {
     key: "ent",
-    titleAr: "الاذن والانف والحنجرة",
+    titleAr: "طب الأذن والأنف والحنجرة",
     titleEn: "ENT",
+    apiLabel: "طب الأذن والأنف والحنجرة",
     count: 120,
     icon: <Ear size={24} />,
   },
@@ -102,6 +96,7 @@ const specialties: Specialty[] = [
     key: "ophtha",
     titleAr: "طب العيون",
     titleEn: "Ophthalmology",
+    apiLabel: "طب العيون",
     count: 120,
     icon: <Eye size={24} />,
   },
@@ -109,6 +104,7 @@ const specialties: Specialty[] = [
     key: "obgyn",
     titleAr: "نسا و توليد",
     titleEn: "OB-GYN",
+    apiLabel: "نسا و توليد",
     count: 80,
     icon: <Syringe size={24} />,
   },
@@ -116,77 +112,17 @@ const specialties: Specialty[] = [
     key: "derma",
     titleAr: "جلدية",
     titleEn: "Dermatology",
+    apiLabel: "جلدية",
     count: 100,
     icon: <Droplet size={24} />,
   },
-];
-
-const doctors: Doctor[] = [
   {
-    id: 1,
-    name: "د. صلاح محمود",
-    specialtyKey: "cardio",
-    specialtyAr: "استشاري جراحة القلب",
-    specialtyEn: "Cardiac Surgery Consultant",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc1.jpg",
-  },
-  {
-    id: 2,
-    name: "د. كريم محمد",
-    specialtyKey: "cardio",
-    specialtyAr: "استشاري جراحة القلب",
-    specialtyEn: "Cardiac Surgery Consultant",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc2.jpg",
-  },
-  {
-    id: 3,
-    name: "د. أحمد محمود",
-    specialtyKey: "cardio",
-    specialtyAr: "استشاري جراحة القلب",
-    specialtyEn: "Cardiac Surgery Consultant",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc3.jpg",
-  },
-  {
-    id: 4,
-    name: "أميرة صابرين",
-    specialtyKey: "cardio",
-    specialtyAr: "استشاري جراحة القلب",
-    specialtyEn: "Cardiac Surgery Consultant",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc1.jpg",
-  },
-  {
-    id: 5,
-    name: "د. محمود محمد",
-    specialtyKey: "cardio",
-    specialtyAr: "استشاري جراحة القلب",
-    specialtyEn: "Cardiac Surgery Consultant",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc2.jpg",
-  },
-  {
-    id: 6,
-    name: "د. محسن محسن",
-    specialtyKey: "cardio",
-    specialtyAr: "بروفيسور",
-    specialtyEn: "Professor",
-    rating: 4.9,
-    price: 350,
-    experience: 8,
-    imageSrc: "/images/doc3.jpg",
+    key: "dentistry",
+    titleAr: "اسنان",
+    titleEn: "Dentistry",
+    apiLabel: "اسنان",
+    count: 90,
+    icon: <Stethoscope size={24} />,
   },
 ];
 
@@ -205,18 +141,6 @@ export default function SpecialtiesPage() {
     : "Search specialty, doctor name, hospital...";
   const listTitle = isArabic ? "التخصصات الطبية" : "Medical Specialties";
   const viewAll = isArabic ? "عرض الكل" : "View all";
-  const availableDoctorsTitle = isArabic
-    ? `الاطباء المتاحون في ${
-        specialties.find((s) => s.key === selectedSpecialty)?.titleAr ?? ""
-      }`
-    : `Available doctors in ${
-        specialties.find((s) => s.key === selectedSpecialty)?.titleEn ?? ""
-      }`;
-  const moreDoctorsLabel = isArabic ? "المزيد من الأطباء" : "More doctors";
-  const feeLabel = isArabic ? "سعر الجلسة" : "Session fee";
-  const expLabel = isArabic ? "الخبرة" : "Experience";
-  const yearsLabel = isArabic ? "سنوات" : "years";
-  const bookNow = isArabic ? "احجز الآن" : "Book now";
   const doctorsWord = isArabic ? "طبيب" : "doctors";
 
   const filteredSpecialties = useMemo(() => {
@@ -227,11 +151,6 @@ export default function SpecialtiesPage() {
       return title.toLowerCase().includes(q);
     });
   }, [isArabic, search]);
-
-  const filteredDoctors = useMemo(
-    () => doctors.filter((doc) => doc.specialtyKey === selectedSpecialty),
-    [selectedSpecialty],
-  );
 
   return (
     <section
@@ -273,9 +192,9 @@ export default function SpecialtiesPage() {
         {filteredSpecialties.map((item) => {
           const active = item.key === selectedSpecialty;
           return (
-            <button
+            <Link
               key={item.key}
-              type="button"
+              href={`/doctors?specialist=${encodeURIComponent(item.apiLabel)}`}
               onClick={() => setSelectedSpecialty(item.key)}
               className={`rounded-xl border bg-white px-3 py-4 text-center shadow-[0_4px_10px_rgba(28,52,112,0.06)] transition ${active ? "border-[#9db1e8] bg-[#f2f6ff]" : "border-[#e6ebf5] hover:border-[#b8c7ee]"}`}
             >
@@ -288,80 +207,20 @@ export default function SpecialtiesPage() {
               <p className="mt-1 text-sm text-[#5a6ea8]">
                 {item.count} {doctorsWord}
               </p>
-            </button>
+            </Link>
           );
         })}
       </div>
 
-      <div className="mt-12">
+      <div className="mt-12 rounded-xl border border-[#e6ebf5] bg-[#f8fafc] p-8 text-center">
         <h3 className="text-2xl font-bold text-[#0f1a4f]">
-          {availableDoctorsTitle}
+          {isArabic ? "اختر تخصصًا لمشاهدة الأطباء المتاحين" : "Select a specialty to view available doctors"}
         </h3>
-        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {filteredDoctors.map((doc) => (
-            <article
-              key={doc.id}
-              className="rounded-xl border border-[#e6ebf5] bg-white p-4 shadow-[0_4px_12px_rgba(28,52,112,0.06)]"
-            >
-              <div className="flex items-start gap-3">
-                <div className="min-w-0 flex-1">
-                  <h4 className="truncate text-base font-bold text-[#111a3d]">
-                    {doc.name}
-                  </h4>
-                  <p className="mt-0.5 truncate text-sm text-[#3f5c9d]">
-                    {isArabic ? doc.specialtyAr : doc.specialtyEn}
-                  </p>
-                  <div className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#11152f]">
-                    <Star className="h-4 w-4 fill-[#f4b400] text-[#f4b400]" />
-                    {doc.rating}
-                  </div>
-                </div>
-                <div className="h-16 w-16 overflow-hidden rounded-sm">
-                  <Image
-                    src={doc.imageSrc}
-                    alt={doc.name}
-                    width={64}
-                    height={64}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-[#767c8f]">{feeLabel}</p>
-                  <p className="font-semibold text-[#22459f]">
-                    {isArabic ? "ج.م " : "EGP "}
-                    {doc.price}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[#767c8f]">{expLabel}</p>
-                  <p className="font-semibold text-[#22459f]">
-                    {doc.experience} {yearsLabel}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="mt-4 h-11 w-full rounded-lg border border-[#7f99d8] text-lg font-semibold text-[#22459f] transition hover:bg-[#f2f6ff]"
-              >
-                {bookNow}
-              </button>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-7 flex justify-center">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 text-lg font-semibold text-[#0f1a4f] hover:opacity-80"
-          >
-            <ChevronDown size={18} />
-            {moreDoctorsLabel}
-          </button>
-        </div>
+        <p className="mt-3 text-[#5a6ea8]">
+          {isArabic
+            ? "يمكنك الآن اختيار التخصص المناسب والانتقال إلى صفحة الأطباء." 
+            : "Now choose a specialty and move to the doctors page."}
+        </p>
       </div>
     </section>
   );

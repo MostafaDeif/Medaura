@@ -65,9 +65,9 @@ export default function DoctorsList({ doctors: doctorsProp }: { doctors?: Doctor
 
       {/* Doctors */}
       <div className="space-y-4 sm:space-y-2.5 px-4 sm:px-6 py-2 pb-6">
-        {doctors.slice(0, 7).map((doctor) => (
+        {doctors.slice(0, 7).map((doctor, index) => (
           <div
-            key={doctor.id}
+            key={doctor.id || index}
             className="flex items-center justify-between p-3 sm:p-4 bg-(--semi-card-bg) rounded-lg hover:bg-(--hover-bg) transition-colors"
           >
             

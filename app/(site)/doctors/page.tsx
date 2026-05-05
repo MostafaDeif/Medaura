@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -25,7 +26,10 @@ type DoctorWithClinic = DoctorProfile & {
 
 const filters = [
   { label: "الدفع", icon: <Hospital className="h-3.5 w-3.5" /> },
-  { label: "اختر رسوم الاستشارة", icon: <ChevronDown className="h-3.5 w-3.5" /> },
+  {
+    label: "اختر رسوم الاستشارة",
+    icon: <ChevronDown className="h-3.5 w-3.5" />,
+  },
   { label: "اختر تخصص", icon: <Stethoscope className="h-3.5 w-3.5" /> },
   { label: "اختر محافظة", icon: <MapPin className="h-3.5 w-3.5" /> },
   { label: "النوع", icon: <UserRound className="h-3.5 w-3.5" /> },
@@ -37,11 +41,9 @@ function getDoctorImage(doctor: DoctorWithClinic) {
 
 async function getDoctors(specialist?: string) {
   try {
-    let url = DOCTORS_API_URL;
-
-    if (specialist) {
-      url += `?specialist=${encodeURIComponent(specialist)}`;
-    }
+    const url = specialist
+      ? `${DOCTORS_API_URL}?specialist=${encodeURIComponent(specialist)}`
+      : DOCTORS_API_URL;
 
     const response = await fetch(url);
     const data = (await response.json()) as {
@@ -50,7 +52,10 @@ async function getDoctors(specialist?: string) {
 
     console.log("API:", data);
 
-    return data.doctors || [];
+    return (data.doctors || []).map((doctor) => ({
+      ...doctor,
+      id: (doctor as any).id ?? (doctor as any).doctor_id,
+    })) as DoctorWithClinic[];
   } catch (error) {
     console.log("Error:", error);
     return [];
@@ -64,7 +69,10 @@ function DoctorCard({ doctor }: { doctor: DoctorWithClinic }) {
   return (
     <article className="w-full">
       <div className="flex items-start gap-5">
-        <div className="relative shrink-0 overflow-hidden rounded-sm bg-[#edf2ff]" style={{ height: 86, width: 86 }}>
+        <div
+          className="relative shrink-0 overflow-hidden rounded-sm bg-[#edf2ff]"
+          style={{ height: 86, width: 86 }}
+        >
           <Image
             src={getDoctorImage(doctor)}
             alt={doctor.full_name}
@@ -117,6 +125,8 @@ export default function DoctorsPage() {
   const [doctors, setDoctors] = useState<DoctorWithClinic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const specialist = searchParams?.get("specialist")?.trim() || "";
 
   useEffect(() => {
     async function loadDoctors() {
@@ -124,27 +134,33 @@ export default function DoctorsPage() {
         setLoading(true);
         setError("");
 
-        const doctorsData = await getDoctors();
+        const doctorsData = await getDoctors(specialist || undefined);
         setDoctors(doctorsData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch doctors");
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch doctors",
+        );
       } finally {
         setLoading(false);
       }
     }
 
     loadDoctors();
-  }, []);
+  }, [specialist]);
 
   return (
     <main dir="rtl" className="min-h-screen bg-white pb-16 pt-28">
       <section className="mx-auto w-full max-w-245 px-4">
         <header className="text-center">
           <h1 className="text-[32px] font-bold leading-tight text-[#111827] sm:text-[40px]">
-            الأطباء الأكثر حجزا في التخصصات
+            {specialist
+              ? `أطباء تخصص ${specialist}`
+              : "الأطباء الأكثر حجزا في التخصصات"}
           </h1>
           <p className="mt-2 text-[16px] font-medium text-[#8b93a5]">
-            محترفو الرعاية الصحية ذوي تقييم عال
+            {specialist
+              ? `عرض الأطباء المتاحين في تخصص ${specialist}`
+              : "محترفو الرعاية الصحية ذوي تقييم عال"}
           </p>
         </header>
 
@@ -192,8 +208,8 @@ export default function DoctorsPage() {
 
         {!loading && !error && doctors.length > 0 && (
           <div className="mt-24 grid grid-cols-1 gap-x-13 gap-y-13.5 sm:grid-cols-2 lg:grid-cols-3">
-            {doctors.map((doctor) => (
-              <DoctorCard key={doctor.id} doctor={doctor} />
+            {doctors.map((doctor, index) => (
+              <DoctorCard key={doctor.id ?? index} doctor={doctor} />
             ))}
           </div>
         )}

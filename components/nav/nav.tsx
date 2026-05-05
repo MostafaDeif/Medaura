@@ -25,22 +25,22 @@ const Navbar: FC = () => {
   }, []);
 
   // Persist & apply locale whenever it changes (runs on client)
-  useEffect(() => {
-    try {
-      localStorage.setItem("locale", locale);
-      document.documentElement.lang = locale;
-      document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
-      try {
-        window.dispatchEvent(
-          new CustomEvent("localeChange", { detail: locale }),
-        );
-      } catch (e) {
-        // noop
-      }
-    } catch (e) {
-      // noop
-    }
-  }, [locale]);
+  // useEffect(() => {
+  //   try {
+  //     localStorage.setItem("locale", locale);
+  //     document.documentElement.lang = locale;
+  //     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+  //     try {
+  //       window.dispatchEvent(
+  //         new CustomEvent("localeChange", { detail: locale }),
+  //       );
+  //     } catch (e) {
+  //       // noop
+  //     }
+  //   } catch (e) {
+  //     // noop
+  //   }
+  // }, [locale]);
 
   const navItems = [
     { href: "/", label: t("nav.home", locale) },
