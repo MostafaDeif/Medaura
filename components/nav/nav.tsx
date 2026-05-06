@@ -8,44 +8,41 @@ import { useAuth } from "@/context/AuthContext";
 import { getDashboardPathByUserType } from "@/lib/utils/redirect";
 import { t } from "@/i18n";
 
+interface Notification {
+  notification_id: number;
+  title: string;
+  message: string;
+  is_read: boolean;
+}
+
 const Navbar: FC = () => {
   const pathname = usePathname();
+
   const { user, isAuthenticated, logout, loading } = useAuth();
+
   const [isOpen, setIsOpen] = useState(false);
   const [locale, setLocale] = useState<string>("en");
-  const [notifications, setNotifications] = useState<any[]>([]);
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
-  const [notificationsError, setNotificationsError] = useState<string | null>(null);
+  const [notificationsError, setNotificationsError] = useState<string | null>(
+    null
+  );
+
   const notificationRef = useRef<HTMLDivElement | null>(null);
 
-  // On mount, read stored locale (client-only) and apply it.
   useEffect(() => {
     try {
       const stored = localStorage.getItem("locale");
-      if (stored) setLocale(stored);
-    } catch (e) {
-      // noop
+
+      if (stored) {
+        setLocale(stored);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }, []);
-
-  // Persist & apply locale whenever it changes (runs on client)
-  // useEffect(() => {
-  //   try {
-  //     localStorage.setItem("locale", locale);
-  //     document.documentElement.lang = locale;
-  //     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
-  //     try {
-  //       window.dispatchEvent(
-  //         new CustomEvent("localeChange", { detail: locale }),
-  //       );
-  //     } catch (e) {
-  //       // noop
-  //     }
-  //   } catch (e) {
-  //     // noop
-  //   }
-  // }, [locale]);
 
   const navItems = [
     { href: "/", label: t("nav.home", locale) },
@@ -61,6 +58,7 @@ const Navbar: FC = () => {
     if (href === "/") {
       return pathname === "/";
     }
+
     return pathname.startsWith(href);
   };
 
@@ -69,37 +67,75 @@ const Navbar: FC = () => {
       ? "/patientProfile"
       : getDashboardPathByUserType(user?.user_type);
 
-  const unreadCount = notifications.filter((notification) => !notification.read).length;
+  const unreadCount = notifications.filter(
+    (notification) => !notification.is_read
+  ).length;
 
   async function loadNotifications() {
-    if (!user?.token) {
-      setNotificationsError("Unauthorized");
-      return;
-    }
-
     setLoadingNotifications(true);
     setNotificationsError(null);
 
     try {
-      const response = await fetch("/api/notifications/list", {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-        credentials: "include",
-      });
+      const response = await fetch(
+        "http://localhost:3001/api/notifications/me",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
       const result = await response.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || "فشل في جلب الإشعارات");
+      console.log("NOTIFICATIONS => ", result);
+
+      if (!response.ok || result.status !== "success") {
+        throw new Error(
+          result.message || "فشل في جلب الإشعارات"
+        );
       }
 
-      setNotifications(result.data || []);
+      setNotifications(result.notifications || []);
     } catch (error) {
+      console.log(error);
+
       setNotificationsError(
-        error instanceof Error ? error.message : "فشل في جلب الإشعارات"
+        error instanceof Error
+          ? error.message
+          : "فشل في جلب الإشعارات"
       );
     } finally {
       setLoadingNotifications(false);
+    }
+  }
+
+  async function markAsRead(notificationId: number) {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/notifications/${notificationId}/read`,
+        {
+          method: "PATCH",
+          credentials: "include",
+        }
+      );
+
+      const result = await response.json();
+
+      console.log("READ RESULT => ", result);
+
+      if (response.ok) {
+        setNotifications((prev) =>
+          prev.map((item) =>
+            item.notification_id === notificationId
+              ? {
+                  ...item,
+                  is_read: true,
+                }
+              : item
+          )
+        );
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -115,21 +151,27 @@ const Navbar: FC = () => {
     }
 
     window.addEventListener("mousedown", handleClickOutside);
-    return () => window.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      window.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
   }, [notificationsOpen]);
 
   useEffect(() => {
-    if (notificationsOpen && notifications.length === 0 && user?.token) {
+    if (notificationsOpen && notifications.length === 0) {
       loadNotifications();
     }
-  }, [notificationsOpen, notifications.length, user?.token]);
+  }, [notificationsOpen, notifications.length]);
 
   return (
-    <nav className="fixed top-0 left-0 w-full border-b border-[#d9e3ff] bg-[#edf2ff] z-50">
+    <nav className="fixed left-0 top-0 z-50 w-full border-b border-[#d9e3ff] bg-[#edf2ff]">
       <div className="container relative mx-auto flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-12 h-12">
+            <div className="relative h-12 w-12">
               <Image
                 src="/images/Logo1.png"
                 alt="logo"
@@ -138,14 +180,19 @@ const Navbar: FC = () => {
                 className="object-contain"
               />
             </div>
-            <span className="text-xl font-bold text-[#0f1a4f]">Medaura</span>
+
+            <span className="text-xl font-bold text-[#0f1a4f]">
+              Medaura
+            </span>
           </Link>
         </div>
 
         <button
-          onClick={() => setLocale(locale === "en" ? "ar" : "en")}
+          onClick={() =>
+            setLocale(locale === "en" ? "ar" : "en")
+          }
           aria-label="Toggle language"
-          className="md:hidden ml-3 rounded-full border px-2 py-1 text-sm font-medium text-[#0f1a4f] hover:opacity-80"
+          className="ml-3 rounded-full border px-2 py-1 text-sm font-medium text-[#0f1a4f] hover:opacity-80 md:hidden"
         >
           {locale === "en" ? "ع" : "EN"}
         </button>
@@ -156,13 +203,21 @@ const Navbar: FC = () => {
           aria-label="Open menu"
         >
           <span
-            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "translate-y-2 rotate-45" : ""}`}
+            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${
+              isOpen ? "translate-y-2 rotate-45" : ""
+            }`}
           />
+
           <span
-            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "opacity-0" : ""}`}
+            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${
+              isOpen ? "opacity-0" : ""
+            }`}
           />
+
           <span
-            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${isOpen ? "-translate-y-2 -rotate-45" : ""}`}
+            className={`h-0.5 w-6 bg-[#0f1a4f] transition-all ${
+              isOpen ? "-translate-y-2 -rotate-45" : ""
+            }`}
           />
         </button>
 
@@ -179,7 +234,11 @@ const Navbar: FC = () => {
               <Link
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`inline-block pb-1 ${isActive(item.href) ? "border-b-2 border-[#0f1a4f]" : ""}`}
+                className={`inline-block pb-1 ${
+                  isActive(item.href)
+                    ? "border-b-2 border-[#0f1a4f]"
+                    : ""
+                }`}
               >
                 {item.label}
               </Link>
@@ -188,23 +247,18 @@ const Navbar: FC = () => {
         </ul>
 
         <div className="hidden items-center gap-3 md:flex">
-          {/* <button
-            onClick={() => setLocale(locale === "en" ? "ar" : "en")}
-            aria-label="Toggle language"
-            className="rounded-full border px-3 py-1 text-sm font-medium text-[#0f1a4f] hover:opacity-80"
-          >
-            {locale === "en" ? "ع" : "EN"}
-          </button> */}
-
           {loading ? (
-            <div className="flex items-center gap-3">
-              {/* Loading state - prevents hydration mismatch */}
-            </div>
+            <div className="flex items-center gap-3"></div>
           ) : isAuthenticated ? (
-            <div className="relative flex items-center gap-3" ref={notificationRef}>
+            <div
+              className="relative flex items-center gap-3"
+              ref={notificationRef}
+            >
               <button
                 type="button"
-                onClick={() => setNotificationsOpen((open) => !open)}
+                onClick={() =>
+                  setNotificationsOpen((open) => !open)
+                }
                 className="relative rounded-full border border-[#0f1a4f] bg-white p-2 text-[#0f1a4f] transition hover:bg-[#d9e3ff]"
                 aria-label="Open notifications"
               >
@@ -217,6 +271,7 @@ const Navbar: FC = () => {
                   <path d="M12 2a6 6 0 0 0-6 6v4.586l-.707.707A1 1 0 0 0 5 15h14a1 1 0 0 0 .707-1.707L18 12.586V8a6 6 0 0 0-6-6Z" />
                   <path d="M8 20a3 3 0 0 0 6 0h-6Z" />
                 </svg>
+
                 {unreadCount > 0 && (
                   <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
                     {unreadCount}
@@ -226,60 +281,63 @@ const Navbar: FC = () => {
 
               {notificationsOpen && (
                 <div className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl">
-                  <div className="border-b border-zinc-200 px-4 py-3 bg-zinc-50">
+                  <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-sm font-semibold text-zinc-900">الإشعارات</h3>
+                      <h3 className="text-sm font-semibold text-zinc-900">
+                        الإشعارات
+                      </h3>
+
                       {loadingNotifications && (
-                        <span className="text-xs text-zinc-500">جاري التحديث...</span>
+                        <span className="text-xs text-zinc-500">
+                          جاري التحديث...
+                        </span>
                       )}
                     </div>
                   </div>
+
                   <div className="max-h-72 overflow-y-auto">
                     {notificationsError ? (
-                      <div className="p-4 text-sm text-red-700">{notificationsError}</div>
+                      <div className="p-4 text-sm text-red-700">
+                        {notificationsError}
+                      </div>
                     ) : notifications.length === 0 ? (
-                      <div className="p-4 text-sm text-zinc-600">لا توجد إشعارات جديدة.</div>
+                      <div className="p-4 text-sm text-zinc-600">
+                        لا توجد إشعارات جديدة.
+                      </div>
                     ) : (
                       notifications.map((notification) => (
                         <button
-                          key={notification.id}
+                          key={
+                            notification.notification_id
+                          }
                           type="button"
                           onClick={() => {
-                            if (notification.read) return;
-                            fetch(`/api/notifications/${notification.id}/read`, {
-                              method: "PATCH",
-                              headers: {
-                                Authorization: `Bearer ${user?.token}`,
-                              },
-                              credentials: "include",
-                            })
-                              .then((res) => res.json())
-                              .then((result) => {
-                                if (result.success) {
-                                  setNotifications((prev) =>
-                                    prev.map((item) =>
-                                      item.id === notification.id
-                                        ? { ...item, read: true }
-                                        : item
-                                    )
-                                  );
-                                }
-                              })
-                              .catch(() => {
-                                // ignore
-                              });
+                            if (notification.is_read)
+                              return;
+
+                            markAsRead(
+                              notification.notification_id
+                            );
                           }}
-                          className={`w-full text-left px-4 py-3 transition hover:bg-zinc-50 ${
-                            notification.read ? "bg-white" : "bg-indigo-50"
+                          className={`w-full px-4 py-3 text-left transition hover:bg-zinc-50 ${
+                            notification.is_read
+                              ? "bg-white"
+                              : "bg-indigo-50"
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-semibold text-zinc-900">{notification.title}</p>
-                            {!notification.read && (
+                            <p className="text-sm font-semibold text-zinc-900">
+                              {notification.title}
+                            </p>
+
+                            {!notification.is_read && (
                               <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
                             )}
                           </div>
-                          <p className="mt-1 text-sm text-zinc-600">{notification.message}</p>
+
+                          <p className="mt-1 text-sm text-zinc-600">
+                            {notification.message}
+                          </p>
                         </button>
                       ))
                     )}
@@ -293,6 +351,7 @@ const Navbar: FC = () => {
               >
                 {t("nav.profile", locale)}
               </Link>
+
               <button
                 type="button"
                 onClick={logout}
@@ -304,7 +363,7 @@ const Navbar: FC = () => {
           ) : (
             <>
               <Link
-                href={`/login`}
+                href="/login"
                 className="font-medium text-[#0f1a4f] hover:opacity-70"
               >
                 {t("nav.login", locale)}
