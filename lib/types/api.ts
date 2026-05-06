@@ -19,11 +19,25 @@ export interface ClinicSignupProfile {
   [key: string]: unknown;
 }
 
+export interface StaffSignupProfile {
+  full_name: string;
+  name: string;
+  specialist: string;
+  work_days: string;
+  work_from: string;
+  work_to: string;
+  consultation_price: number;
+}
+
 export interface SignupRequest {
   email: string;
   password: string;
   user_type: UserType;
-  profile: PatientSignupProfile | DoctorSignupProfile | ClinicSignupProfile;
+  profile:
+    | PatientSignupProfile
+    | DoctorSignupProfile
+    | StaffSignupProfile
+    | ClinicSignupProfile;
 }
 
 export interface LoginRequest {

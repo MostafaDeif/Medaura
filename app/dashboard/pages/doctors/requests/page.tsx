@@ -359,8 +359,8 @@ export default function DoctorRequestsPage() {
             طلبات توثيق الأطباء
           </h1>
           <p className="mt-2 text-sm text-(--text-secondary)">
-            راجع بيانات الطبيب والمستندات ثم وثق الحساب عبر الـ API أو ارفض
-            الطلب محليا.
+            راجع بيانات الطبيب والمستندات ثم وثق الحساب أو ارفض
+            الطلب .
           </p>
         </div>
 

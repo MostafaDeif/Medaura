@@ -23,12 +23,12 @@ const REGISTER_TYPES = [
     href: "/register",
     icon: "customer-icon",
   },
-  // {
-  //   key: "clinic",
-  //   label: "عيادة",
-  //   href: "/register/clinic",
-  //   icon: "clinic-icon",
-  // },
+  {
+    key: "staff",
+    label: "انضم لعيادة",
+    href: "/register/staff",
+    icon: "clinic-icon",
+  },
   {
     key: "doctor",
     label: "طبيب",
@@ -49,6 +49,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
   // Determine active register type
   const getActiveType = () => {
+    if (pathname.includes("/staff")) return "staff";
     if (pathname.includes("/clinic")) return "clinic";
     if (pathname.includes("/doctor")) return "doctor";
     return "patient";
