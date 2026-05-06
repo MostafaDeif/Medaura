@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +13,11 @@ const Navbar: FC = () => {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [locale, setLocale] = useState<string>("en");
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [notificationsError, setNotificationsError] = useState<string | null>(null);
+  const notificationRef = useRef<HTMLDivElement | null>(null);
 
   // On mount, read stored locale (client-only) and apply it.
   useEffect(() => {
@@ -63,6 +68,61 @@ const Navbar: FC = () => {
     user?.user_type?.toLowerCase() === "patient"
       ? "/patientProfile"
       : getDashboardPathByUserType(user?.user_type);
+
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+
+  async function loadNotifications() {
+    if (!user?.token) {
+      setNotificationsError("Unauthorized");
+      return;
+    }
+
+    setLoadingNotifications(true);
+    setNotificationsError(null);
+
+    try {
+      const response = await fetch("/api/notifications/list", {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+        credentials: "include",
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "فشل في جلب الإشعارات");
+      }
+
+      setNotifications(result.data || []);
+    } catch (error) {
+      setNotificationsError(
+        error instanceof Error ? error.message : "فشل في جلب الإشعارات"
+      );
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        notificationsOpen &&
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setNotificationsOpen(false);
+      }
+    }
+
+    window.addEventListener("mousedown", handleClickOutside);
+    return () => window.removeEventListener("mousedown", handleClickOutside);
+  }, [notificationsOpen]);
+
+  useEffect(() => {
+    if (notificationsOpen && notifications.length === 0 && user?.token) {
+      loadNotifications();
+    }
+  }, [notificationsOpen, notifications.length, user?.token]);
 
   return (
     <nav className="fixed top-0 left-0 w-full border-b border-[#d9e3ff] bg-[#edf2ff] z-50">
@@ -128,20 +188,105 @@ const Navbar: FC = () => {
         </ul>
 
         <div className="hidden items-center gap-3 md:flex">
-          <button
+          {/* <button
             onClick={() => setLocale(locale === "en" ? "ar" : "en")}
             aria-label="Toggle language"
             className="rounded-full border px-3 py-1 text-sm font-medium text-[#0f1a4f] hover:opacity-80"
           >
             {locale === "en" ? "ع" : "EN"}
-          </button>
+          </button> */}
 
           {loading ? (
             <div className="flex items-center gap-3">
               {/* Loading state - prevents hydration mismatch */}
             </div>
           ) : isAuthenticated ? (
-            <div className="flex items-center gap-3">
+            <div className="relative flex items-center gap-3" ref={notificationRef}>
+              <button
+                type="button"
+                onClick={() => setNotificationsOpen((open) => !open)}
+                className="relative rounded-full border border-[#0f1a4f] bg-white p-2 text-[#0f1a4f] transition hover:bg-[#d9e3ff]"
+                aria-label="Open notifications"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-5 w-5"
+                >
+                  <path d="M12 2a6 6 0 0 0-6 6v4.586l-.707.707A1 1 0 0 0 5 15h14a1 1 0 0 0 .707-1.707L18 12.586V8a6 6 0 0 0-6-6Z" />
+                  <path d="M8 20a3 3 0 0 0 6 0h-6Z" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <div className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl">
+                  <div className="border-b border-zinc-200 px-4 py-3 bg-zinc-50">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-sm font-semibold text-zinc-900">الإشعارات</h3>
+                      {loadingNotifications && (
+                        <span className="text-xs text-zinc-500">جاري التحديث...</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="max-h-72 overflow-y-auto">
+                    {notificationsError ? (
+                      <div className="p-4 text-sm text-red-700">{notificationsError}</div>
+                    ) : notifications.length === 0 ? (
+                      <div className="p-4 text-sm text-zinc-600">لا توجد إشعارات جديدة.</div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <button
+                          key={notification.id}
+                          type="button"
+                          onClick={() => {
+                            if (notification.read) return;
+                            fetch(`/api/notifications/${notification.id}/read`, {
+                              method: "PATCH",
+                              headers: {
+                                Authorization: `Bearer ${user?.token}`,
+                              },
+                              credentials: "include",
+                            })
+                              .then((res) => res.json())
+                              .then((result) => {
+                                if (result.success) {
+                                  setNotifications((prev) =>
+                                    prev.map((item) =>
+                                      item.id === notification.id
+                                        ? { ...item, read: true }
+                                        : item
+                                    )
+                                  );
+                                }
+                              })
+                              .catch(() => {
+                                // ignore
+                              });
+                          }}
+                          className={`w-full text-left px-4 py-3 transition hover:bg-zinc-50 ${
+                            notification.read ? "bg-white" : "bg-indigo-50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-semibold text-zinc-900">{notification.title}</p>
+                            {!notification.read && (
+                              <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
+                            )}
+                          </div>
+                          <p className="mt-1 text-sm text-zinc-600">{notification.message}</p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
               <Link
                 href={profileHref}
                 className="rounded-full bg-[#0f1a4f] px-4 py-2 font-medium text-white transition hover:bg-[#1b2773]"
