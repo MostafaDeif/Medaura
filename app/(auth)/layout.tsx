@@ -30,6 +30,12 @@ const REGISTER_TYPES = [
     icon: "clinic-icon",
   },
   {
+    key: "clinic",
+    label: "انشأ عيادة",
+    href: "/register/clinic",
+    icon: "clinic-icon",
+  },
+  {
     key: "doctor",
     label: "طبيب",
     href: "/register/doctor",

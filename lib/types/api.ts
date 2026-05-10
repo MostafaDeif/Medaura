@@ -16,7 +16,14 @@ export interface DoctorSignupProfile {
 }
 
 export interface ClinicSignupProfile {
-  [key: string]: unknown;
+  name: string;
+  address: string;
+  location: string;
+  phone: string;
+  geo_location: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 export interface StaffSignupProfile {
