@@ -7,6 +7,27 @@ import DoctorCard from "@/components/home/doctorCard/doctorCard";
 import { allClinics } from "@/constants/clinics";
 import { t } from "@/i18n";
 
+type ClinicStaffDoctor = {
+  staff_id: number;
+  full_name: string;
+  role_title: string;
+  specialist?: string;
+  is_verified?: boolean;
+  is_active?: boolean;
+  photo?: string | null;
+};
+
+type DisplayDoctor = {
+  id: number;
+  name: string;
+  specialty: string;
+  price: number;
+  experience: number;
+  rating: number;
+  imageSrc: string;
+  gender?: "male" | "female";
+};
+
 export default function ClinicDetailsPage() {
   const params = useParams();
   const clinic =
@@ -17,6 +38,9 @@ export default function ClinicDetailsPage() {
   const [selectedGender, setSelectedGender] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [locale, setLocale] = useState("en");
+  const [clinicDoctors, setClinicDoctors] = useState<ClinicStaffDoctor[]>([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [staffError, setStaffError] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("locale");
@@ -27,7 +51,55 @@ export default function ClinicDetailsPage() {
     return () => window.removeEventListener("localeChange", handleLocaleChange);
   }, []);
 
-  const filteredDoctors = clinic.doctors.filter((doc) => {
+  useEffect(() => {
+    async function loadClinicDoctors() {
+      setStaffLoading(true);
+      setStaffError(null);
+
+      try {
+        const response = await fetch("/api/staff/my-clinic", {
+          credentials: "include",
+        });
+        const payload = await response.json();
+
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || "Failed to load clinic doctors");
+        }
+
+        const staff = payload.data?.staff;
+        if (!Array.isArray(staff)) {
+          throw new Error("Invalid clinic doctors response");
+        }
+
+        setClinicDoctors(staff);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load clinic doctors";
+        setStaffError(errorMessage);
+        console.error("Error loading clinic doctors:", error);
+      } finally {
+        setStaffLoading(false);
+      }
+    }
+
+    loadClinicDoctors();
+  }, []);
+
+  const staffDoctors: DisplayDoctor[] = clinicDoctors.map((doctor) => ({
+    id: doctor.staff_id,
+    name: doctor.full_name,
+    specialty: doctor.specialist || doctor.role_title || "طبيب",
+    price: 250,
+    experience: 5,
+    rating: 4.8,
+    imageSrc: doctor.photo || "/images/blank-profile-picture.png",
+    gender: undefined,
+  }));
+
+  const doctorItems: DisplayDoctor[] =
+    staffDoctors.length > 0 ? staffDoctors : clinic.doctors;
+
+  const filteredDoctors = doctorItems.filter((doc) => {
     const matchesSpecialty =
       selectedSpecialty === "" || doc.specialty.includes(selectedSpecialty);
     const matchesGender =
@@ -159,6 +231,18 @@ export default function ClinicDetailsPage() {
               {t("clinics.search", locale)}
             </button>
           </div>
+
+          {staffLoading && (
+            <p className="text-center text-[#001A6E] mb-6">
+              جاري تحميل الأطباء...
+            </p>
+          )}
+
+          {staffError && (
+            <div className="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg text-center mb-6">
+              <p>{staffError}</p>
+            </div>
+          )}
 
           {/* Doctors Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

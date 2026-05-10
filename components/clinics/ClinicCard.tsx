@@ -30,7 +30,7 @@ export default function ClinicCard({ clinic }: { clinic: Clinic }) {
       </div>
 
       {/* Content */}
-      <div className="px-6 pb-6 flex flex-col flex-grow text-right" dir="rtl">
+      <div className="px-6 pb-6 flex flex-col grow text-right" dir="rtl">
         <h3 className="text-lg font-bold mb-4 text-gray-800">{clinic.name}</h3>
 
         <div className="space-y-2 mb-6">
