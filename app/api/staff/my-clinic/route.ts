@@ -1,23 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { staffService } from "@/lib/api/staff";
-import { applyAuthCookies, getServerAccessToken } from "@/lib/api/server-auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = await getServerAccessToken(request);
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
 
-    if (!auth.token) {
+    if (!token) {
       return NextResponse.json(
-        { success: false, error: "Not authenticated" },
+        { success: false, error: "Missing authorization token" },
         { status: 401 }
       );
     }
 
-    const response = await staffService.getMyClinic(auth.token);
-    return applyAuthCookies(
-      NextResponse.json({ success: true, data: response }),
-      auth
-    );
+    const response = await staffService.getMyClinic(token);
+    return NextResponse.json({ success: true, data: response });
   } catch (error: any) {
     console.error("Get staff clinic error:", error);
     return NextResponse.json(

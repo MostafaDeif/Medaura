@@ -138,7 +138,7 @@ export default function BookingPage() {
           >
             {/* Doctor Info Card */}
             <div className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="w-full md:w-48 h-48 relative rounded-3xl overflow-hidden shadow-md flex-shrink-0">
+              <div className="w-full md:w-48 h-48 relative rounded-3xl overflow-hidden shadow-md shrink-0">
                 <Image
                   src={doctor.imageSrc}
                   alt={doctor.name}
@@ -229,9 +229,9 @@ export default function BookingPage() {
 
           {/* Right Column: Clinic Info (Second on mobile) */}
           <div
-            className={`lg:w-80 flex-shrink-0 ${locale === "ar" ? "order-2 lg:order-2" : "order-2"}`}
+            className={`lg:w-80 shrink-0 ${locale === "ar" ? "order-2 lg:order-2" : "order-2"}`}
           >
-            <div className="bg-white border border-gray-100 rounded-[32px] p-6 shadow-sm sticky top-32">
+            <div className="bg-white border border-gray-100 rounded-4xl p-6 shadow-sm sticky top-32">
               <h2 className="text-xl font-bold text-[#001A6E] mb-6">
                 {t("booking.clinicInfo", locale)}
               </h2>
@@ -251,13 +251,13 @@ export default function BookingPage() {
                     {clinic.name}
                   </h3>
                   <div className="flex items-start gap-2 text-gray-400 text-sm">
-                    <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
+                    <MapPin className="w-4 h-4 mt-1 shrink-0" />
                     <span>{clinic.address}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-400 text-sm">
-                  <Phone className="w-4 h-4 flex-shrink-0" />
+                  <Phone className="w-4 h-4 shrink-0" />
                   <span dir="ltr">{clinic.phone}</span>
                 </div>
 
@@ -302,7 +302,7 @@ export default function BookingPage() {
             {clinic.reviews.slice(0, 4).map((review) => (
               <div
                 key={review.id}
-                className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
+                className="bg-linear-to-br from-blue-50 to-white border border-blue-100 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex gap-0.5 mb-3">
                   {[...Array(5)].map((_, i) => (

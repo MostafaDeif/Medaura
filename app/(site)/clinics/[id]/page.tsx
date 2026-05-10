@@ -7,40 +7,35 @@ import DoctorCard from "@/components/home/doctorCard/doctorCard";
 import { allClinics } from "@/constants/clinics";
 import { t } from "@/i18n";
 
-type ClinicStaffDoctor = {
+const API_BASE_URL = "http://127.0.0.1:3001/api";
+
+type ClinicDoctor = {
   staff_id: number;
   full_name: string;
   role_title: string;
-  specialist?: string;
-  is_verified?: boolean;
-  is_active?: boolean;
+  specialist: string;
+  work_days: string;
+  work_from: string;
+  work_to: string;
+  consultation_price: number;
   photo?: string | null;
-};
-
-type DisplayDoctor = {
-  id: number;
-  name: string;
-  specialty: string;
-  price: number;
-  experience: number;
-  rating: number;
-  imageSrc: string;
-  gender?: "male" | "female";
+  can_be_booked: number;
 };
 
 export default function ClinicDetailsPage() {
   const params = useParams();
+  const clinicId = Number(params.id);
   const clinic =
-    allClinics.find((c) => c.id === Number(params.id)) || allClinics[0];
+    allClinics.find((c) => c.id === clinicId) || allClinics[0];
 
   const [visibleDoctors, setVisibleDoctors] = useState(3);
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [selectedGender, setSelectedGender] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [locale, setLocale] = useState("en");
-  const [clinicDoctors, setClinicDoctors] = useState<ClinicStaffDoctor[]>([]);
-  const [staffLoading, setStaffLoading] = useState(false);
-  const [staffError, setStaffError] = useState<string | null>(null);
+  const [doctors, setDoctors] = useState<ClinicDoctor[]>([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+  const [doctorsError, setDoctorsError] = useState("");
 
   useEffect(() => {
     const stored = localStorage.getItem("locale");
@@ -53,58 +48,49 @@ export default function ClinicDetailsPage() {
 
   useEffect(() => {
     async function loadClinicDoctors() {
-      setStaffLoading(true);
-      setStaffError(null);
+      if (!clinicId) {
+        setDoctors([]);
+        setDoctorsError("Clinic not found");
+        return;
+      }
+
+      setLoadingDoctors(true);
+      setDoctorsError("");
 
       try {
-        const response = await fetch("/api/staff/my-clinic", {
-          credentials: "include",
-        });
-        const payload = await response.json();
+        const response = await fetch(`${API_BASE_URL}/clinic/${clinicId}/staff`);
+        const data = await response.json();
 
-        if (!response.ok || !payload.success) {
-          throw new Error(payload.error || "Failed to load clinic doctors");
+        const staff = Array.isArray(data.staff)
+          ? data.staff
+          : Array.isArray(data.data?.staff)
+          ? data.data.staff
+          : [];
+
+        if (!response.ok) {
+          const message = data.error || data.message || "Failed to load clinic doctors";
+          throw new Error(message);
         }
 
-        const staff = payload.data?.staff;
-        if (!Array.isArray(staff)) {
-          throw new Error("Invalid clinic doctors response");
-        }
-
-        setClinicDoctors(staff);
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to load clinic doctors";
-        setStaffError(errorMessage);
-        console.error("Error loading clinic doctors:", error);
+        setDoctors(staff);
+      } catch (error: any) {
+        console.error("Clinic doctors fetch error:", error);
+        setDoctorsError(error?.message || "تعذر تحميل الأطباء");
       } finally {
-        setStaffLoading(false);
+        setLoadingDoctors(false);
       }
     }
 
     loadClinicDoctors();
-  }, []);
+  }, [clinicId]);
 
-  const staffDoctors: DisplayDoctor[] = clinicDoctors.map((doctor) => ({
-    id: doctor.staff_id,
-    name: doctor.full_name,
-    specialty: doctor.specialist || doctor.role_title || "طبيب",
-    price: 250,
-    experience: 5,
-    rating: 4.8,
-    imageSrc: doctor.photo || "/images/blank-profile-picture.png",
-    gender: undefined,
-  }));
-
-  const doctorItems: DisplayDoctor[] =
-    staffDoctors.length > 0 ? staffDoctors : clinic.doctors;
-
-  const filteredDoctors = doctorItems.filter((doc) => {
+  const filteredDoctors = doctors.filter((doc) => {
     const matchesSpecialty =
-      selectedSpecialty === "" || doc.specialty.includes(selectedSpecialty);
-    const matchesGender =
-      selectedGender === "" || doc.gender === selectedGender;
-    const matchesSearch = searchQuery === "" || doc.name.includes(searchQuery);
+      selectedSpecialty === "" || doc.specialist?.includes(selectedSpecialty);
+    const matchesGender = true;
+    const matchesSearch =
+      searchQuery === "" ||
+      doc.full_name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSpecialty && matchesGender && matchesSearch;
   });
 
@@ -232,45 +218,42 @@ export default function ClinicDetailsPage() {
             </button>
           </div>
 
-          {staffLoading && (
-            <p className="text-center text-[#001A6E] mb-6">
-              جاري تحميل الأطباء...
-            </p>
-          )}
+          {loadingDoctors ? (
+            <p className="text-center text-[#001A6E]">جاري تحميل الدكاترة...</p>
+          ) : doctorsError ? (
+            <p className="text-center text-red-600">{doctorsError}</p>
+          ) : filteredDoctors.length === 0 ? (
+            <p className="text-center text-[#001A6E]">لا يوجد دكاترة متاحين في هذه العيادة حالياً</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredDoctors.slice(0, visibleDoctors).map((doc) => (
+                  <DoctorCard
+                    key={doc.staff_id}
+                    id={doc.staff_id}
+                    clinicId={clinic.id}
+                    name={doc.full_name}
+                    specialty={doc.specialist || ""}
+                    rating={0}
+                    price={doc.consultation_price}
+                    experience={0}
+                    imageSrc={doc.photo || ""}
+                  />
+                ))}
+              </div>
 
-          {staffError && (
-            <div className="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg text-center mb-6">
-              <p>{staffError}</p>
-            </div>
-          )}
-
-          {/* Doctors Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredDoctors.slice(0, visibleDoctors).map((doc) => (
-              <DoctorCard
-                key={doc.id}
-                id={doc.id}
-                clinicId={clinic.id}
-                name={doc.name}
-                specialty={doc.specialty}
-                rating={doc.rating}
-                price={doc.price}
-                experience={doc.experience}
-                imageSrc={doc.imageSrc}
-              />
-            ))}
-          </div>
-
-          {visibleDoctors < filteredDoctors.length && (
-            <div className="flex justify-center mt-12">
-              <button
-                onClick={() => setVisibleDoctors((prev) => prev + 3)}
-                className="flex items-center gap-2 text-[#001A6E] font-bold hover:opacity-80"
-              >
-                {t("clinics.moreDoctors", locale)}
-                <ChevronDown className="w-5 h-5 animate-bounce" />
-              </button>
-            </div>
+              {visibleDoctors < filteredDoctors.length && (
+                <div className="flex justify-center mt-12">
+                  <button
+                    onClick={() => setVisibleDoctors((prev) => prev + 3)}
+                    className="flex items-center gap-2 text-[#001A6E] font-bold hover:opacity-80"
+                  >
+                    {t("clinics.moreDoctors", locale)}
+                    <ChevronDown className="w-5 h-5 animate-bounce" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
