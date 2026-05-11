@@ -8,8 +8,16 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isDashboardRoute =
     pathname.startsWith("/dashboard") || pathname.startsWith("/doctorDash");
+  const isAuthRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/resetPassword") ||
+    pathname.startsWith("/passwordResetSent") ||
+    pathname.startsWith("/emailVerfication") ||
+    pathname.startsWith("/doctorDocument");
 
-  if (isDashboardRoute) {
+  if (isDashboardRoute || isAuthRoute) {
     return <>{children}</>;
   }
 

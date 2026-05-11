@@ -25,10 +25,10 @@ export interface ClinicSignupProfile {
     longitude: number;
   };
 }
-
 export interface StaffSignupProfile {
   full_name: string;
   name: string;
+  role_title: string;
   specialist: string;
   work_days: string;
   work_from: string;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiClient } from "@/lib/api/client";
-import type { DoctorSignupProfile, SignupRequest } from "@/lib/types/api";
+import type { DoctorSignupProfile, SignupRequest, StaffSignupProfile } from "@/lib/types/api";
 
 // POST /api/auth/signup
 export async function POST(request: NextRequest) {
@@ -35,6 +35,30 @@ export async function POST(request: NextRequest) {
             success: false,
             error:
               "Missing required doctor profile fields: full_name, license_number, specialist, work_days, work_from, work_to, consultation_price",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (body.user_type === "staff") {
+      const profile = body.profile as Partial<StaffSignupProfile> | undefined;
+
+      if (
+        !profile?.full_name ||
+        !profile?.name ||
+        !profile?.role_title ||
+        !profile?.specialist ||
+        !profile?.work_days ||
+        !profile?.work_from ||
+        !profile?.work_to ||
+        profile.consultation_price === undefined
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Missing required staff profile fields: full_name, name, role_title, specialist, work_days, work_from, work_to, consultation_price",
           },
           { status: 400 }
         );

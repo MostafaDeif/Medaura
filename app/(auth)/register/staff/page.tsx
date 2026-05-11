@@ -8,18 +8,18 @@ import type { ClinicProfile, StaffSignupProfile } from "@/lib/types/api";
 import { EyeIcon } from "../utils";
 
 const SPECIALTIES = [
-  "مخ وأعصاب",
+  "مخ واعصاب",
   "عظام",
   "الأورام",
-  "أنف وأذن وحنجرة",
-  "عيون",
-  "قلب وأوعية دموية",
-  "صدر وجهاز تنفسي",
+  "طب الأذن والأنف والحنجرة",
+  "طب العيون",
+  "قلب و اوعية دموية",
+  "صدر و جهاز تنفسي",
   "كلى",
-  "أسنان",
-  "أطفال وحديثي الولادة",
+  "اسنان",
+  "اطفال و حديثي الولادة",
   "جلدية",
-  "نساء وتوليد",
+  "نسا و توليد",
 ];
 
 const WORK_DAYS = [
@@ -124,6 +124,7 @@ export default function StaffRegisterPage() {
       const profile: StaffSignupProfile = {
         full_name: fullName.trim(),
         name: selectedClinic,
+        role_title: "doctor",
         specialist: specialist.trim(),
         work_days: selectedDays.join(","),
         work_from: workFrom,

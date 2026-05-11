@@ -8,18 +8,18 @@ import type { DoctorSignupProfile } from "@/lib/types/api";
 import { EyeIcon } from "../utils";
 
 const SPECIALTIES = [
-  "مخ وأعصاب",
+  "مخ واعصاب",
   "عظام",
   "الأورام",
-  "أنف وأذن وحنجرة",
-  "عيون",
-  "قلب وأوعية دموية",
-  "صدر وجهاز تنفسي",
+  "طب الأذن والأنف والحنجرة",
+  "طب العيون",
+  "قلب و اوعية دموية",
+  "صدر و جهاز تنفسي",
   "كلى",
-  "أسنان",
-  "أطفال وحديثي الولادة",
+  "اسنان",
+  "اطفال و حديثي الولادة",
   "جلدية",
-  "نساء وتوليد",
+  "نسا و توليد",
 ];
 
 const WORK_DAYS = [
@@ -261,6 +261,7 @@ export default function DoctorRegisterPage() {
           name="specialist"
           value={specialist}
           onChange={(event) => setSpecialist(event.target.value)}
+          required
           aria-invalid={!!errors.specialist}
           aria-describedby={errors.specialist ? "specialist-error" : undefined}
           className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
