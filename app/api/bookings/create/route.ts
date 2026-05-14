@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { bookingService } from "@/lib/api/bookings";
 import type { BookingRequest } from "@/lib/types/api";
 
+function getStatus(error: unknown) {
+  return typeof error === "object" && error !== null && "status" in error
+    ? Number((error as { status?: number }).status)
+    : undefined;
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 // POST /api/bookings/create
 export async function POST(request: NextRequest) {
   try {
@@ -21,14 +31,15 @@ export async function POST(request: NextRequest) {
     const rawBody = await request.json();
     const body = {
       ...rawBody,
+      staff_id: rawBody.staff_id || rawBody.doctor_id,
       booking_from: rawBody.booking_from || rawBody.booking_time,
     } as BookingRequest;
 
-    if (!body.doctor_id || !body.booking_date || !body.booking_from) {
+    if (!body.staff_id || !body.booking_date || !body.booking_from) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields: doctor_id, booking_date, booking_from",
+          error: "Missing required fields: staff_id, booking_date, booking_from",
         },
         { status: 400 }
       );
@@ -40,14 +51,14 @@ export async function POST(request: NextRequest) {
       { success: true, data: response },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Create booking error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to create booking",
+        error: getErrorMessage(error, "Failed to create booking"),
       },
-      { status: error.status || 500 }
+      { status: getStatus(error) || 500 }
     );
   }
 }
