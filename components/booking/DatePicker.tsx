@@ -1,22 +1,36 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { t } from "@/i18n";
 
 interface DatePickerProps {
   onSelect: (date: string) => void;
   onClose: () => void;
+  selectedDate?: string;
 }
 
-export default function DatePicker({ onSelect, onClose }: DatePickerProps) {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 5, 10)); // Default to June 10, 2026
-  const [locale, setLocale] = useState("en");
+function toDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem("locale");
-    if (stored) setLocale(stored);
-  }, []);
+export default function DatePicker({
+  onSelect,
+  onClose,
+  selectedDate,
+}: DatePickerProps) {
+  const initialDate = selectedDate ? new Date(selectedDate) : new Date();
+  const [currentDate, setCurrentDate] = useState(
+    new Date(initialDate.getFullYear(), initialDate.getMonth(), 1)
+  );
+  const [locale] = useState(() =>
+    typeof window === "undefined"
+      ? "en"
+      : localStorage.getItem("locale") || "en"
+  );
 
   const daysInMonth = (year: number, month: number) =>
     new Date(year, month + 1, 0).getDate();
@@ -59,39 +73,29 @@ export default function DatePicker({ onSelect, onClose }: DatePickerProps) {
       ? ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"]
       : ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-  // Mock booked dates
-  const bookedDates = [11, 15, 20, 25];
-
   const handlePrevMonth = () => {
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
     );
   };
 
   const handleNextMonth = () => {
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
     );
   };
 
-  const handleTimeNavigation = (monthsOffset: number) => {
-    setCurrentDate(
-      new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + monthsOffset,
-        1,
-      ),
-    );
-  };
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const days = [];
   const totalDays = daysInMonth(
     currentDate.getFullYear(),
-    currentDate.getMonth(),
+    currentDate.getMonth()
   );
   const startDay = firstDayOfMonth(
     currentDate.getFullYear(),
-    currentDate.getMonth(),
+    currentDate.getMonth()
   );
 
   for (let i = 0; i < startDay; i++) {
@@ -99,25 +103,31 @@ export default function DatePicker({ onSelect, onClose }: DatePickerProps) {
   }
 
   for (let d = 1; d <= totalDays; d++) {
-    const isBooked = bookedDates.includes(d);
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), d);
+    const value = toDateInputValue(date);
+    const isPast = date < today;
+    const isSelected = selectedDate === value;
 
     days.push(
       <button
-        key={d}
-        disabled={isBooked}
-        onClick={() => {
-          const formattedDate = `${d} ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-          onSelect(formattedDate);
-        }}
+        key={value}
+        disabled={isPast}
+        onClick={() => onSelect(value)}
         className={`relative h-10 w-10 flex items-center justify-center rounded-lg text-sm transition-colors
-          ${isBooked ? "text-gray-300 cursor-not-allowed" : "text-[#001A6E] hover:bg-blue-50"}
+          ${
+            isPast
+              ? "text-gray-300 cursor-not-allowed"
+              : isSelected
+                ? "bg-[#001A6E] text-white"
+                : "text-[#001A6E] hover:bg-blue-50"
+          }
         `}
       >
         {d}
-        {isBooked && (
+        {isPast && (
           <div className="absolute w-6 h-[1px] bg-gray-300 rotate-[-45deg]"></div>
         )}
-      </button>,
+      </button>
     );
   }
 
@@ -138,35 +148,13 @@ export default function DatePicker({ onSelect, onClose }: DatePickerProps) {
             <ChevronLeft size={20} />
           </button>
           <h3 className="text-xl font-bold text-[#001A6E]">
-            {currentDate.getDate()} {monthNames[currentDate.getMonth()]}{" "}
-            {currentDate.getFullYear()}
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <button
             onClick={handleNextMonth}
             className="p-2 text-gray-400 hover:text-[#001A6E]"
           >
             <ChevronRight size={20} />
-          </button>
-        </div>
-
-        <div className="mb-8 flex justify-between px-2 text-xs font-medium text-gray-500 gap-2">
-          <button
-            onClick={() => handleTimeNavigation(-3)}
-            className="px-3 py-1 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            {locale === "ar" ? "منذ 3 أشهر" : "3 months ago"}
-          </button>
-          <button
-            onClick={() => handleTimeNavigation(-6)}
-            className="px-3 py-1 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            {locale === "ar" ? "منذ 6 أشهر" : "6 months ago"}
-          </button>
-          <button
-            onClick={() => handleTimeNavigation(-12)}
-            className="px-3 py-1 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            {locale === "ar" ? "منذ عام" : "1 Year Ago"}
           </button>
         </div>
 

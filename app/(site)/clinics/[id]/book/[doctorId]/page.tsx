@@ -12,29 +12,128 @@ import {
 } from "lucide-react";
 import { allClinics } from "@/constants/clinics";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DatePicker from "@/components/booking/DatePicker";
 import TimePicker from "@/components/booking/TimePicker";
 import ValidationModal from "@/components/booking/ValidationModal";
 import { t } from "@/i18n";
+
+type ApiStaffProfile = {
+  id?: number;
+  staff_id?: number;
+  full_name?: string;
+  name?: string;
+  clinic_id?: number;
+  role_title?: string;
+  specialist?: string;
+  work_days?: string;
+  work_from?: string;
+  work_to?: string;
+  consultation_price?: number;
+  rating?: number;
+  photo?: string | null;
+  about?: string;
+  verified?: boolean;
+  can_be_booked?: number | boolean;
+};
+
+type ApiClinicProfile = {
+  id?: number;
+  name?: string;
+  address?: string;
+  location?: string;
+  phone?: string;
+  opening_hours?: string;
+  image?: string;
+};
+
+type BookingSlot = {
+  from: string;
+  to: string;
+  available: boolean;
+};
+
+type ApiRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is ApiRecord {
+  return typeof value === "object" && value !== null;
+}
+
+function unwrapData(data: unknown): unknown {
+  if (isRecord(data) && data.data !== undefined) return unwrapData(data.data);
+  return data;
+}
+
+function normalizeStaff(data: unknown): ApiStaffProfile | null {
+  const unwrapped = unwrapData(data);
+  if (!isRecord(unwrapped)) return null;
+  return (unwrapped.staff || unwrapped.profile || unwrapped) as ApiStaffProfile;
+}
+
+function normalizeClinic(data: unknown): ApiClinicProfile | null {
+  const unwrapped = unwrapData(data);
+  if (!isRecord(unwrapped)) return null;
+  return (unwrapped.clinic || unwrapped.profile || unwrapped) as ApiClinicProfile;
+}
+
+function normalizeSlots(data: unknown): BookingSlot[] {
+  const unwrapped = unwrapData(data);
+  const slots = Array.isArray(unwrapped)
+    ? unwrapped
+    : isRecord(unwrapped) && Array.isArray(unwrapped.slots)
+      ? unwrapped.slots
+      : [];
+
+  return slots
+    .map((slot): BookingSlot => {
+      const record = isRecord(slot) ? slot : {};
+      const from = String(record.from || record.time || record.booking_from || "");
+      return {
+        from,
+        to: String(record.to || ""),
+        available: Boolean(record.available ?? record.is_available ?? true),
+      };
+    })
+    .filter((slot: BookingSlot) => slot.from);
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function formatDisplayDate(date: string, locale: string) {
+  if (!date) return "";
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(`${date}T00:00:00`));
+}
 
 export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
 
   const clinicId = Number(params.id);
-  const doctorId = Number(params.doctorId);
-
-  const clinic = allClinics.find((c) => c.id === clinicId);
-  const doctor = clinic?.doctors.find((d) => d.id === doctorId);
+  const staffId = Number(params.doctorId);
+  const fallbackClinic = allClinics.find((c) => c.id === clinicId);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [isBooked, setIsBooked] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [locale, setLocale] = useState("en");
+  const [staff, setStaff] = useState<ApiStaffProfile | null>(null);
+  const [clinicProfile, setClinicProfile] = useState<ApiClinicProfile | null>(
+    null
+  );
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState("");
+  const [slots, setSlots] = useState<BookingSlot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState("");
   const [validationModalData, setValidationModalData] = useState<{
     type: "success" | "warning";
     title: string;
@@ -45,24 +144,165 @@ export default function BookingPage() {
     const stored = localStorage.getItem("locale");
     if (stored) setLocale(stored);
 
-    const handleLocaleChange = (e: any) => setLocale(e.detail);
+    const handleLocaleChange: EventListener = (event) => {
+      setLocale((event as CustomEvent<string>).detail);
+    };
     window.addEventListener("localeChange", handleLocaleChange);
     return () => window.removeEventListener("localeChange", handleLocaleChange);
   }, []);
 
-  const handleBookingClick = () => {
-    // Check if already booked
-    if (isBooked) {
+  useEffect(() => {
+    async function loadProfile() {
+      if (!staffId) {
+        setProfileError(t("clinics.notFound", locale));
+        setProfileLoading(false);
+        return;
+      }
+
+      setProfileLoading(true);
+      setProfileError("");
+
+      try {
+        const [staffResponse, clinicResponse] = await Promise.all([
+          fetch(`/api/staff/${staffId}/profile`, { credentials: "include" }),
+          clinicId
+            ? fetch(`/api/clinic/profile?id=${clinicId}`, {
+                credentials: "include",
+              })
+            : Promise.resolve(null),
+        ]);
+
+        const staffPayload = await staffResponse.json();
+        if (!staffResponse.ok || staffPayload.success === false) {
+          throw new Error(
+            staffPayload.error || staffPayload.message || "Failed to load staff"
+          );
+        }
+
+        setStaff(normalizeStaff(staffPayload));
+
+        if (clinicResponse) {
+          const clinicPayload = await clinicResponse.json();
+          if (clinicResponse.ok && clinicPayload.success !== false) {
+            setClinicProfile(normalizeClinic(clinicPayload));
+          }
+        }
+      } catch (error: unknown) {
+        console.error("Staff profile fetch error:", error);
+        setProfileError(
+          getErrorMessage(
+            error,
+            locale === "ar"
+              ? "تعذر تحميل بيانات الطبيب."
+              : "Failed to load staff profile."
+          )
+        );
+      } finally {
+        setProfileLoading(false);
+      }
+    }
+
+    loadProfile();
+  }, [clinicId, locale, staffId]);
+
+  useEffect(() => {
+    async function loadSlots() {
+      if (!staffId || !selectedDate) {
+        setSlots([]);
+        return;
+      }
+
+      setSlotsLoading(true);
+      setSlotsError("");
+
+      try {
+        const params = new URLSearchParams({
+          staff_id: String(staffId),
+          booking_date: selectedDate,
+        });
+        const response = await fetch(`/api/book/slots?${params.toString()}`, {
+          credentials: "include",
+        });
+        const payload = await response.json();
+
+        if (!response.ok || payload.success === false) {
+          throw new Error(
+            payload.error || payload.message || "Failed to load available slots"
+          );
+        }
+
+        setSlots(normalizeSlots(payload));
+      } catch (error: unknown) {
+        console.error("Booking slots fetch error:", error);
+        setSlots([]);
+        setSlotsError(
+          getErrorMessage(
+            error,
+            locale === "ar"
+              ? "تعذر تحميل المواعيد المتاحة."
+              : "Failed to load available times."
+          )
+        );
+      } finally {
+        setSlotsLoading(false);
+      }
+    }
+
+    loadSlots();
+  }, [locale, selectedDate, staffId]);
+
+  const doctorName = staff?.full_name || staff?.name || "";
+  const doctorSpecialty = staff?.specialist || staff?.role_title || "";
+  const doctorRating = Number(staff?.rating || 0);
+  const canBeBooked = staff?.can_be_booked !== false && staff?.can_be_booked !== 0;
+  const clinicName = clinicProfile?.name || fallbackClinic?.name || "";
+  const clinicAddress =
+    clinicProfile?.address ||
+    clinicProfile?.location ||
+    fallbackClinic?.address ||
+    "";
+  const clinicCity = clinicProfile?.location || fallbackClinic?.city || "";
+  const clinicPhone = clinicProfile?.phone || fallbackClinic?.phone || "";
+  const clinicHours =
+    clinicProfile?.opening_hours || fallbackClinic?.hours || "";
+  const clinicImage =
+    clinicProfile?.image || fallbackClinic?.image || "/images/clinic1.png";
+  const staffImage =
+    staff?.photo || fallbackClinic?.doctors?.[0]?.imageSrc || "/images/blank-profile-picture.png";
+
+  const displayedDate = useMemo(
+    () => formatDisplayDate(selectedDate, locale),
+    [locale, selectedDate]
+  );
+
+  const openTimePicker = () => {
+    if (!selectedDate) {
       setValidationModalData({
         type: "warning",
-        title: t("booking.validation.alreadyBooked.title", locale),
-        message: t("booking.validation.alreadyBooked.message", locale),
+        title: t("booking.validation.selectDateOnly.title", locale),
+        message: t("booking.validation.selectDateOnly.message", locale),
       });
       setShowValidationModal(true);
       return;
     }
 
-    // Check if both date and time are selected
+    setShowTimePicker(true);
+  };
+
+  const handleBookingClick = async () => {
+    if (!canBeBooked) {
+      setValidationModalData({
+        type: "warning",
+        title: t("booking.validation.alreadyBooked.title", locale),
+        message:
+          locale === "ar"
+            ? "هذا الطبيب غير متاح للحجز حاليا."
+            : "This staff member is not available for booking right now.",
+      });
+      setShowValidationModal(true);
+      return;
+    }
+
     if (!selectedDate && !selectedTime) {
       setValidationModalData({
         type: "warning",
@@ -73,7 +313,6 @@ export default function BookingPage() {
       return;
     }
 
-    // Check if only date is selected
     if (selectedDate && !selectedTime) {
       setValidationModalData({
         type: "warning",
@@ -84,7 +323,6 @@ export default function BookingPage() {
       return;
     }
 
-    // Check if only time is selected
     if (!selectedDate && selectedTime) {
       setValidationModalData({
         type: "warning",
@@ -95,23 +333,78 @@ export default function BookingPage() {
       return;
     }
 
-    // Both date and time are selected - show success message
-    setValidationModalData({
-      type: "success",
-      title: t("booking.validation.success.title", locale),
-      message: t("booking.validation.success.message", locale)
-        .replace("{doctorName}", doctor?.name || "")
-        .replace("{date}", selectedDate)
-        .replace("{time}", selectedTime),
-    });
-    setIsBooked(true);
-    setShowValidationModal(true);
+    setIsBooking(true);
+
+    try {
+      const response = await fetch("/api/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          staff_id: staffId,
+          booking_date: selectedDate,
+          booking_from: selectedTime,
+        }),
+        credentials: "include",
+      });
+      const payload = await response.json();
+
+      if (!response.ok || payload.success === false) {
+        throw new Error(
+          payload.error || payload.message || "Failed to create booking"
+        );
+      }
+
+      setValidationModalData({
+        type: "success",
+        title: t("booking.validation.success.title", locale),
+        message: t("booking.validation.success.message", locale)
+          .replace("{doctorName}", doctorName)
+          .replace("{date}", displayedDate || selectedDate)
+          .replace("{time}", selectedTime),
+      });
+      setShowValidationModal(true);
+      setSlots((current) =>
+        current.map((slot) =>
+          slot.from === selectedTime ? { ...slot, available: false } : slot
+        )
+      );
+    } catch (error: unknown) {
+      setValidationModalData({
+        type: "warning",
+        title:
+          locale === "ar"
+            ? "تعذر إتمام الحجز"
+            : "Could not complete booking",
+        message:
+          getErrorMessage(
+            error,
+            locale === "ar"
+            ? "حدث خطأ أثناء إنشاء الحجز."
+            : "Something went wrong while creating the booking."
+          ),
+      });
+      setShowValidationModal(true);
+    } finally {
+      setIsBooking(false);
+    }
   };
 
-  if (!clinic || !doctor) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>{t("clinics.notFound", locale)}</p>
+        <p className="font-semibold text-[#001A6E]">
+          {locale === "ar" ? "جاري تحميل الملف..." : "Loading profile..."}
+        </p>
+      </div>
+    );
+  }
+
+  if (profileError || !staff) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="font-semibold text-red-600">
+          {profileError || t("clinics.notFound", locale)}
+        </p>
       </div>
     );
   }
@@ -119,7 +412,6 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-5xl mx-auto pt-32 pb-12 px-4">
-        {/* Back Button */}
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-[#001A6E] font-bold mb-8 hover:opacity-80 transition-opacity"
@@ -130,35 +422,37 @@ export default function BookingPage() {
           {t("booking.back", locale)}
         </button>
 
-        {/* Main Layout */}
         <div className="flex flex-col lg:flex-row gap-12">
-          {/* Left Column: Doctor Details (First on mobile) */}
           <div
             className={`flex-1 space-y-12 ${locale === "ar" ? "order-1 lg:order-1" : "order-1"}`}
           >
-            {/* Doctor Info Card */}
             <div className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="w-full md:w-48 h-48 relative rounded-3xl overflow-hidden shadow-md shrink-0">
+              <div className="w-full md:w-48 h-48 relative rounded-3xl overflow-hidden shadow-md shrink-0 bg-gray-50">
                 <Image
-                  src={doctor.imageSrc}
-                  alt={doctor.name}
-                  fill
-                  className="object-cover"
+                  src={staffImage}
+                  alt={doctorName}
+                  width={420}
+                  height={420}
+                  className="h-full w-full object-cover"
                 />
               </div>
               <div className="flex-1 space-y-4">
                 <div>
                   <h1 className="text-2xl font-bold text-[#001A6E]">
-                    {doctor.name}
+                    {doctorName}
                   </h1>
                   <p className="text-gray-500 font-medium">
-                    {t("specialties.doctors", locale)} {doctor.specialty}
+                    {t("specialties.doctors", locale)} {doctorSpecialty}
                   </p>
                   <div className="flex gap-1 mt-2">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`w-4 h-4 ${i < Math.floor(doctor.rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                        className={`w-4 h-4 ${
+                          i < Math.floor(doctorRating)
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-gray-300"
+                        }`}
                       />
                     ))}
                   </div>
@@ -170,14 +464,15 @@ export default function BookingPage() {
                       {t("booking.sessionFee", locale)}
                     </p>
                     <p className="font-bold text-[#001A6E]">
-                      {doctor.price} {locale === "ar" ? "ج.م" : "EGP"}
+                      {staff.consultation_price ?? "-"}{" "}
+                      {locale === "ar" ? "ج.م" : "EGP"}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-2xl">
                     <p className="text-xs text-gray-400 mb-1">
                       {t("booking.city", locale)}
                     </p>
-                    <p className="font-bold text-[#001A6E]">{clinic.city}</p>
+                    <p className="font-bold text-[#001A6E]">{clinicCity}</p>
                   </div>
                 </div>
 
@@ -187,10 +482,10 @@ export default function BookingPage() {
                     className="flex items-center gap-2 text-sm text-gray-500 border border-gray-100 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors"
                   >
                     <Calendar className="w-4 h-4 text-[#001A6E]" />
-                    {selectedDate || t("booking.datePlaceholder", locale)}
+                    {displayedDate || t("booking.datePlaceholder", locale)}
                   </button>
                   <button
-                    onClick={() => setShowTimePicker(true)}
+                    onClick={openTimePicker}
                     className="flex items-center gap-2 text-sm text-gray-500 border border-gray-100 px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors"
                   >
                     <Clock className="w-4 h-4 text-[#001A6E]" />
@@ -201,9 +496,14 @@ export default function BookingPage() {
                 <div className="flex flex-col sm:flex-row gap-4 pt-2">
                   <button
                     onClick={handleBookingClick}
-                    className="flex-1 bg-[#001A6E] text-white py-4 rounded-2xl font-bold hover:bg-[#001250] transition-colors shadow-lg shadow-blue-900/10"
+                    disabled={isBooking}
+                    className="flex-1 bg-[#001A6E] text-white py-4 rounded-2xl font-bold hover:bg-[#001250] transition-colors shadow-lg shadow-blue-900/10 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {t("booking.bookNow", locale)}
+                    {isBooking
+                      ? locale === "ar"
+                        ? "جاري الحجز..."
+                        : "Booking..."
+                      : t("booking.bookNow", locale)}
                   </button>
                   <button className="flex items-center justify-center gap-2 border border-gray-200 text-gray-600 px-8 py-4 rounded-2xl font-bold hover:bg-gray-50 transition-colors">
                     <Mail className="w-5 h-5" />
@@ -213,21 +513,19 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* About Doctor */}
             <section>
               <h2 className="text-xl font-bold text-[#001A6E] mb-4">
                 {t("booking.aboutDoctor", locale)}
               </h2>
               <p className="text-gray-500 leading-relaxed text-sm">
-                {doctor.about ||
+                {staff.about ||
                   (locale === "ar"
-                    ? "استشاري متخصص بخبرة واسعة في مجاله، يحرص على تقديم أفضل رعاية طبية للمرضى باستخدام أحدث التقنيات الطبية العالمية."
-                    : "Specialized consultant with extensive experience in his field, keen to provide the best medical care to patients using the latest global medical technologies.")}
+                    ? "استشاري متخصص بخبرة واسعة في مجاله، يحرص على تقديم أفضل رعاية طبية للمرضى."
+                    : "Specialized consultant with extensive experience, focused on providing high quality medical care.")}
               </p>
             </section>
           </div>
 
-          {/* Right Column: Clinic Info (Second on mobile) */}
           <div
             className={`lg:w-80 shrink-0 ${locale === "ar" ? "order-2 lg:order-2" : "order-2"}`}
           >
@@ -236,29 +534,30 @@ export default function BookingPage() {
                 {t("booking.clinicInfo", locale)}
               </h2>
 
-              <div className="aspect-square relative rounded-2xl overflow-hidden mb-6 shadow-inner">
+              <div className="aspect-square relative rounded-2xl overflow-hidden mb-6 shadow-inner bg-gray-50">
                 <Image
-                  src={clinic.image}
-                  alt={clinic.name}
-                  fill
-                  className="object-cover"
+                  src={clinicImage}
+                  alt={clinicName}
+                  width={420}
+                  height={420}
+                  className="h-full w-full object-cover"
                 />
               </div>
 
               <div className="space-y-6">
                 <div>
                   <h3 className="font-bold text-gray-800 mb-1">
-                    {clinic.name}
+                    {clinicName}
                   </h3>
                   <div className="flex items-start gap-2 text-gray-400 text-sm">
                     <MapPin className="w-4 h-4 mt-1 shrink-0" />
-                    <span>{clinic.address}</span>
+                    <span>{clinicAddress}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-400 text-sm">
                   <Phone className="w-4 h-4 shrink-0" />
-                  <span dir="ltr">{clinic.phone}</span>
+                  <span dir="ltr">{clinicPhone}</span>
                 </div>
 
                 <div>
@@ -266,7 +565,7 @@ export default function BookingPage() {
                     {t("booking.workingHours", locale)}
                   </h3>
                   <p className="text-gray-400 text-sm leading-relaxed">
-                    {clinic.hours}
+                    {clinicHours || `${staff.work_from || ""} - ${staff.work_to || ""}`}
                   </p>
                 </div>
               </div>
@@ -274,7 +573,6 @@ export default function BookingPage() {
           </div>
         </div>
 
-        {/* Reviews Section - Full Width Centered */}
         <div className="mt-20 py-12 border-t border-b border-gray-100">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-[#001A6E] mb-4">
@@ -299,7 +597,7 @@ export default function BookingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {clinic.reviews.slice(0, 4).map((review) => (
+            {(fallbackClinic?.reviews || []).slice(0, 4).map((review) => (
               <div
                 key={review.id}
                 className="bg-linear-to-br from-blue-50 to-white border border-blue-100 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
@@ -320,27 +618,30 @@ export default function BookingPage() {
                 </p>
                 <p className="text-gray-400 text-[11px] mb-3">{review.date}</p>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  "{review.comment}"
+                  &quot;{review.comment}&quot;
                 </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Date Picker Modal */}
         {showDatePicker && (
           <DatePicker
+            selectedDate={selectedDate}
             onSelect={(date) => {
               setSelectedDate(date);
+              setSelectedTime("");
               setShowDatePicker(false);
             }}
             onClose={() => setShowDatePicker(false)}
           />
         )}
 
-        {/* Time Picker Modal */}
         {showTimePicker && (
           <TimePicker
+            slots={slots}
+            loading={slotsLoading}
+            error={slotsError}
             onSelect={(time) => {
               setSelectedTime(time);
               setShowTimePicker(false);
@@ -349,7 +650,6 @@ export default function BookingPage() {
           />
         )}
 
-        {/* Validation Modal */}
         {showValidationModal && validationModalData && (
           <ValidationModal
             type={validationModalData.type}

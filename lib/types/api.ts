@@ -181,7 +181,7 @@ export interface StaffCreateRequest {
 
 // Booking Types
 export interface BookingRequest {
-  doctor_id: number;
+  staff_id: number;
   booking_date: string;
   booking_from: string;
 }
@@ -197,12 +197,13 @@ export interface BookingResponse {
 }
 
 export interface BookingSlot {
-  time: string;
-  available: boolean;
+  from: string;
+  to: string;
+  available?: boolean;
 }
 
 export interface SlotsQuery {
-  doctor_id: number;
+  staff_id: number;
   booking_date: string;
 }
 

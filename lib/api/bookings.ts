@@ -6,15 +6,37 @@ import type {
   SlotsQuery,
 } from "@/lib/types/api";
 
+function extractBookingList(payload: unknown): BookingResponse[] {
+  const responseData = (payload as { data?: unknown } | undefined)?.data;
+  const nestedData = (responseData as { data?: unknown } | undefined)?.data;
+  const bookingCandidates = [
+    payload,
+    responseData,
+    nestedData,
+    (payload as { bookings?: unknown } | undefined)?.bookings,
+    (responseData as { bookings?: unknown } | undefined)?.bookings,
+    (nestedData as { bookings?: unknown } | undefined)?.bookings,
+  ];
+
+  for (const candidate of bookingCandidates) {
+    if (Array.isArray(candidate)) {
+      return candidate as BookingResponse[];
+    }
+  }
+
+  return [];
+}
+
 export const bookingService = {
   async create(data: BookingRequest, token: string) {
     return apiClient.post<BookingResponse>("/api/book", data, { token });
   },
 
   async getMyBookings(token: string) {
-    return apiClient.get<BookingResponse[]>("/api/book/my-bookings", {
+    const response = await apiClient.get<unknown>("/api/book/my-bookings", {
       token,
     });
+    return extractBookingList(response);
   },
 
   async getClinicBookings(token: string, clinicId?: number) {
@@ -22,14 +44,13 @@ export const bookingService = {
       ? `/api/book/clinic-bookings?clinic_id=${clinicId}`
       : "/api/book/clinic-bookings";
 
-    return apiClient.get<BookingResponse[]>(endpoint, {
-      token,
-    });
+    const response = await apiClient.get<unknown>(endpoint, { token });
+    return extractBookingList(response);
   },
 
   async getAvailableSlots(query: SlotsQuery) {
     const params = new URLSearchParams({
-      doctor_id: query.doctor_id.toString(),
+      staff_id: query.staff_id.toString(),
       booking_date: query.booking_date,
     });
 
