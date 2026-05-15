@@ -1,17 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bookingService } from "@/lib/api/bookings";
+import { applyAuthCookies, getServerAccessToken } from "@/lib/api/server-auth";
+
+function getStatus(error: unknown) {
+  return typeof error === "object" && error !== null && "status" in error
+    ? Number((error as { status?: number }).status)
+    : undefined;
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
 
 // POST /api/bookings/cancel?id=17
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
+    let auth = await getServerAccessToken(request);
+    let token = auth.token;
 
     if (!token) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing authorization token",
+          error: "Not authenticated",
         },
         { status: 401 }
       );
@@ -30,20 +41,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await bookingService.cancelBooking(
-      parseInt(bookingId),
-      token
-    );
+    let response;
+    try {
+      response = await bookingService.cancelBooking(parseInt(bookingId), token);
+    } catch (error: unknown) {
+      if (getStatus(error) !== 401) throw error;
+      auth = await getServerAccessToken(request, { forceRefresh: true });
+      token = auth.token;
+      if (!token) throw error;
+      response = await bookingService.cancelBooking(parseInt(bookingId), token);
+    }
 
-    return NextResponse.json({ success: true, data: response });
+    const nextResponse = NextResponse.json({ success: true, data: response });
+    return applyAuthCookies(nextResponse, auth);
   } catch (error: any) {
     console.error("Cancel booking error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to cancel booking",
+        error: getErrorMessage(error, "Failed to cancel booking"),
       },
-      { status: error.status || 500 }
+      { status: getStatus(error) || 500 }
     );
   }
 }

@@ -22,6 +22,8 @@ type DoctorWithClinic = DoctorProfile & {
   photo?: string;
   image?: string;
   email?: string;
+  average_rating?: number;
+  total_ratings?: number;
 };
 
 const filters = [
@@ -63,8 +65,8 @@ async function getDoctors(specialist?: string) {
 }
 
 function DoctorCard({ doctor }: { doctor: DoctorWithClinic }) {
-  const clinicId = doctor.clinic_id ?? 1;
-  const rating = doctor.rating ?? 0;
+  const ratingValue = Number(doctor.average_rating ?? doctor.rating ?? 0);
+  const rating = Number.isFinite(ratingValue) ? ratingValue : 0;
 
   return (
     <article className="w-full">
@@ -112,7 +114,7 @@ function DoctorCard({ doctor }: { doctor: DoctorWithClinic }) {
       </div>
 
       <Link
-        href={`/clinics/${clinicId}/book/${doctor.id}`}
+        href={`/doctors/${doctor.id}`}
         className="mt-4 flex h-10 w-full items-center justify-center rounded-[5px] border border-[#001a6e] text-[19px] font-medium leading-none text-[#001a6e] transition hover:bg-[#f3f6ff]"
       >
         عرض الملف الشخصي
@@ -125,8 +127,10 @@ export default function DoctorsPage() {
   const [doctors, setDoctors] = useState<DoctorWithClinic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
   const searchParams = useSearchParams();
   const specialist = searchParams?.get("specialist")?.trim() || "";
+  const pageSize = 10;
 
   useEffect(() => {
     async function loadDoctors() {
@@ -136,6 +140,7 @@ export default function DoctorsPage() {
 
         const doctorsData = await getDoctors(specialist || undefined);
         setDoctors(doctorsData);
+        setPage(1);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to fetch doctors",
@@ -147,6 +152,31 @@ export default function DoctorsPage() {
 
     loadDoctors();
   }, [specialist]);
+
+  const totalPages = Math.max(1, Math.ceil(doctors.length / pageSize));
+
+  const getPages = () => {
+    if (totalPages <= 3) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (page <= 2) {
+      return [1, 2, 3, ...(totalPages > 3 ? ["..."] : [])];
+    }
+    if (page >= totalPages - 1) {
+      return [
+        ...(totalPages > 3 ? ["..."] : []),
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
+    }
+    return ["...", page - 1, page, page + 1, "..."];
+  };
+
+  const paginatedDoctors = doctors.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
 
   return (
     <main dir="rtl" className="min-h-screen bg-white pb-16 pt-28">
@@ -208,9 +238,53 @@ export default function DoctorsPage() {
 
         {!loading && !error && doctors.length > 0 && (
           <div className="mt-24 grid grid-cols-1 gap-x-13 gap-y-13.5 sm:grid-cols-2 lg:grid-cols-3">
-            {doctors.map((doctor, index) => (
+            {paginatedDoctors.map((doctor, index) => (
               <DoctorCard key={doctor.id ?? index} doctor={doctor} />
             ))}
+          </div>
+        )}
+
+        {!loading && !error && doctors.length > 0 && totalPages > 1 && (
+          <div className="mt-12 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <button
+              onClick={() => setPage((current) => Math.max(current - 1, 1))}
+              className="h-9 rounded-md border border-[#dbe2f5] px-4 text-[#001a6e] transition hover:bg-[#f3f6ff]"
+              disabled={page === 1}
+            >
+              السابق
+            </button>
+
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {getPages().map((item, index) =>
+                item === "..." ? (
+                  <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={`page-${item}`}
+                    onClick={() => setPage(item as number)}
+                    className={`h-9 w-9 rounded-md border text-sm font-semibold transition ${
+                      page === item
+                        ? "border-[#001a6e] bg-[#001a6e] text-white"
+                        : "border-[#dbe2f5] text-[#001a6e] hover:bg-[#f3f6ff]"
+                    }`}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
+            </div>
+
+            <button
+              onClick={() =>
+                setPage((current) => Math.min(current + 1, totalPages))
+              }
+              className="h-9 rounded-md border border-[#dbe2f5] px-4 text-[#001a6e] transition hover:bg-[#f3f6ff]"
+              disabled={page === totalPages}
+            >
+              التالي
+            </button>
           </div>
         )}
       </section>

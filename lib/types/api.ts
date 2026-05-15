@@ -181,7 +181,8 @@ export interface StaffCreateRequest {
 
 // Booking Types
 export interface BookingRequest {
-  staff_id: number;
+  staff_id?: number;
+  doctor_id?: number;
   booking_date: string;
   booking_from: string;
 }

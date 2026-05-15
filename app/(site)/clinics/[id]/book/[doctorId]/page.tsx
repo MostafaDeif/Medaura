@@ -110,6 +110,62 @@ function formatDisplayDate(date: string, locale: string) {
   }).format(new Date(`${date}T00:00:00`));
 }
 
+function formatWorkingDays(value: string, locale: string) {
+  if (!value) return "";
+  const dayMap =
+    locale === "ar"
+      ? {
+          sun: "الاحد",
+          mon: "الاثنين",
+          tue: "الثلاثاء",
+          tues: "الثلاثاء",
+          wed: "الاربعاء",
+          thu: "الخميس",
+          thur: "الخميس",
+          fri: "الجمعة",
+          sat: "السبت",
+        }
+      : {
+          sun: "Sunday",
+          mon: "Monday",
+          tue: "Tuesday",
+          tues: "Tuesday",
+          wed: "Wednesday",
+          thu: "Thursday",
+          thur: "Thursday",
+          fri: "Friday",
+          sat: "Saturday",
+        };
+
+  const formatToken = (token: string) => {
+    const trimmed = token.trim();
+    if (!trimmed) return "";
+
+    const normalized = trimmed.toLowerCase().replace(/\.$/, "");
+    const mapped = dayMap[normalized as keyof typeof dayMap];
+    if (mapped) return mapped;
+
+    if (trimmed.length < 2) return trimmed;
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  };
+
+  const parts = value
+    .split(/[,/|]/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      if (part.includes("-")) {
+        const [start, end] = part.split("-");
+        return `${formatToken(start)} - ${formatToken(end)}`.trim();
+      }
+      return formatToken(part);
+    })
+    .filter(Boolean);
+
+  const separator = locale === "ar" ? "، " : ", ";
+  return parts.join(separator);
+}
+
 export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
@@ -265,6 +321,8 @@ export default function BookingPage() {
   const clinicPhone = clinicProfile?.phone || fallbackClinic?.phone || "";
   const clinicHours =
     clinicProfile?.opening_hours || fallbackClinic?.hours || "";
+  const workingDays = staff?.work_days || "";
+  const formattedWorkingDays = formatWorkingDays(workingDays, locale);
   const clinicImage =
     clinicProfile?.image || fallbackClinic?.image || "/images/clinic1.png";
   const staffImage =
@@ -438,13 +496,22 @@ export default function BookingPage() {
               </div>
               <div className="flex-1 space-y-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-[#001A6E]">
-                    {doctorName}
-                  </h1>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="text-2xl font-bold text-[#001A6E]">
+                      {doctorName}
+                    </h1>
+                    {formattedWorkingDays && (
+                      <span className="text-xs font-semibold text-[#001A6E] bg-blue-50 px-3 py-1 rounded-full">
+                        {locale === "ar"
+                          ? `ايام العمل: ${formattedWorkingDays}`
+                          : `Working days: ${formattedWorkingDays}`}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-500 font-medium">
                     {t("specialties.doctors", locale)} {doctorSpecialty}
                   </p>
-                  <div className="flex gap-1 mt-2">
+                  <div className="flex items-center gap-2 mt-2">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
@@ -455,6 +522,9 @@ export default function BookingPage() {
                         }`}
                       />
                     ))}
+                    <span className="text-xs font-semibold text-gray-500">
+                      {doctorRating.toFixed(1)}
+                    </span>
                   </div>
                 </div>
 
