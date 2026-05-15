@@ -26,25 +26,37 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    if (!body.staff_id || !body.booking_date || !body.booking_from) {
+    const doctorId = body.doctor_id;
+    const staffId = body.staff_id;
+    const hasDoctorId = doctorId !== undefined && doctorId !== null && doctorId !== "";
+    const hasStaffId = staffId !== undefined && staffId !== null && staffId !== "";
+
+    if ((!hasDoctorId && !hasStaffId) || !body.booking_date || !body.booking_from) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields: staff_id, booking_date, booking_from",
+          error:
+            "Missing required fields: doctor_id or staff_id, booking_date, booking_from",
         },
         { status: 400 }
       );
     }
 
+    const payload = {
+      booking_date: body.booking_date,
+      booking_from: body.booking_from,
+      ...(hasDoctorId ? { doctor_id: doctorId } : { staff_id: staffId }),
+    };
+
     let response;
     try {
-      response = await bookingService.create(body, token);
+      response = await bookingService.create(payload, token);
     } catch (error: unknown) {
       if (getStatus(error) !== 401) throw error;
       auth = await getServerAccessToken(request, { forceRefresh: true });
       token = auth.token;
       if (!token) throw error;
-      response = await bookingService.create(body, token);
+      response = await bookingService.create(payload, token);
     }
 
     const nextResponse = NextResponse.json(

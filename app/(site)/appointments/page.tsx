@@ -10,6 +10,9 @@ type BookingView = BookingResponse & {
   booking_to?: string;
   doctor_name?: string;
   doctor_specialty?: string;
+  staff_id?: number;
+  staff_name?: string;
+  staff_specialty?: string;
   specialist?: string;
   specialty?: string;
 };
@@ -29,6 +32,9 @@ const DETAIL_LABELS: Record<string, string> = {
   doctor_name: "اسم الطبيب",
   doctor_id: "رقم الطبيب",
   doctor_specialty: "تخصص الطبيب",
+  staff_name: "اسم الطبيب",
+  staff_id: "رقم الطبيب",
+  staff_specialty: "التخصص",
   specialist: "التخصص",
   specialty: "التخصص",
   clinic_id: "رقم العيادة",
@@ -148,12 +154,61 @@ function isPastBooking(dateValue?: string) {
   return bookingDay < todayDay;
 }
 
+type ApiRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is ApiRecord {
+  return typeof value === "object" && value !== null;
+}
+
+function unwrapData(data: unknown): unknown {
+  if (isRecord(data) && data.data !== undefined) return unwrapData(data.data);
+  return data;
+}
+
+type ProfileSummary = {
+  name?: string;
+  specialty?: string;
+};
+
+function normalizeProfileSummary(payload: unknown): ProfileSummary | null {
+  const unwrapped = unwrapData(payload);
+  if (!isRecord(unwrapped)) return null;
+
+  const record =
+    (unwrapped.profile || unwrapped.doctor || unwrapped.staff || unwrapped) as ApiRecord;
+  const name =
+    typeof record.full_name === "string"
+      ? record.full_name
+      : typeof record.name === "string"
+        ? record.name
+        : undefined;
+  const specialty =
+    typeof record.specialist === "string"
+      ? record.specialist
+      : typeof record.role_title === "string"
+        ? record.role_title
+        : typeof record.specialty === "string"
+          ? record.specialty
+          : undefined;
+
+  if (!name && !specialty) return null;
+  return { name, specialty };
+}
+
 export default function AppointmentsPage() {
   const { user, loading: authLoading } = useAuth();
   const bookingsApi = useApi<BookingResponse[]>();
   const [selectedDate, setSelectedDate] = useState("");
   const [appliedDate, setAppliedDate] = useState("");
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [cancelingId, setCancelingId] = useState<number | null>(null);
+  const [cancelError, setCancelError] = useState("");
+  const [doctorProfiles, setDoctorProfiles] = useState<Record<number, ProfileSummary>>(
+    {}
+  );
+  const [staffProfiles, setStaffProfiles] = useState<Record<number, ProfileSummary>>(
+    {}
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -171,6 +226,121 @@ export default function AppointmentsPage() {
       booking.booking_date?.startsWith(appliedDate)
     );
   }, [bookings, appliedDate]);
+
+  useEffect(() => {
+    if (bookings.length === 0) return;
+
+    const doctorIds = Array.from(
+      new Set(bookings.map((booking) => booking.doctor_id).filter(Boolean))
+    ) as number[];
+    const staffIds = Array.from(
+      new Set(
+        bookings
+          .map((booking) => booking.staff_id)
+          .filter(Boolean)
+      )
+    ) as number[];
+
+    const missingDoctorIds = doctorIds.filter((id) => !doctorProfiles[id]);
+    const missingStaffIds = staffIds.filter((id) => !staffProfiles[id]);
+
+    if (missingDoctorIds.length === 0 && missingStaffIds.length === 0) return;
+
+    let cancelled = false;
+
+    async function loadProfiles() {
+      const doctorRequests = missingDoctorIds.map(async (id) => {
+        const response = await fetch(`/api/doctors/profile?id=${id}`, {
+          credentials: "include",
+        });
+        const payload = await response.json();
+        if (!response.ok || payload.success === false) {
+          throw new Error(
+            payload.error || payload.message || "Failed to load doctor profile"
+          );
+        }
+        const summary = normalizeProfileSummary(payload);
+        return summary ? { id, summary } : null;
+      });
+
+      const staffRequests = missingStaffIds.map(async (id) => {
+        const response = await fetch(`/api/staff/${id}/profile`, {
+          credentials: "include",
+        });
+        const payload = await response.json();
+        if (!response.ok || payload.success === false) {
+          throw new Error(
+            payload.error || payload.message || "Failed to load staff profile"
+          );
+        }
+        const summary = normalizeProfileSummary(payload);
+        return summary ? { id, summary } : null;
+      });
+
+      const results = await Promise.allSettled([
+        ...doctorRequests,
+        ...staffRequests,
+      ]);
+
+      if (cancelled) return;
+
+      const nextDoctors: Record<number, ProfileSummary> = {};
+      const nextStaff: Record<number, ProfileSummary> = {};
+
+      results.forEach((result, index) => {
+        if (result.status !== "fulfilled" || !result.value) return;
+        const value = result.value;
+        if (index < doctorRequests.length) {
+          nextDoctors[value.id] = value.summary;
+        } else {
+          nextStaff[value.id] = value.summary;
+        }
+      });
+
+      if (Object.keys(nextDoctors).length > 0) {
+        setDoctorProfiles((current) => ({ ...current, ...nextDoctors }));
+      }
+      if (Object.keys(nextStaff).length > 0) {
+        setStaffProfiles((current) => ({ ...current, ...nextStaff }));
+      }
+    }
+
+    loadProfiles();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bookings, doctorProfiles, staffProfiles]);
+
+  const handleCancelBooking = async (bookingId?: number) => {
+    if (!bookingId) return;
+    setCancelError("");
+    setCancelingId(bookingId);
+
+    try {
+      const response = await fetch(`/api/book/${bookingId}/cancel`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      const payload = await response.json();
+
+      if (!response.ok || payload.success === false) {
+        throw new Error(
+          payload.error || payload.message || "Failed to cancel booking"
+        );
+      }
+
+      await bookingsApi.execute("/api/bookings/my-bookings");
+    } catch (error: unknown) {
+      setCancelError(
+        error instanceof Error
+          ? error.message
+          : "حدث خطأ أثناء إلغاء الحجز"
+      );
+    } finally {
+      setCancelingId(null);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -272,6 +442,12 @@ export default function AppointmentsPage() {
             </p>
           )}
 
+          {cancelError && (
+            <p className="text-center text-base font-semibold text-red-600">
+              {cancelError}
+            </p>
+          )}
+
           {!bookingsApi.loading && bookingsApi.error && (
             <p className="text-center text-base font-semibold text-red-600">
               {bookingsApi.error instanceof Error
@@ -291,17 +467,47 @@ export default function AppointmentsPage() {
               const bookingId = booking.booking_id ?? booking.id;
               const bookingKey = `${bookingId ?? "booking"}-${booking.booking_date ?? ""}-${booking.booking_from ?? ""}-${index}`;
               const isPast = isPastBooking(booking.booking_date);
-              const statusLabel = isPast ? "تم الكشف" : "موعد قادم";
-              const statusClass = isPast ? "text-red-600" : "text-emerald-600";
+              const normalizedStatus = (booking.status || "").toLowerCase();
+              const isCancelled = ["cancelled", "canceled", "rejected"].includes(
+                normalizedStatus
+              );
+              const isCompleted = normalizedStatus === "completed";
+              const isCancellable = !isPast && !isCancelled && !isCompleted;
+              const statusLabel = isPast
+                ? "تم الكشف"
+                : STATUS_LABELS[normalizedStatus] || "موعد قادم";
+              const statusClass = isPast
+                ? "text-red-600"
+                : isCancelled
+                  ? "text-slate-500"
+                  : normalizedStatus === "pending"
+                    ? "text-amber-600"
+                    : "text-emerald-600";
               const isExpanded = expandedKey === bookingKey;
               const details = getBookingDetails(booking);
+              const doctorProfile = booking.doctor_id
+                ? doctorProfiles[booking.doctor_id]
+                : undefined;
+              const staffProfile = booking.staff_id
+                ? staffProfiles[booking.staff_id]
+                : undefined;
               const doctorName =
                 booking.doctor_name ||
-                (booking.doctor_id ? `Doctor #${booking.doctor_id}` : "—");
+                booking.staff_name ||
+                staffProfile?.name ||
+                doctorProfile?.name ||
+                (booking.doctor_id
+                  ? `Doctor #${booking.doctor_id}`
+                  : booking.staff_id
+                    ? `Staff #${booking.staff_id}`
+                    : "—");
               const doctorSpecialty =
                 booking.doctor_specialty ||
+                booking.staff_specialty ||
                 booking.specialist ||
                 booking.specialty ||
+                staffProfile?.specialty ||
+                doctorProfile?.specialty ||
                 "";
               const doctorLine = [doctorName, doctorSpecialty]
                 .filter(Boolean)
@@ -331,15 +537,29 @@ export default function AppointmentsPage() {
                       </span>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setExpandedKey(isExpanded ? null : bookingKey)
-                      }
-                      className="self-start rounded-xl bg-[#001A6E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#001250] sm:self-auto"
-                    >
-                      {isExpanded ? "إخفاء التفاصيل" : "عرض التفاصيل"}
-                    </button>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      {isCancellable && (
+                        <button
+                          type="button"
+                          onClick={() => handleCancelBooking(bookingId)}
+                          disabled={cancelingId === bookingId}
+                          className="self-start rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 sm:self-auto"
+                        >
+                          {cancelingId === bookingId
+                            ? "جارٍ الإلغاء..."
+                            : "إلغاء الحجز"}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedKey(isExpanded ? null : bookingKey)
+                        }
+                        className="self-start rounded-xl bg-[#001A6E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#001250] sm:self-auto"
+                      >
+                        {isExpanded ? "إخفاء التفاصيل" : "عرض التفاصيل"}
+                      </button>
+                    </div>
                   </div>
 
                   {isExpanded && (
