@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { MapPin, Phone, Clock, Star, Search, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import DoctorCard from "@/components/home/doctorCard/doctorCard";
-import { allClinics } from "@/constants/clinics";
 import { t } from "@/i18n";
 
 const API_BASE_URL = "http://127.0.0.1:3001/api";
@@ -18,24 +17,137 @@ type ClinicDoctor = {
   work_from: string;
   work_to: string;
   consultation_price: number;
-  photo?: string | null;
+  photo: string | null;
   can_be_booked: number;
 };
+
+type GeoLocation = {
+  latitude: number;
+  longitude: number;
+};
+
+type ClinicProfileData = {
+  clinic_id: number;
+  name: string;
+  location: string;
+  phone: string;
+  photo: string;
+  total_ratings: number;
+  average_rating: number;
+  geo_location: GeoLocation | null;
+};
+
+type ApiRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is ApiRecord {
+  return typeof value === "object" && value !== null;
+}
+
+function unwrapData(data: unknown): unknown {
+  if (isRecord(data) && data.data !== undefined) return unwrapData(data.data);
+  return data;
+}
+
+function toNumber(value: unknown, fallback: number) {
+  return Number.isFinite(Number(value)) ? Number(value) : fallback;
+}
+
+function normalizeClinic(
+  value: unknown,
+  fallbackId: number,
+): ClinicProfileData | null {
+  if (!isRecord(value)) return null;
+
+  const clinicId = toNumber(value.clinic_id ?? value.id, fallbackId);
+  const name = typeof value.name === "string" ? value.name : "";
+  const location = typeof value.location === "string" ? value.location : "";
+  const phone = typeof value.phone === "string" ? value.phone : "";
+  const photo =
+    typeof value.photo === "string" && value.photo.trim()
+      ? value.photo
+      : "/images/clinic1.png";
+  const totalRatings = toNumber(value.total_ratings, 0);
+  const averageRating = toNumber(value.average_rating, 0);
+  const geoLocation =
+    isRecord(value.geo_location) &&
+    typeof value.geo_location.latitude === "number" &&
+    typeof value.geo_location.longitude === "number"
+      ? {
+          latitude: value.geo_location.latitude,
+          longitude: value.geo_location.longitude,
+        }
+      : null;
+
+  return {
+    clinic_id: clinicId,
+    name,
+    location,
+    phone,
+    photo,
+    total_ratings: totalRatings,
+    average_rating: averageRating,
+    geo_location: geoLocation,
+  };
+}
+
+function normalizeDoctors(value: unknown): ClinicDoctor[] {
+  if (!Array.isArray(value)) return [];
+
+  const doctors: ClinicDoctor[] = [];
+
+  for (const [index, entry] of value.entries()) {
+    if (!isRecord(entry)) continue;
+
+    doctors.push({
+      staff_id: toNumber(entry.staff_id ?? entry.id, index + 1),
+      full_name:
+        typeof entry.full_name === "string"
+          ? entry.full_name
+          : typeof entry.name === "string"
+            ? entry.name
+            : "",
+      role_title: typeof entry.role_title === "string" ? entry.role_title : "",
+      specialist: typeof entry.specialist === "string" ? entry.specialist : "",
+      work_days: typeof entry.work_days === "string" ? entry.work_days : "",
+      work_from: typeof entry.work_from === "string" ? entry.work_from : "",
+      work_to: typeof entry.work_to === "string" ? entry.work_to : "",
+      consultation_price: toNumber(entry.consultation_price, 0),
+      photo: typeof entry.photo === "string" ? entry.photo : null,
+      can_be_booked:
+        typeof entry.can_be_booked === "number"
+          ? entry.can_be_booked
+          : entry.can_be_booked
+            ? 1
+            : 0,
+    });
+  }
+
+  return doctors;
+}
+
+function getClinicHours(doctors: ClinicDoctor[]) {
+  const withHours = doctors.find(
+    (doctor) => doctor.work_from && doctor.work_to,
+  );
+  if (!withHours) return "";
+  return `${withHours.work_from} - ${withHours.work_to}`;
+}
 
 export default function ClinicDetailsPage() {
   const params = useParams();
   const clinicId = Number(params.id);
-  const clinic =
-    allClinics.find((c) => c.id === clinicId) || allClinics[0];
 
   const [visibleDoctors, setVisibleDoctors] = useState(3);
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [selectedGender, setSelectedGender] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [locale, setLocale] = useState("en");
+  const [clinicProfile, setClinicProfile] = useState<ClinicProfileData | null>(
+    null,
+  );
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState("");
   const [doctors, setDoctors] = useState<ClinicDoctor[]>([]);
-  const [loadingDoctors, setLoadingDoctors] = useState(false);
-  const [doctorsError, setDoctorsError] = useState("");
 
   useEffect(() => {
     const stored = localStorage.getItem("locale");
@@ -47,42 +159,69 @@ export default function ClinicDetailsPage() {
   }, []);
 
   useEffect(() => {
-    async function loadClinicDoctors() {
+    async function loadClinicProfile() {
       if (!clinicId) {
+        setClinicProfile(null);
         setDoctors([]);
-        setDoctorsError("Clinic not found");
+        setProfileError("Clinic not found");
         return;
       }
 
-      setLoadingDoctors(true);
-      setDoctorsError("");
+      setProfileLoading(true);
+      setProfileError("");
 
       try {
-        const response = await fetch(`${API_BASE_URL}/clinic/${clinicId}/staff`);
+        const response = await fetch(
+          `${API_BASE_URL}/clinic/${clinicId}/profile`,
+        );
         const data = await response.json();
 
-        const staff = Array.isArray(data.staff)
-          ? data.staff
-          : Array.isArray(data.data?.staff)
-          ? data.data.staff
-          : [];
-
         if (!response.ok) {
-          const message = data.error || data.message || "Failed to load clinic doctors";
+          const message =
+            data.error || data.message || "Failed to load clinic profile";
           throw new Error(message);
         }
 
-        setDoctors(staff);
+        const unwrapped = unwrapData(data);
+        const clinicSource = isRecord(unwrapped)
+          ? (unwrapped.clinic ?? unwrapped.profile ?? unwrapped)
+          : unwrapped;
+        const doctorsSource = isRecord(unwrapped)
+          ? (unwrapped.doctors ?? unwrapped.staff ?? [])
+          : [];
+
+        setClinicProfile(normalizeClinic(clinicSource, clinicId));
+        setDoctors(normalizeDoctors(doctorsSource));
       } catch (error: any) {
-        console.error("Clinic doctors fetch error:", error);
-        setDoctorsError(error?.message || "تعذر تحميل الأطباء");
+        console.error("Clinic profile fetch error:", error);
+        setProfileError(error?.message || "تعذر تحميل بيانات العيادة");
+        setClinicProfile(null);
+        setDoctors([]);
       } finally {
-        setLoadingDoctors(false);
+        setProfileLoading(false);
       }
     }
 
-    loadClinicDoctors();
+    loadClinicProfile();
   }, [clinicId]);
+
+  const clinic = clinicProfile;
+  const clinicSpecialties = Array.from(
+    new Set(
+      doctors
+        .map((doctor) => doctor.specialist)
+        .filter((specialty) => specialty),
+    ),
+  );
+  const clinicHours = getClinicHours(doctors);
+  const ratingValue = clinic?.average_rating ?? 0;
+  const ratingCount = clinic?.total_ratings ?? 0;
+  const roundedRating = Math.round(ratingValue);
+  const mapSrc = clinic?.geo_location
+    ? `https://maps.google.com/maps?q=${clinic.geo_location.latitude},${clinic.geo_location.longitude}&z=15&output=embed`
+    : `https://maps.google.com/maps?q=${encodeURIComponent(
+        clinic?.location || "Cairo",
+      )}&z=12&output=embed`;
 
   const filteredDoctors = doctors.filter((doc) => {
     const matchesSpecialty =
@@ -93,6 +232,30 @@ export default function ClinicDetailsPage() {
       doc.full_name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSpecialty && matchesGender && matchesSearch;
   });
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="max-w-6xl mx-auto pt-32 pb-12 px-4">
+          <div className="flex justify-center items-center min-h-96">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#001A6E]"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (profileError || !clinic) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="max-w-6xl mx-auto pt-32 pb-12 px-4">
+          <div className="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg text-center">
+            <p>{profileError || "Clinic not found"}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -105,7 +268,7 @@ export default function ClinicDetailsPage() {
           >
             <div className="rounded-3xl overflow-hidden shadow-sm">
               <img
-                src={clinic.image}
+                src={clinic.photo}
                 alt={clinic.name}
                 className="w-full h-87.5 object-cover"
               />
@@ -125,7 +288,7 @@ export default function ClinicDetailsPage() {
               {t("clinics.medicalSpecialties", locale)}
             </h3>
             <div className="flex flex-wrap gap-4 mb-12">
-              {clinic.specialties.map((spec, index) => (
+              {clinicSpecialties.map((spec, index) => (
                 <span key={index} className="text-gray-400 text-sm">
                   {spec}
                 </span>
@@ -139,7 +302,7 @@ export default function ClinicDetailsPage() {
                 <MapPin
                   className={`w-5 h-5 ${locale === "ar" ? "ml-3" : "mr-3"}`}
                 />
-                <span>{clinic.city}</span>
+                <span>{clinic.location}</span>
               </div>
               <div className="flex items-center text-gray-400">
                 <Phone
@@ -147,16 +310,18 @@ export default function ClinicDetailsPage() {
                 />
                 <span dir="ltr">{clinic.phone}</span>
               </div>
-              <div className="flex items-center text-gray-400">
-                <Clock
-                  className={`w-5 h-5 ${locale === "ar" ? "ml-3" : "mr-3"}`}
-                />
-                <span>{clinic.hours}</span>
-              </div>
+              {clinicHours ? (
+                <div className="flex items-center text-gray-400">
+                  <Clock
+                    className={`w-5 h-5 ${locale === "ar" ? "ml-3" : "mr-3"}`}
+                  />
+                  <span>{clinicHours}</span>
+                </div>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap gap-2 mb-4">
-              {clinic.specialties.map((tag, i) => (
+              {clinicSpecialties.map((tag, i) => (
                 <span
                   key={i}
                   className="bg-blue-50 text-blue-600 text-xs px-4 py-1.5 rounded-full font-medium"
@@ -166,7 +331,10 @@ export default function ClinicDetailsPage() {
               ))}
             </div>
             <p className="text-gray-300 text-xs">
-              {t("clinics.fromVisitors", locale).replace("{count}", "245")}
+              {t("clinics.fromVisitors", locale).replace(
+                "{count}",
+                String(ratingCount),
+              )}
             </p>
           </div>
         </div>
@@ -186,7 +354,7 @@ export default function ClinicDetailsPage() {
                 onChange={(e) => setSelectedSpecialty(e.target.value)}
               >
                 <option value="">{t("clinics.selectSpecialty", locale)}</option>
-                {clinic.specialties.map((spec, i) => (
+                {clinicSpecialties.map((spec, i) => (
                   <option key={i} value={spec}>
                     {spec}
                   </option>
@@ -218,12 +386,14 @@ export default function ClinicDetailsPage() {
             </button>
           </div>
 
-          {loadingDoctors ? (
+          {profileLoading ? (
             <p className="text-center text-[#001A6E]">جاري تحميل الدكاترة...</p>
-          ) : doctorsError ? (
-            <p className="text-center text-red-600">{doctorsError}</p>
+          ) : profileError ? (
+            <p className="text-center text-red-600">{profileError}</p>
           ) : filteredDoctors.length === 0 ? (
-            <p className="text-center text-[#001A6E]">لا يوجد دكاترة متاحين في هذه العيادة حالياً</p>
+            <p className="text-center text-[#001A6E]">
+              لا يوجد دكاترة متاحين في هذه العيادة حالياً
+            </p>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -231,7 +401,7 @@ export default function ClinicDetailsPage() {
                   <DoctorCard
                     key={doc.staff_id}
                     id={doc.staff_id}
-                    clinicId={clinic.id}
+                    clinicId={clinic.clinic_id}
                     name={doc.full_name}
                     specialty={doc.specialist || ""}
                     rating={0}
@@ -264,7 +434,7 @@ export default function ClinicDetailsPage() {
           </h2>
           <div className="rounded-3xl overflow-hidden h-96 border border-gray-100 shadow-sm relative">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.1594251121!2d31.2357116!3d30.0444196!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x145840c611843949%3A0x63346f0474665f80!2sCairo%20Opera%20House!5e0!3m2!1sen!2seg!4v1708612345678!5m2!1sen!2seg"
+              src={mapSrc}
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -287,7 +457,11 @@ export default function ClinicDetailsPage() {
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className="w-6 h-6 text-yellow-400 fill-yellow-400"
+                  className={`w-6 h-6 ${
+                    i < roundedRating
+                      ? "text-yellow-400 fill-yellow-400"
+                      : "text-gray-200"
+                  }`}
                 />
               ))}
             </div>
@@ -295,38 +469,17 @@ export default function ClinicDetailsPage() {
               {t("clinics.overallRating", locale)}
             </p>
             <p className="text-gray-400 text-sm">
-              {t("clinics.fromVisitors", locale).replace("{count}", "200")}
+              {t("clinics.fromVisitors", locale).replace(
+                "{count}",
+                String(ratingCount),
+              )}
             </p>
           </div>
 
           {/* Reviews Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {clinic.reviews.slice(0, 4).map((review) => (
-              <div
-                key={review.id}
-                className="bg-linear-to-br from-blue-50 to-white border border-blue-100 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex gap-0.5 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 text-yellow-400 fill-yellow-400"
-                    />
-                  ))}
-                </div>
-                <p className="font-bold text-sm text-gray-800 mb-2">
-                  {t("clinics.overallRating", locale)}
-                </p>
-                <p className="text-gray-600 text-xs font-medium mb-1">
-                  {review.name}
-                </p>
-                <p className="text-gray-400 text-[11px] mb-3">{review.date}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  "{review.comment}"
-                </p>
-              </div>
-            ))}
-          </div>
+          {ratingCount === 0 ? (
+            <p className="text-center text-gray-400">No reviews yet.</p>
+          ) : null}
         </div>
       </div>
     </div>
