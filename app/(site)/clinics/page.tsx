@@ -4,30 +4,86 @@ import ClinicCard from "@/components/clinics/ClinicCard";
 import { ChevronDown } from "lucide-react";
 import { t } from "@/i18n";
 
-interface ApiClinic {
+type GeoLocation = {
+  latitude: number;
+  longitude: number;
+};
+
+type ApiClinic = {
+  clinic_id?: number;
+  id?: number;
+  name?: string;
+  location?: string;
+  phone?: string;
+  photo?: string | null;
+  doctors_count?: number | null;
+  total_ratings?: number | null;
+  average_rating?: number | null;
+  geo_location?: GeoLocation | null;
+};
+
+type ClinicCardData = {
   clinic_id: number;
   name: string;
   location: string;
   phone: string;
+  photo: string;
   doctors_count: number;
   total_ratings: number;
   average_rating: number;
-  geo_location: null | string;
+  geo_location: GeoLocation | null;
+};
+
+type ApiRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is ApiRecord {
+  return typeof value === "object" && value !== null;
 }
 
-interface Clinic {
-  id: number;
-  name: string;
-  city: string;
-  phone: string;
-  rating: number;
-  hours: string;
-  specialties: string[];
-  image: string;
+function extractClinics(payload: unknown): ApiClinic[] {
+  if (Array.isArray(payload)) return payload as ApiClinic[];
+  if (!isRecord(payload)) return [];
+
+  if (Array.isArray(payload.clinics)) return payload.clinics as ApiClinic[];
+
+  const data = payload.data;
+  if (Array.isArray(data)) return data as ApiClinic[];
+  if (isRecord(data) && Array.isArray(data.clinics)) {
+    return data.clinics as ApiClinic[];
+  }
+
+  return [];
+}
+
+function toNumber(value: unknown, fallback: number) {
+  return Number.isFinite(Number(value)) ? Number(value) : fallback;
+}
+
+function normalizeClinic(clinic: ApiClinic, index: number): ClinicCardData | null {
+  const clinicId = toNumber(clinic.clinic_id ?? clinic.id, index + 1);
+  const name = typeof clinic.name === "string" ? clinic.name : "";
+  const location = typeof clinic.location === "string" ? clinic.location : "";
+  const phone = typeof clinic.phone === "string" ? clinic.phone : "";
+  const photo =
+    typeof clinic.photo === "string" && clinic.photo.trim()
+      ? clinic.photo
+      : "/images/clinic1.png";
+
+  return {
+    clinic_id: clinicId,
+    name,
+    location,
+    phone,
+    photo,
+    doctors_count: toNumber(clinic.doctors_count, 0),
+    total_ratings: toNumber(clinic.total_ratings, 0),
+    average_rating: toNumber(clinic.average_rating, 0),
+    geo_location: clinic.geo_location ?? null,
+  };
 }
 
 export default function Page() {
-  const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [clinics, setClinics] = useState<ClinicCardData[]>([]);
   const [visibleCount, setVisibleCount] = useState(6);
   const [locale, setLocale] = useState("en");
   const [loading, setLoading] = useState(true);
@@ -54,20 +110,12 @@ export default function Page() {
         }
 
         const data = await response.json();
-        
-        // Transform API response to expected format
-        const transformedClinics: Clinic[] = data.clinics.map((clinic: ApiClinic) => ({
-          id: clinic.clinic_id,
-          name: clinic.name,
-          city: clinic.location,
-          phone: clinic.phone,
-          rating: clinic.average_rating,
-          hours: "9:00 AM - 6:00 PM",
-          specialties: ["Healthcare Services"],
-          image: "/images/clinic1.png", // Default image
-        }));
+        const list = extractClinics(data);
+        const normalized = list
+          .map((clinic, index) => normalizeClinic(clinic, index))
+          .filter((clinic): clinic is ClinicCardData => Boolean(clinic));
 
-        setClinics(transformedClinics);
+        setClinics(normalized);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "An error occurred";
         setError(errorMessage);
@@ -117,7 +165,7 @@ export default function Page() {
             <>
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {clinics.slice(0, visibleCount).map((clinic) => (
-                  <ClinicCard key={clinic.id} clinic={clinic} />
+                  <ClinicCard key={clinic.clinic_id} clinic={clinic} />
                 ))}
               </div>
 
