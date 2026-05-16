@@ -52,8 +52,81 @@ export const adminService = {
   },
 
   async listClinics(token: string) {
-    const res = await apiClient.get<ApiResponse<AdminClinicsList[]>>("/api/admin/clinics", { token });
-    return res.data || [];
+    const res = await apiClient.get<
+      | ApiResponse<AdminClinicsList[]>
+      | AdminClinicsList[]
+      | {
+          status?: string;
+          clinics?: AdminClinicsList[];
+          data?: AdminClinicsList[];
+        }
+    >("/api/admin/clinics", { token });
+
+    if (Array.isArray(res)) {
+      return res;
+    }
+
+    if (Array.isArray(res.data)) {
+      return res.data;
+    }
+
+    if ("clinics" in res && Array.isArray(res.clinics)) {
+      return res.clinics;
+    }
+
+    return [];
+  },
+
+  async listApprovedClinics(token: string) {
+    const res = await apiClient.get<
+      | ApiResponse<AdminClinicsList[]>
+      | AdminClinicsList[]
+      | {
+          status?: string;
+          clinics?: AdminClinicsList[];
+          data?: AdminClinicsList[];
+        }
+    >("/api/admin/approved-clinics", { token });
+
+    if (Array.isArray(res)) {
+      return res;
+    }
+
+    if (Array.isArray(res.data)) {
+      return res.data;
+    }
+
+    if ("clinics" in res && Array.isArray(res.clinics)) {
+      return res.clinics;
+    }
+
+    return [];
+  },
+
+  async listPendingClinics(token: string) {
+    const res = await apiClient.get<
+      | ApiResponse<AdminClinicsList[]>
+      | AdminClinicsList[]
+      | {
+          status?: string;
+          clinics?: AdminClinicsList[];
+          data?: AdminClinicsList[];
+        }
+    >("/api/admin/pending-clinics", { token });
+
+    if (Array.isArray(res)) {
+      return res;
+    }
+
+    if (Array.isArray(res.data)) {
+      return res.data;
+    }
+
+    if ("clinics" in res && Array.isArray(res.clinics)) {
+      return res.clinics;
+    }
+
+    return [];
   },
 
   async approveClinic(clinicId: number, token: string) {

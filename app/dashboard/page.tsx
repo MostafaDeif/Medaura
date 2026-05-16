@@ -6,9 +6,9 @@ import ChartBar from "./components/charts/ChartBar";
 import AppointsmentRequests from "./features/appointments/AppointsmentRequests";
 import VisitsGauge from "./components/charts/VisitsGauge";
 import DoctorsList from "./features/doctors/doctorsList";
-import ClinicsList from "./features/patient/PatientReport";
+import ClinicsList from "./features/clinics/ClinicsList";
 import DepartmentsChart from "./components/charts/DepartmentsChart";
-import PatientsTable from "./features/patient/PatientTaple";
+import PatientsTable from "./features/clinics/PatientsTable";
 import AppointmentsTable from "./features/appointments/AppointmentsTable";
 
 import React, { useState, useEffect } from "react";
