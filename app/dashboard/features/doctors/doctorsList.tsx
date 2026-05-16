@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Check, X } from "lucide-react";
 
 interface Doctor {
-  id: number;
+  id?: number;
+  doctor_id?: number;
   name?: string;
   full_name?: string;
   specialty?: string;
@@ -17,20 +19,112 @@ interface Doctor {
 
 const DOCTOR_FALLBACK_IMAGE = "/images/blank-profile-picture.png";
 
+function getDoctorId(doctor: Doctor) {
+  return doctor.doctor_id || doctor.id || 0;
+}
+
+function getDoctorVerified(doctor: Doctor) {
+  const record = doctor as Record<string, unknown>;
+  const raw =
+    doctor.verified ??
+    record.is_verified ??
+    record.isVerified ??
+    record.verify_status ??
+    record.verified_status;
+
+  if (typeof raw === "boolean") return raw;
+  if (typeof raw === "number") return raw === 1;
+  if (typeof raw === "string") {
+    const normalized = raw.trim().toLowerCase();
+    return normalized === "true" || normalized === "1";
+  }
+
+  return false;
+}
+
+function normalizeDoctor(doctor: Doctor): Doctor {
+  return {
+    ...doctor,
+    id: getDoctorId(doctor),
+    verified: getDoctorVerified(doctor),
+  };
+}
+
+function normalizeDoctors(list: Doctor[]) {
+  return list.map(normalizeDoctor);
+}
+
 export default function DoctorsList({ doctors: doctorsProp }: { doctors?: Doctor[] }) {
-  const [doctors, setDoctors] = useState<Doctor[]>(doctorsProp || []);
+  const router = useRouter();
+  const [doctors, setDoctors] = useState<Doctor[]>(() =>
+    normalizeDoctors(doctorsProp || []),
+  );
   const [loadingId, setLoadingId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(!doctorsProp?.length);
 
   useEffect(() => {
     if (doctorsProp) {
-      setDoctors(doctorsProp);
+      setDoctors(normalizeDoctors(doctorsProp));
     }
   }, [doctorsProp]);
 
-  const handleVerify = async (id: number, verify: boolean) => {
+  useEffect(() => {
+    let active = true;
+
+    async function loadAllDoctors() {
+      try {
+        const response = await fetch("/api/admin/doctors", {
+          credentials: "include",
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          return;
+        }
+
+        const list = Array.isArray(result.data)
+          ? result.data
+          : Array.isArray(result.doctors)
+            ? result.doctors
+            : Array.isArray(result.data?.doctors)
+              ? result.data.doctors
+              : [];
+
+        if (active) {
+          setDoctors(normalizeDoctors(list));
+        }
+      } catch (error) {
+        console.error("Failed to load doctors:", error);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadAllDoctors();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleVerify = async (doctor: Doctor, verify: boolean) => {
+    if (verify && doctor.verified) {
+      return;
+    }
+
+    const id = getDoctorId(doctor);
+    if (!id) {
+      console.error("Cannot update doctor verification: missing doctor id");
+      return;
+    }
+
     setLoadingId(id);
     try {
-      const endpoint = verify ? `/api/admin/${id}/verify` : `/api/admin/${id}/unverify`;
+      const endpoint = verify
+        ? `/api/admin/${id}/verify`
+        : `/api/admin/${id}/unverify`;
       const response = await fetch(endpoint, {
         method: "PATCH",
         credentials: "include",
@@ -38,11 +132,19 @@ export default function DoctorsList({ doctors: doctorsProp }: { doctors?: Doctor
       const result = await response.json();
       if (result.success) {
         setDoctors((prev) =>
-          prev.map((d) => (d.id === id ? { ...d, verified: verify } : d))
+          prev.map((doctor) =>
+            getDoctorId(doctor) === id ? { ...doctor, verified: verify } : doctor,
+          )
         );
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("admin:doctors-updated"));
+        }
       }
     } catch (error) {
       console.error("Failed to update doctor verification:", error);
+      if (verify && doctor.verified) {
+        return;
+      }
     } finally {
       setLoadingId(null);
     }
@@ -54,7 +156,10 @@ export default function DoctorsList({ doctors: doctorsProp }: { doctors?: Doctor
       {/* header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-(--card-border) mb-6 p-6">
         
-        <button className="w-full sm:w-auto border-2 border-(--card-border) px-3 py-2 rounded-[5px] text-sm text-(--text-primary) font-normal cursor-pointer hover:text-white hover:bg-[#1F2B6C] transition-colors duration-500">
+        <button
+          onClick={() => router.push("/dashboard/pages/doctors")}
+          className="w-full sm:w-auto border-2 border-(--card-border) px-3 py-2 rounded-[5px] text-sm text-(--text-primary) font-normal cursor-pointer hover:text-white hover:bg-[#1F2B6C] transition-colors duration-500"
+        >
           عرض الكل
         </button>
 
@@ -65,9 +170,21 @@ export default function DoctorsList({ doctors: doctorsProp }: { doctors?: Doctor
 
       {/* Doctors */}
       <div className="space-y-4 sm:space-y-2.5 px-4 sm:px-6 py-2 pb-6">
+        {loading && doctors.length === 0 && (
+          <div className="py-8 text-center text-(--text-secondary)">
+            جاري تحميل الأطباء...
+          </div>
+        )}
+
+        {!loading && doctors.length === 0 && (
+          <div className="py-8 text-center text-(--text-secondary)">
+            لا يوجد أطباء
+          </div>
+        )}
+
         {doctors.slice(0, 7).map((doctor, index) => (
           <div
-            key={doctor.id || index}
+            key={`${getDoctorId(doctor) || "doctor"}-${index}`}
             className="flex items-center justify-between p-3 sm:p-4 bg-(--semi-card-bg) rounded-lg hover:bg-(--hover-bg) transition-colors"
           >
             
@@ -104,8 +221,8 @@ export default function DoctorsList({ doctors: doctorsProp }: { doctors?: Doctor
               </span>
 
               <button
-                onClick={() => handleVerify(doctor.id, !doctor.verified)}
-                disabled={loadingId === doctor.id}
+                onClick={() => handleVerify(doctor, !doctor.verified)}
+                disabled={loadingId === getDoctorId(doctor) || !getDoctorId(doctor)}
                 className={`p-1.5 rounded-lg transition-colors ${
                   doctor.verified
                     ? "bg-red-50 text-red-600 hover:bg-red-100"

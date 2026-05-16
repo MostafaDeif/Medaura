@@ -29,10 +29,8 @@ export default function PatientsTable({ patients: patientsProp }: { patients?: P
 
   return (
     <div className=" rounded-2xl shadow-sm bg-(--card-bg) border border-(--card-border) w-full">
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b-2 border-(--card-border) mb-6 p-6 gap-4">
-        
         <button className="w-full sm:w-auto border-2 border-(--card-border) px-3 py-2 rounded-[5px] text-sm text-(--text-primary) font-normal cursor-pointer hover:text-white hover:bg-indigo-600 transition-colors duration-500">
           عرض الكل
         </button>
@@ -45,7 +43,6 @@ export default function PatientsTable({ patients: patientsProp }: { patients?: P
       {/* Table */}
       <div className="p-6">
         <div className="overflow-hidden rounded-xl border border-(--card-border)">
-
           {/* Mobile */}
           <div className="sm:hidden space-y-4 p-4">
             {data.map((item, index) => (
@@ -54,7 +51,6 @@ export default function PatientsTable({ patients: patientsProp }: { patients?: P
                 className="rounded-2xl border border-(--card-border)  p-4 shadow-sm"
               >
                 <div className="flex flex-col gap-3">
-                  
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-(--text-primary)">
                       {item.name || item.full_name}
@@ -70,7 +66,6 @@ export default function PatientsTable({ patients: patientsProp }: { patients?: P
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-sm text-(--text-secondary)">
-                    
                     <span className="font-medium text-(--text-primary)">
                       الجنس
                     </span>
@@ -80,7 +75,6 @@ export default function PatientsTable({ patients: patientsProp }: { patients?: P
                       آخر زيارة
                     </span>
                     <span>{item.date}</span>
-
                   </div>
                 </div>
               </div>
@@ -90,7 +84,6 @@ export default function PatientsTable({ patients: patientsProp }: { patients?: P
           {/* Desktop */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full min-w-max p-6 text-sm text-right">
-
               <thead className="bg-(--hover-bg) text-(--text-secondary)">
                 <tr>
                   <th className="px-4 py-3">آخر زيارة</th>
@@ -130,10 +123,8 @@ export default function PatientsTable({ patients: patientsProp }: { patients?: P
                   </tr>
                 ))}
               </tbody>
-
             </table>
           </div>
-
         </div>
       </div>
     </div>

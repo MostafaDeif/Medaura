@@ -40,6 +40,21 @@ export async function PATCH(request: NextRequest) {
         ? error.status
         : 500;
 
+    const data =
+      typeof error === "object" &&
+      error !== null &&
+      "data" in error
+        ? (error as { data?: { message?: string } }).data
+        : undefined;
+    const serverMessage = data?.message || message;
+
+    if (status === 400 && /already verified/i.test(serverMessage)) {
+      return applyAuthCookies(
+        NextResponse.json({ success: true, data: { alreadyVerified: true } }),
+        auth
+      );
+    }
+
     console.error("Verify admin doctor error:", error);
     return NextResponse.json(
       { success: false, error: message },
