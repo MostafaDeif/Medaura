@@ -12,9 +12,7 @@ interface Appointment {
   status: "pending" | "approved" | "rejected";
 }
 
-const fallbackAppointments: Appointment[] = [
-
-  ];
+const fallbackAppointments: Appointment[] = [];
 
 export default function AppointsmentRequests({
   appointments: appointmentsProp,
@@ -22,7 +20,7 @@ export default function AppointsmentRequests({
   appointments?: Appointment[];
 }) {
   const [appointments, setAppointmets] = useState<Appointment[]>(
-    appointmentsProp ?? fallbackAppointments
+    appointmentsProp ?? fallbackAppointments,
   );
 
   useEffect(() => {
@@ -34,10 +32,8 @@ export default function AppointsmentRequests({
   const updateStatus = (id: number, newStatus: "approved" | "rejected") => {
     setAppointmets((prev) =>
       prev.map((item) =>
-        item.id === id
-          ? ({ ...item, status: newStatus } as Appointment)
-          : item
-      )
+        item.id === id ? ({ ...item, status: newStatus } as Appointment) : item,
+      ),
     );
   };
 
@@ -57,7 +53,7 @@ export default function AppointsmentRequests({
   };
 
   const getStatusColor = (
-    status: "pending" | "approved" | "rejected" | "canceled"
+    status: "pending" | "approved" | "rejected" | "canceled",
   ) => {
     switch (status) {
       case "pending":
@@ -74,7 +70,7 @@ export default function AppointsmentRequests({
   };
 
   const getStatusText = (
-    status: "pending" | "approved" | "rejected" | "canceled"
+    status: "pending" | "approved" | "rejected" | "canceled",
   ) => {
     switch (status) {
       case "pending":
@@ -90,56 +86,62 @@ export default function AppointsmentRequests({
     }
   };
 
-  const date = appointments.map((item) => {
-    return item.time.split("-");
-  });
-
-  console.log(date[0]);
-
   return (
-    <div className="bg-(--card-bg) rounded-xl shadow-sm">
-
+    <div className="bg-(--card-bg) rounded-2xl border border-(--card-border) shadow-[var(--shadow-soft)]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-(--card-border) mb-6 p-6">
-        <button className="w-full sm:w-auto border-2 border-(--card-border) px-3 py-2 rounded-[5px] text-sm sm:text-base text-(--text-primary) font-normal cursor-pointer hover:text-white hover:bg-[#1F2B6C] transition-colors duration-500">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-(--card-border) mb-4 p-4">
+        <button className="w-full sm:w-auto border border-(--card-border) px-3 py-1.5 rounded-xl text-xs sm:text-sm text-(--text-primary) font-medium cursor-pointer hover:text-white hover:bg-[color:var(--primary)] transition-colors duration-300">
           جميع المواعيد
         </button>
 
-        <h1 className="text-2xl font-bold text-(--text-primary)">
-         طلب حجز موعد
+        <h1 className="text-lg font-semibold text-(--text-primary)">
+          طلب حجز موعد
         </h1>
       </div>
 
       {/* List */}
-      <div className="space-y-4 px-6 py-4 ">
+      <div className="space-y-3 px-4 pb-4">
+        {appointments.length === 0 && (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-(--card-border) p-6 text-center">
+            <div className="h-12 w-12 rounded-2xl bg-(--hover-bg) flex items-center justify-center mb-3">
+              <Calendar size={20} className="text-(--text-secondary)" />
+            </div>
+            <p className="text-sm font-semibold text-(--text-primary)">
+              لا توجد طلبات حجز حالياً
+            </p>
+            <p className="text-xs text-(--text-secondary)">
+              ستظهر الطلبات الجديدة فور وصولها.
+            </p>
+          </div>
+        )}
+
         {appointments.map((item) => (
           <div
             key={item.id}
-            className="flex justify-between gap-10 flex-col sm:flex-row items-start sm:items-center rounded-3xl border border-(--card-border) bg-(--card-bg) p-4"
+            className="flex justify-between gap-6 flex-col sm:flex-row items-start sm:items-center rounded-2xl border border-(--card-border) bg-(--card-bg) p-3 hover:shadow-[var(--shadow-soft)] transition"
           >
-
             {/* Left Actions */}
-            <div className="flex gap-3 ">
+            <div className="flex gap-2">
               {item.status === "pending" ? (
                 <>
                   <button
                     onClick={() => updateStatus(item.id, "rejected")}
-                    className="w-8 h-8 flex items-center justify-center rounded-md bg-[#EEF2F7] hover:bg-[#FECACA] transition cursor-pointer"
+                    className="w-7 h-7 flex items-center justify-center rounded-md bg-[#EEF2F7] hover:bg-[#FECACA] transition cursor-pointer"
                   >
                     <X size={14} className="text-[#0B0D0E]" />
                   </button>
 
                   <button
                     onClick={() => updateStatus(item.id, "approved")}
-                    className="w-8 h-8 flex items-center justify-center rounded-md bg-[#EEF2F7] hover:bg-[#BFDBFE] transition cursor-pointer"
+                    className="w-7 h-7 flex items-center justify-center rounded-md bg-[#EEF2F7] hover:bg-[#BFDBFE] transition cursor-pointer"
                   >
                     <Check size={14} className="text-[#0B0D0E]" />
                   </button>
                 </>
               ) : (
                 <span
-                  className={`px-3 py-1 rounded-md text-sm font-semibold ${getStatusColor(
-                    item.status
+                  className={`px-3 py-1 rounded-md text-xs font-semibold ${getStatusColor(
+                    item.status,
                   )}`}
                 >
                   {getStatusText(item.status)}
@@ -151,7 +153,7 @@ export default function AppointsmentRequests({
             <div className="shrink-0">
               <span
                 className={`px-2 py-1 rounded-md text-xs sm:text-sm ${getSpecialtyColor(
-                  item.specialty
+                  item.specialty,
                 )}`}
               >
                 {item.specialty}
@@ -160,14 +162,12 @@ export default function AppointsmentRequests({
 
             {/* Right Info */}
             <div className="flex flex-1 justify-end flex-col sm:flex-row items-start sm:items-center gap-3 min-w-0">
-              
               <div className="text-right min-w-0">
-                <p className="font-semibold text-xl text-(--text-primary)">
+                <p className="font-semibold text-base text-(--text-primary)">
                   {item.name}
                 </p>
 
                 <div className="flex items-center justify-end gap-1 text-xs text-(--text-secondary)">
-                  
                   <div className="flex items-center gap-1 border-r border-(--card-border) pr-2">
                     {item.time.split("-")[0]}
                     <Clock size={12} />
@@ -177,7 +177,6 @@ export default function AppointsmentRequests({
                     {item.time.split("-")[1]}
                     <Calendar size={12} />
                   </div>
-
                 </div>
               </div>
 

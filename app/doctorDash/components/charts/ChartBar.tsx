@@ -1,133 +1,185 @@
 "use client";
 import { useState } from "react";
-import { BarChart , Bar , XAxis , YAxis , Tooltip , ResponsiveContainer  , CartesianGrid} from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 import { format } from "date-fns";
 
-interface props{
-    data :{
-      date: string;
-      exixiting: number;
-      new: number;
-    }[];
+interface props {
+  data: {
+    date: string;
+    exixiting: number;
+    new: number;
+  }[];
 }
 
-export default function ChartBar({data}:props) {
-  const [New , setNew] = useState(false)
-  const [old , setOld] = useState(false)
+export default function ChartBar({ data }: props) {
+  const [New, setNew] = useState(false);
+  const [old, setOld] = useState(false);
 
-  let totall = 0
-  data.forEach((item)=>{
-    if(New){
-      totall = totall + item.new
-    }else if(old){
-      totall = totall + item.exixiting
-    }else{
-      totall = totall + (item.exixiting + item.new )
+  let totall = 0;
+  data.forEach((item) => {
+    if (New) {
+      totall = totall + item.new;
+    } else if (old) {
+      totall = totall + item.exixiting;
+    } else {
+      totall = totall + (item.exixiting + item.new);
     }
-  })
+  });
 
   return (
-    <div className="bg-(--card-bg) rounded-xl shadow-sm overflow-hidden">
-      
-      <div className="flex flex-col gap-4 border-b-2 border-(--card-border) p-6 sm:flex-row sm:items-center sm:justify-between">
-        <button 
-          onClick={()=> {
-            setNew(false);
-            setOld(false);
-          }} 
-          className="w-full sm:w-auto border-2 border-(--card-border) px-3 py-2 rounded-[5px] text-sm text-(--text-primary) font-normal cursor-pointer hover:text-white hover:bg-[#1F2B6C] transition-colors duration-500"
-        >
-          عرض الكل
-        </button>
+    <div className="bg-(--card-bg) rounded-2xl border border-(--card-border) shadow-[var(--shadow-soft)] overflow-hidden">
+      <div className="flex flex-col gap-3 border-b border-(--card-border) p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setNew(false);
+              setOld(false);
+            }}
+            className="w-full sm:w-auto border border-(--card-border) px-3 py-1.5 rounded-xl text-xs text-(--text-primary) font-medium cursor-pointer hover:text-white hover:bg-[color:var(--primary)] transition-colors duration-300"
+          >
+            عرض الكل
+          </button>
+        </div>
 
-        <h1 className="text-2xl font-bold text-(--text-primary)">
+        <h1 className="text-lg font-semibold text-(--text-primary)">
           إحصائيات المرضى
         </h1>
       </div>
 
-      {/* title */}
-      <div className="flex flex-col gap-4 mb-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-        
-        <div className=" flex items-center gap-3 ">
-          
-          <div onClick={()=>{
-            setNew(true);
-            setOld(false);
-          }} className=" flex items-center gap-1  cursor-pointer " >
-            <span className={` rounded-full bg-[#1F2B6C]  ${New ? "outline-1 border-2 border-white p-1" : "p-1.5 "}  `} ></span>
-            <p className="text-(--text-primary)]">المرضى الجدد</p> 
-          </div>
+      {/* Filters */}
+      <div className="flex flex-col gap-3 mb-3 px-4 pt-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => {
+              setNew(true);
+              setOld(false);
+            }}
+            className="flex items-center gap-2 text-xs text-(--text-secondary) hover:text-(--text-primary) transition"
+          >
+            <span
+              className={`h-2.5 w-2.5 rounded-full bg-[color:var(--primary)] ${New ? "ring-2 ring-[color:var(--primary)]/30" : ""}`}
+            />
+            المرضى الجدد
+          </button>
 
-          <div onClick={()=>{
-            setOld(true);
-            setNew(false);
-          }} className=" flex items-center gap-1 cursor-pointer">
-            <span className={` rounded-full bg-[#D7DCF4] ${old ? "outline-1 border-2 border-white p-1" : "p-1.5 "} `}></span>
-            <p className="text-(--text-primary)">المرضى القدامى</p> 
-          </div>
-
+          <button
+            onClick={() => {
+              setOld(true);
+              setNew(false);
+            }}
+            className="flex items-center gap-2 text-xs text-(--text-secondary) hover:text-(--text-primary) transition"
+          >
+            <span
+              className={`h-2.5 w-2.5 rounded-full bg-[#D7DCF4] ${old ? "ring-2 ring-[#D7DCF4]/40" : ""}`}
+            />
+            المرضى القدامى
+          </button>
         </div>
 
-        <h3 className=" text-lg font-bold text-(--text-primary)">
-          {totall} : إجمالي عدد المرضى
+        <h3 className="text-xs font-semibold text-(--text-secondary)">
+          إجمالي عدد المرضى:{" "}
+          <span className="text-(--text-primary) font-bold">{totall}</span>
         </h3>
       </div>
 
       {/* Chart */}
-      <div className="h-80 min-h-80 w-full min-w-0">
-        <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} barCategoryGap={30} barGap={-28}>
-                
-                <CartesianGrid strokeDasharray="0 0" vertical={false} stroke="var(--card-border)" />
+      <div className="h-64 min-h-64 w-full min-w-0 px-2 pb-4">
+        {data.length === 0 ? (
+          <div className="h-full w-full flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-sm font-semibold text-(--text-primary)">
+                لا توجد بيانات بعد
+              </p>
+              <p className="text-xs text-(--text-secondary)">
+                ستظهر الإحصائيات بمجرد توفر سجلات جديدة.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} barCategoryGap={18} barGap={-20}>
+              <defs>
+                <linearGradient id="newGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="0%"
+                    stopColor="var(--primary)"
+                    stopOpacity={0.9}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--primary)"
+                    stopOpacity={0.2}
+                  />
+                </linearGradient>
+                <linearGradient id="oldGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#D7DCF4" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#D7DCF4" stopOpacity={0.2} />
+                </linearGradient>
+              </defs>
 
-                <XAxis 
-                  reversed 
-                  dataKey="date" 
-                  tickMargin={5} 
-                  tick={{fontSize:12 ,fill: "var(--text-secondary)"  }} 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tickFormatter={(value)=>format(new Date(value) , "dd MMM")} 
-                />
+              <CartesianGrid
+                strokeDasharray="4 6"
+                vertical={false}
+                stroke="var(--card-border)"
+              />
 
-                <YAxis  
-                  orientation="right" 
-                  tick={{fontSize:12 ,fill: "var(--text-secondary)"}} 
-                  axisLine={false} 
-                  tickLine={false} 
-                />
+              <XAxis
+                reversed
+                dataKey="date"
+                tickMargin={8}
+                tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(value) => format(new Date(value), "dd MMM")}
+              />
 
-                <Tooltip 
-                  cursor={{fill :"rgba(0,0,0,0.02)"}} 
-                  contentStyle={{
-                    borderRadius:"12px",
-                    border:"none",
-                    background:"var(--card-bg)",
-                    color:"var(--text-primary)"
-                  }} 
-                />
+              <YAxis
+                orientation="right"
+                tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+                axisLine={false}
+                tickLine={false}
+              />
 
-                {/* الفاتح */}
-                <Bar 
-                  dataKey="exixiting" 
-                  className={`${ New? "hidden" : "" }  duration-300`}  
-                  fill="#D7DCF4" 
-                  barSize={28} 
-                  radius={[6,6,6,6]} 
-                />
+              <Tooltip
+                cursor={{ fill: "rgba(15,23,42,0.04)" }}
+                contentStyle={{
+                  borderRadius: "14px",
+                  border: "none",
+                  background: "var(--card-bg)",
+                  color: "var(--text-primary)",
+                  boxShadow: "var(--shadow-soft)",
+                }}
+              />
 
-                {/* الغامق */}
-                <Bar 
-                  dataKey="new" 
-                  className={` ${ old?"hidden" : "" }  duration-300`}  
-                  fill="#1F2B6C" 
-                  barSize={28} 
-                  radius={[6,6,6,6]} 
-                />
+              {/* الفاتح */}
+              <Bar
+                dataKey="exixiting"
+                className={`${New ? "hidden" : ""} duration-300`}
+                fill="url(#oldGradient)"
+                barSize={20}
+                radius={[8, 8, 8, 8]}
+              />
 
+              {/* الغامق */}
+              <Bar
+                dataKey="new"
+                className={`${old ? "hidden" : ""} duration-300`}
+                fill="url(#newGradient)"
+                barSize={20}
+                radius={[8, 8, 8, 8]}
+              />
             </BarChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
-  )
+  );
 }

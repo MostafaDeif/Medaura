@@ -5,10 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPathByUserType } from "@/lib/utils/redirect";
-import {
-  validateEmail,
-  validatePassword,
-} from "../validators";
+import { validateEmail, validatePassword } from "../validators";
 import { ErrorAlert, PasswordInput, EmailInput } from "../components";
 
 export default function LoginPage() {
