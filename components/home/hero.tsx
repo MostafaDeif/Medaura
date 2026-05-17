@@ -56,7 +56,7 @@ export default function Hero() {
           scale: [1, 1.1, 1],
         }}
         transition={{ duration: 6, repeat: Infinity }}
-        className="absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[#1c3faa]/10 blur-3xl"
+        className="absolute -top-40 left-1/2 w-125 h-125 -translate-x-1/2 rounded-full bg-[#1c3faa]/10 blur-3xl"
       />
 
       <div className="absolute inset-0 z-0">
