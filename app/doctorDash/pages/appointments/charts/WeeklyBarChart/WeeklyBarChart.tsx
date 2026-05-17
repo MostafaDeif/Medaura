@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
 } from "recharts";
+import type { TooltipPayload } from "recharts";
 
 const weeklyData = [
   { day: 1, value: 45 },
@@ -24,40 +25,22 @@ const weeklyData = [
 export default function WeeklyAppointmentsChart() {
   const [mode, setMode] = useState<"current" | "last7">("current");
 
-  const data = useMemo(() => {
-    if (mode === "current") {
-      return weeklyData;
-    }
-
-    // مثال: تزود random بسيط كأنها بيانات قديمة
-    return weeklyData.map((d) => ({
-      ...d,
-      value: Math.floor(d.value * (0.7 + Math.random() * 0.6)),
-    }));
-  }, [mode]);
-
   const weekRange = useMemo(() => {
     const now = new Date();
 
     return Array.from({ length: 7 }).map((_, i) => {
       const offset = i - 6;
-
       const d = new Date();
       d.setDate(now.getDate() + offset);
 
       return {
         label: d.toLocaleDateString("ar-EG", { weekday: "long" }),
-        date: d.toISOString().split("T")[0],
         day: d.getDate(),
         month: d.toLocaleDateString("en-EG", { month: "long" }).slice(0, 3),
-        fullDate: d.toLocaleDateString("en-EG", {
-          day: "numeric",
-          month: "long",
-        }),
-        isToday: d.toDateString() === now.toDateString(),
       };
     });
   }, []);
+
   const chartData = useMemo(() => {
     return weekRange.map((day, i) => ({
       label: day.label,
@@ -65,34 +48,41 @@ export default function WeeklyAppointmentsChart() {
       month: day.month,
       value: weeklyData[i]?.value || 0,
     }));
-  }, [weekRange, weeklyData]);
+  }, [weekRange]);
+
+  const visibleChartData = useMemo(() => {
+    if (mode === "current") return chartData;
+
+    return chartData.map((day, index) => ({
+      ...day,
+      value: Math.floor(day.value * (index % 2 === 0 ? 0.82 : 1.12)),
+    }));
+  }, [chartData, mode]);
+
   return (
-    <div className="bg-(--card-bg) border border-(--card-border) rounded-2xl p-5">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        {/* Filters */}
+    <div className="rounded-2xl border border-(--card-border) bg-(--card-bg) p-5">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-4 text-sm">
           <button
             onClick={() => setMode("last7")}
-            className={` text-md font-semibold text-(--text-primary)`}
+            className="text-md font-semibold text-(--text-primary)"
           >
             آخر 7 أيام
           </button>
 
           <div className="flex items-center gap-1">
-            <span className={`w-2 h-2 rounded-full bg-[#1F2B6C] p-1}`} />
+            <span className="h-2 w-2 rounded-full bg-[#1F2B6C] p-1" />
             <button
               onClick={() => setMode("current")}
-              className={` text-md font-semibold text-(--text-primary)`}
+              className="text-md font-semibold text-(--text-primary)"
             >
               الحالي
             </button>
           </div>
         </div>
 
-        {/* Title */}
         <div className="text-right">
-          <h3 className="font-bold text-2xl text-(--text-primary)">
+          <h3 className="text-2xl font-bold text-(--text-primary)">
             اتجاهات المواعيد الأسبوعية
           </h3>
           <p className="text-md text-(--text-secondary)">
@@ -101,10 +91,9 @@ export default function WeeklyAppointmentsChart() {
         </div>
       </div>
 
-      {/* Chart */}
-      <div className=" h-75">
+      <div className="h-[300px] min-h-[300px] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} barCategoryGap={30} barGap={-28}>
+          <BarChart data={visibleChartData} barCategoryGap={30} barGap={-28}>
             <CartesianGrid
               strokeDasharray="0 0"
               vertical={false}
@@ -127,22 +116,25 @@ export default function WeeklyAppointmentsChart() {
             />
 
             <Tooltip
-              labelFormatter={(label, payload) => {
+              labelFormatter={(
+                label,
+                payload: TooltipPayload<number, string>[]
+              ) => {
                 if (payload && payload.length) {
                   const data = payload[0].payload;
-                 console.log(data);
                   return `${data.day} ${data.month} - ${label}`;
                 }
                 return label;
               }}
-              formatter={(value) => {
-                return [
-                  <span style={{  color: "var(--text2-bg)", fontWeight: "bold" }}>
-                    <span className=" text-(--text-primary)">value : </span>
-                    {value}
-                  </span>,
-                ];
-              }}
+              formatter={(value) => [
+                <span
+                  key="value"
+                  style={{ color: "var(--text2-bg)", fontWeight: "bold" }}
+                >
+                  <span className="text-(--text-primary)">value : </span>
+                  {value}
+                </span>,
+              ]}
               cursor={{ fill: "rgba(0,0,0,0.02)" }}
               contentStyle={{
                 borderRadius: "12px",

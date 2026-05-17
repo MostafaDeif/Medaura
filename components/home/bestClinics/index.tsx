@@ -104,12 +104,13 @@ export default function BestClinics() {
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.5 }}
-                className="h-full w-full"
+                className="relative h-full w-full"
               >
                 <Image
                   src={clinic.image}
                   alt={clinic.name}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover"
                 />
               </motion.div>

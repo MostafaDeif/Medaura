@@ -20,7 +20,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       body: "محمد احمد booked an appointment",
       time: "2m",
       read: false,
-      avatar: "https://i.pravatar.cc/40?img=2",
+      avatar: "/images/blank-profile-picture.png",
     },
     {
       id: "2",
@@ -28,7 +28,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       body: "Results for د.احمد السيد",
       time: "1h",
       read: false,
-      avatar: "https://i.pravatar.cc/40?img=3",
+      avatar: "/images/blank-profile-picture.png",
     },
     {
       id: "3",
@@ -36,11 +36,14 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       body: "Scheduled maintenance tonight",
       time: "1d",
       read: true,
-      avatar: "https://i.pravatar.cc/40?img=4",
+      avatar: "/images/blank-profile-picture.png",
     },
   ]);
   const [query, setQuery] = useState("");
-  const img = "https://i.pravatar.cc/40?img=1";
+  const avatarSrc =
+    (typeof user?.photo === "string" && user.photo) ||
+    (user?.profile?.photo as string) ||
+    "/images/blank-profile-picture.png";
   const notifRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
@@ -341,8 +344,10 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   className="w-10 h-10 flex items-center justify-center rounded-xl border border-(--card-border) bg-(--card-bg) hover:bg-(--semi-card-bg) transition cursor-pointer"
                 >
                   <img
-                    src={img}
-                    alt="user"
+                    src={avatarSrc}
+                    alt={fullName}
+                    width={40}
+                    height={40}
                     className="rounded-full"
                   />
                 </button>
@@ -351,8 +356,8 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   <div className="absolute left-0 top-full mt-2 w-48 bg-white/90 dark:bg-slate-900/80 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 backdrop-blur-sm transform origin-top-left transition-all duration-150">
                     <div className="flex items-center gap-3 px-3 py-2">
                       <img
-                        src={img}
-                        alt="user"
+                        src={avatarSrc}
+                        alt={fullName}
                         width={40}
                         height={40}
                         className="rounded-full"

@@ -72,7 +72,7 @@ export default function SalesSection() {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.5 }}
-                className="h-full w-full"
+                className="relative h-full w-full"
               >
                 <Image
                   src={`/images/${offer.image ?? "sale1.png"}`}

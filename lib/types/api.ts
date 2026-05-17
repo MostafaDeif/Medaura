@@ -62,6 +62,7 @@ export interface AuthResponse {
   refresh_token?: string;
   refreshToken?: string;
   profile?: Record<string, unknown>;
+  photo?: string;
 }
 
 export interface LogoutRequest {

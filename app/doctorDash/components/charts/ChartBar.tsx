@@ -4,7 +4,11 @@ import { BarChart , Bar , XAxis , YAxis , Tooltip , ResponsiveContainer  , Carte
 import { format } from "date-fns";
 
 interface props{
-    data :any[];
+    data :{
+      date: string;
+      exixiting: number;
+      new: number;
+    }[];
 }
 
 export default function ChartBar({data}:props) {
@@ -12,7 +16,7 @@ export default function ChartBar({data}:props) {
   const [old , setOld] = useState(false)
 
   let totall = 0
-  const filteredData = data.map((item)=>{
+  data.forEach((item)=>{
     if(New){
       totall = totall + item.new
     }else if(old){
@@ -27,7 +31,10 @@ export default function ChartBar({data}:props) {
       
       <div className="flex flex-col gap-4 border-b-2 border-(--card-border) p-6 sm:flex-row sm:items-center sm:justify-between">
         <button 
-          onClick={()=> {setNew(false) , setOld(false)}} 
+          onClick={()=> {
+            setNew(false);
+            setOld(false);
+          }} 
           className="w-full sm:w-auto border-2 border-(--card-border) px-3 py-2 rounded-[5px] text-sm text-(--text-primary) font-normal cursor-pointer hover:text-white hover:bg-[#1F2B6C] transition-colors duration-500"
         >
           عرض الكل
@@ -43,12 +50,18 @@ export default function ChartBar({data}:props) {
         
         <div className=" flex items-center gap-3 ">
           
-          <div onClick={()=>{setNew(true) , setOld(false) }} className=" flex items-center gap-1  cursor-pointer " >
+          <div onClick={()=>{
+            setNew(true);
+            setOld(false);
+          }} className=" flex items-center gap-1  cursor-pointer " >
             <span className={` rounded-full bg-[#1F2B6C]  ${New ? "outline-1 border-2 border-white p-1" : "p-1.5 "}  `} ></span>
             <p className="text-(--text-primary)]">المرضى الجدد</p> 
           </div>
 
-          <div onClick={()=>{ setOld(true) , setNew(false) }} className=" flex items-center gap-1 cursor-pointer">
+          <div onClick={()=>{
+            setOld(true);
+            setNew(false);
+          }} className=" flex items-center gap-1 cursor-pointer">
             <span className={` rounded-full bg-[#D7DCF4] ${old ? "outline-1 border-2 border-white p-1" : "p-1.5 "} `}></span>
             <p className="text-(--text-primary)">المرضى القدامى</p> 
           </div>
@@ -61,7 +74,7 @@ export default function ChartBar({data}:props) {
       </div>
 
       {/* Chart */}
-      <div className="h-80 w-full min-h-80">
+      <div className="h-80 min-h-80 w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} barCategoryGap={30} barGap={-28}>
                 

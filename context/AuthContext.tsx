@@ -43,6 +43,7 @@ export interface AuthContextValue {
   signup: (data: SignupRequest) => Promise<AuthResponse>;
   refreshAuth: () => Promise<AuthResponse | null>;
   logout: () => Promise<void>;
+  updateUser: (user: AuthResponse | null) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -72,6 +73,7 @@ function normalizeAuthResponse(authData: AuthResponseLike): AuthResponse {
       user_type: backendUser.role,
       profile: backendUser.profile,
       token,
+      ...(typeof backendUser.photo === "string" ? { photo: backendUser.photo } : {}),
     };
   }
 
@@ -149,6 +151,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearAuth = useCallback(() => {
     setUser(null);
+    setError(null);
+  }, []);
+
+  const updateUser = useCallback((updatedUser: AuthResponse | null) => {
+    setUser(updatedUser);
     setError(null);
   }, []);
 
@@ -268,8 +275,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signup,
       refreshAuth,
       logout,
+      updateUser,
     }),
-    [error, loading, login, logout, refreshAuth, signup, user]
+    [error, loading, login, logout, refreshAuth, signup, updateUser, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

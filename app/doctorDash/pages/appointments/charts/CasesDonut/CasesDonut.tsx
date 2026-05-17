@@ -125,7 +125,7 @@ export default function CasesDonut() {
         توزيع الحالات الطبية
       </h3>
 
-      <div className="relative w-full h-62.5 sm:h-75">
+      <div className="relative h-[250px] min-h-[250px] w-full min-w-0 sm:h-[300px] sm:min-h-[300px]">
 
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

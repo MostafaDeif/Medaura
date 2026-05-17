@@ -53,7 +53,7 @@ export default function StatsCard({title , value , percentage , icon , iconBg , 
       </div>
 
       {/* mini chart */}
-      <div className="h-28 w-full">
+      <div className="h-28 min-h-28 w-full min-w-0">
         <ResponsiveContainer  width={"100%"} height={"100%"}>
           <AreaChart data={data} >
             

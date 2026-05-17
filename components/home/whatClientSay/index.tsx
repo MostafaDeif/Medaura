@@ -68,6 +68,7 @@ export default function WhatClientSay() {
                   src={item.image}
                   alt={item.name}
                   fill
+                  sizes="48px"
                   className="object-cover"
                 />
               </motion.div>

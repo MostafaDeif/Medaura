@@ -1,9 +1,11 @@
 "use client";
 import { useMemo } from "react";
 import { BarChart , Bar , XAxis , YAxis , Tooltip , ResponsiveContainer  , CartesianGrid} from "recharts";
-import { format } from "date-fns";
 interface props{
-    data :any[];
+    data :{
+      month: number | string;
+      exciting: number;
+    }[];
 }
 
 export default function PatientProgress({data}:props) {
@@ -75,7 +77,7 @@ const chartData = useMemo(() => {
       </div>
 
       {/* Chart */}
-      <div className=" h-72">
+      <div className="h-72 min-h-72 w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} barCategoryGap={30} barGap={-28}>
                 <CartesianGrid strokeDasharray="0 0" vertical={false} stroke="var(--card-border)" />
