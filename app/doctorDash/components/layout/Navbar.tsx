@@ -106,20 +106,19 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       {isTransitioning && (
         <div className="fixed inset-0 bg-black/10 backdrop-blur-sm z-999 pointer-events-none transition-opacity duration-200" />
       )}
-      <header className="w-full sticky top-0 z-50 backdrop-blur-md bg-(--background)/70  shadow-sm">
-        {" "}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between gap-4">
+      <header className="w-full sticky top-0 z-50 backdrop-blur-md bg-(--background)/80 border-b border-(--card-border)">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-8 py-3">
+          <div className="flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-(--card-border) bg-(--card-bg) text-(--foreground) hover:bg-gray-100 transition xl:hidden"
+              className="inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl border border-(--card-border) bg-(--card-bg) text-(--foreground) hover:bg-(--hover-bg) transition xl:hidden"
             >
               <span className="sr-only">Open sidebar</span>
               <Menu size={18} />
             </button>
 
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -156,11 +155,11 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   aria-controls="nav-search-list"
                   placeholder="Search patients, doctors, appointments..."
                   dir="ltr"
-                  className="w-full pl-10 pr-4 py-3 rounded-full border border-(--input-border) bg-(--input-bg) dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-white"
+                  className="w-full pl-10 pr-4 py-2 rounded-2xl border border-(--input-border) bg-(--input-bg) text-sm text-(--text-primary) placeholder:text-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)]/40"
                 />
                 <Search
                   size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-secondary)"
                 />
 
                 {query.length > 0 && (
@@ -181,7 +180,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                           e.preventDefault();
                           router.push(`/search?q=${encodeURIComponent(s)}`);
                         }}
-                        className={`px-3 py-2 hover:bg-(--semi-card-bg) dark:hover:bg-slate-800 cursor-pointer ${activeIndex === idx ? "bg-slate-100 dark:bg-slate-700" : ""}`}
+                        className={`px-3 py-2 hover:bg-(--semi-card-bg) cursor-pointer ${activeIndex === idx ? "bg-(--hover-bg)" : ""}`}
                       >
                         {s}
                       </li>
@@ -194,14 +193,14 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               </form>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={handleThemeChange}
                 title={
                   darkMode ? "Switch to light mode" : "Switch to dark mode"
                 }
                 aria-pressed={darkMode}
-                className="w-10 h-10 flex items-center justify-center rounded-xl border border-(--card-border) bg-(--card-bg) hover:bg-(--semi-card-bg) transition cursor-pointer"
+                className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-2xl border border-(--card-border) bg-(--card-bg) hover:bg-(--semi-card-bg) transition cursor-pointer"
               >
                 <span className="sr-only">Toggle theme</span>
                 <div className="relative w-4.5 h-4.5">
@@ -236,7 +235,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   onClick={() => setNotifOpen((v) => !v)}
                   aria-haspopup="true"
                   aria-expanded={notifOpen}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl border border-(--card-border)  bg-(--card-bg) hover:bg-(--semi-card-bg) transition cursor-pointer"
+                  className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-2xl border border-(--card-border) bg-(--card-bg) hover:bg-(--semi-card-bg) transition cursor-pointer"
                 >
                   <Bell size={18} />
                 </button>
@@ -244,7 +243,7 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
                 )}
                 {notifOpen && (
-                  <div className="absolute -left-2 mt-2 w-96 bg-(--card-bg) border border-(--card-border) rounded-2xl shadow-2xl p-3 z-40 backdrop-blur-md transform origin-top-left transition-all duration-150 ease-out">
+                  <div className="absolute -left-2 mt-2 w-96 bg-(--card-bg) border border-(--card-border) rounded-2xl shadow-[var(--shadow-soft)] p-3 z-40 backdrop-blur-md transform origin-top-left transition-all duration-150 ease-out">
                     <div className="flex items-center justify-between px-2">
                       <h4 className="font-semibold">Notifications</h4>
                       <div className="flex items-center gap-2">
@@ -366,7 +365,9 @@ function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                         <div className="font-medium text-slate-800 dark:text-slate-100">
                           {fullName}
                         </div>
-                        <div className="text-xs text-slate-400">{specialist}</div>
+                        <div className="text-xs text-slate-400">
+                          {specialist}
+                        </div>
                       </div>
                     </div>
                     <div className="border-t mt-1" />

@@ -2,41 +2,53 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f8fb;
+  --foreground: #0f1b3d;
   --card-bg: #ffffff;
-  --card-border: #e5e7eb;
+  --card-border: #e6eaf0;
   --input-bg: #ffffff;
-  --input-border: #d1d5db;
-  --text-primary: #171717;
-  --text-secondary: #6b7280;
-  --semi-card-bg: #f3f3f5;
-  --hover-bg: #f3f4f6;
-  --btn-bg: #E7EDF3;
-  --input2-bg: #E7EDF3;
-  --text2-bg: #001A6E;
-  --donut-bg: #E7EDF3;
-  --status-hover: #171717;
+  --input-border: #d8dee7;
+  --text-primary: #0f1b3d;
+  --text-secondary: #5e6b85;
+  --semi-card-bg: #f1f4f9;
+  --hover-bg: #eef2f7;
+  --btn-bg: #e7edf3;
+  --input2-bg: #eef3f8;
+  --text2-bg: #1f6feb;
+  --donut-bg: #e7edf3;
+  --status-hover: #0f1b3d;
+  --primary: #1f6feb;
+  --primary-600: #1b5bd7;
+  --accent-teal: #19a7b5;
+  --accent-amber: #f4b740;
+  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-hover: 0 16px 40px rgba(15, 23, 42, 0.12);
   --invert: invert(0);
 }
 
 /* Dark mode scoped to dashboard areas only */
 [data-theme-dashboard].dark {
-  --background: #0f0f0f;
-  --foreground: #ededed;
-  --card-bg: #1e1e1e;
-  --card-border: #2e2e2e;
-  --input-bg: #1e1e1e;
-  --input-border: #3e3e3e;
-  --text-primary: #ededed;
-  --text-secondary: #9ca3af;
-  --semi-card-bg: #2a2a2a;
-  --hover-bg: #464646;
-  --btn-bg: #1c1a1a;
-  --input2-bg: #1c1a1a;
-  --text2-bg: #17a6ee;
-  --donut-bg: #383636;
-  --status-hover: #d2d2d2;
+  --background: #0b1224;
+  --foreground: #e6edf7;
+  --card-bg: #121b33;
+  --card-border: #1f2a44;
+  --input-bg: #0f182f;
+  --input-border: #2a3550;
+  --text-primary: #e6edf7;
+  --text-secondary: #a6b0c3;
+  --semi-card-bg: #16213b;
+  --hover-bg: #1a2746;
+  --btn-bg: #111a32;
+  --input2-bg: #111a32;
+  --text2-bg: #6fb2ff;
+  --donut-bg: #1a2440;
+  --status-hover: #d2d9e5;
+  --primary: #6fb2ff;
+  --primary-600: #4d8fe5;
+  --accent-teal: #45c2c7;
+  --accent-amber: #f4c66a;
+  --shadow-soft: 0 10px 30px rgba(6, 12, 28, 0.45);
+  --shadow-hover: 0 16px 40px rgba(6, 12, 28, 0.6);
   --invert: invert(1);
 }
 

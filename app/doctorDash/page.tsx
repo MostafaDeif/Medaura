@@ -12,15 +12,7 @@ import PatientsTable from "./features/patient/PatientTaple";
 import AppointmentsTable from "./features/appointments/AppointmentsTable";
 
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Stethoscope,
-  Users,
-  Calendar,
-  User,
-  FileText,
-  Activity,
-  Wallet,
-} from "lucide-react";
+import { Calendar, User } from "lucide-react";
 
 type DashboardApiData = {
   cards?: {
@@ -84,7 +76,9 @@ type DashboardApiData = {
 
 function Dashboard({ childern }: { childern: React.ReactNode }) {
   const [range, setRange] = useState<any>();
-  const [dashboardData, setDashboardData] = useState<DashboardApiData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardApiData | null>(
+    null,
+  );
 
   const weeklyData = [
     { date: "2026-01-25", exixiting: 40, new: 20 },
@@ -126,7 +120,7 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
       dashboardData?.weeklyPatients?.length
         ? dashboardData.weeklyPatients
         : weeklyData,
-    [dashboardData]
+    [dashboardData],
   );
 
   const filteredData = chartData.filter((item) => {
@@ -140,20 +134,21 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
 
   return (
     <div className="flex w-full">
-      
       <div className="flex w-full flex-col bg-(--background) min-h-screen transition-colors duration-300">
-        
-        <div className="p-6">
-
-          <DashboardHeader range={range} setRange={setRange} />
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-(--card-border) bg-(--card-bg) shadow-[var(--shadow-soft)] px-4 py-3 sm:px-5 sm:py-4">
+            <DashboardHeader range={range} setRange={setRange} />
+          </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-5">
             <StatsCard
               title="المواعيد"
               value={appointmentCard?.value ?? 659}
               percentage={appointmentCard?.percentage ?? -15}
-              icon={<Calendar size={20} strokeWidth={2} className="text-white" />}
+              icon={
+                <Calendar size={18} strokeWidth={2} className="text-white" />
+              }
               iconBg="bg-[#E65100]"
               chartColor="#E65100"
               data={
@@ -170,7 +165,7 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
               title="إجمالي المرضى"
               value={patientCard?.value ?? 108}
               percentage={patientCard?.percentage ?? 20}
-              icon={<User size={20} strokeWidth={2} className="text-white" />}
+              icon={<User size={18} strokeWidth={2} className="text-white" />}
               iconBg="bg-[#001A6E]"
               chartColor="#001A6E"
               data={
@@ -186,19 +181,17 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
           </div>
 
           {/* Charts + Requests */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div className="lg:col-span-1">
               <ChartBar data={filteredData} />
             </div>
             <AppointsmentRequests
               appointments={dashboardData?.appointmentRequests}
             />
-
           </div>
 
           {/* Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             <VisitsGauge
               male={dashboardData?.genderStats?.male ?? 69}
               female={dashboardData?.genderStats?.female ?? 56}
@@ -207,14 +200,13 @@ function Dashboard({ childern }: { childern: React.ReactNode }) {
             <DoctorsList appointments={dashboardData?.todayAppointments} />
             <PatientsTable patients={dashboardData?.patients} />
           </div>
-          <div className="grid grid-cols-1 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-5">
             <ClinicsList reports={dashboardData?.reports} />
           </div>
           {/* Appointments */}
-          <div className="grid grid-cols-1 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-5">
             <AppointmentsTable appointments={dashboardData?.appointments} />
           </div>
-
         </div>
       </div>
     </div>

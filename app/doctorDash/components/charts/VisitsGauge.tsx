@@ -9,10 +9,10 @@ type Props = {
 };
 
 export default function VisitsGauge({ male, female, total }: Props) {
-  const size = 260;
+  const size = 220;
   const center = size / 2;
-  const outerRadius = 122;
-  const innerRadius = 103;
+  const outerRadius = 100;
+  const innerRadius = 84;
   const outerCircumference = 2 * Math.PI * outerRadius;
   const innerCircumference = 2 * Math.PI * innerRadius;
 
@@ -26,23 +26,20 @@ export default function VisitsGauge({ male, female, total }: Props) {
   const femaleUnfilled = Math.round(innerCircumference - femaleFilled);
 
   return (
-    <div className="bg-(--card-bg) border border-(--card-border) h-fit rounded-xl shadow-md overflow-hidden">
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-(--card-border) mb-6 p-6">
-        
-        <button className="w-full sm:w-auto border-2 border-(--card-border) px-3 py-2 rounded-[5px] text-sm text-(--text-primary) font-normal cursor-pointer hover:text-white hover:bg-indigo-600 transition-colors duration-500">
+    <div className="bg-(--card-bg) border border-(--card-border) h-fit rounded-2xl shadow-[var(--shadow-soft)] overflow-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-(--card-border) mb-4 p-4">
+        <button className="w-full sm:w-auto border border-(--card-border) px-3 py-1.5 rounded-xl text-xs text-(--text-primary) font-medium cursor-pointer hover:text-white hover:bg-[color:var(--primary)] transition-colors duration-300">
           عرض الكل
         </button>
 
-        <h3 className="text-2xl font-bold text-(--text-primary)">
+        <h3 className="text-lg font-semibold text-(--text-primary)">
           زيارات المرضى
         </h3>
       </div>
 
-      <div className="flex justify-center p-6">
+      <div className="flex justify-center p-4">
         <div className="w-full max-w-75">
           <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-auto">
-            
             <defs>
               <mask id="maskMale">
                 <circle
@@ -103,7 +100,7 @@ export default function VisitsGauge({ male, female, total }: Props) {
               y={center - 22}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="20"
+              fontSize="16"
               fill="var(--text-secondary)"
               fontWeight="semibold"
             >
@@ -115,7 +112,7 @@ export default function VisitsGauge({ male, female, total }: Props) {
               y={center + 22}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="30"
+              fontSize="24"
               fill="var(--text-primary)"
               fontWeight="bold"
             >
@@ -125,60 +122,50 @@ export default function VisitsGauge({ male, female, total }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 p-6">
-
+      <div className="flex flex-col gap-3 p-4">
         {/* male */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-2xl font-bold text-(--text-primary)">
-            {male}%
-          </h3>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="text-lg font-bold text-(--text-primary)">{male}%</h3>
 
           <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
             <div className="text-right">
-              <p className="font-semibold text-(--text-primary)">
-                ذكر
-              </p>
+              <p className="font-semibold text-(--text-primary)">ذكر</p>
 
               <div className="flex items-center gap-2 font-medium">
-                <p className="text-sm text-(--text-secondary)">
+                <p className="text-xs text-(--text-secondary)">
                   منذ الأسبوع الماضي
                 </p>
                 <span className="text-emerald-600">-15%</span>
               </div>
             </div>
 
-            <div className="w-10 h-10 rounded-full bg-[#1F6DB2] flex items-center justify-center">
-              <Mars size={23} strokeWidth={2} className="text-white" />
+            <div className="w-9 h-9 rounded-full bg-[#1F6DB2] flex items-center justify-center">
+              <Mars size={20} strokeWidth={2} className="text-white" />
             </div>
           </div>
         </div>
 
         {/* female */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-2xl font-bold text-(--text-primary)">
-            {female}%
-          </h3>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="text-lg font-bold text-(--text-primary)">{female}%</h3>
 
           <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
             <div className="text-right">
-              <p className="font-semibold text-(--text-primary)">
-                أنثى
-              </p>
+              <p className="font-semibold text-(--text-primary)">أنثى</p>
 
               <div className="flex items-center gap-2 font-medium">
-                <p className="text-sm text-(--text-secondary)">
+                <p className="text-xs text-(--text-secondary)">
                   منذ الأسبوع الماضي
                 </p>
                 <span className="text-emerald-600">-15%</span>
               </div>
             </div>
 
-            <div className="w-10 h-10 rounded-full bg-[#6A1B9A] flex items-center justify-center">
-              <Venus size={23} strokeWidth={2} className="text-white" />
+            <div className="w-9 h-9 rounded-full bg-[#6A1B9A] flex items-center justify-center">
+              <Venus size={20} strokeWidth={2} className="text-white" />
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { MoreVertical , ChevronRight , ChevronLeft } from "lucide-react";
-import { useRouter } from 'next/navigation';
+import { MoreVertical, ChevronRight, ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Appointment = {
   id: string;
@@ -216,18 +216,17 @@ const data: Appointment[] = [
 export async function fetchAppointmentsFromApi(
   url = "/api/appointments",
   page = 1,
-  limit = 10
+  limit = 10,
 ): Promise<ApiListResult> {
   const q = new URL(
     url,
-    typeof window !== "undefined" ? window.location.origin : "http://localhost"
+    typeof window !== "undefined" ? window.location.origin : "http://localhost",
   );
   q.searchParams.set("page", String(page));
   q.searchParams.set("limit", String(limit));
 
   const res = await fetch(q.toString());
-  if (!res.ok)
-    throw new Error(`Failed to fetch appointments: ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to fetch appointments: ${res.status}`);
 
   const items = await res.json();
   const totalHeader = res.headers.get("X-Total-Count");
@@ -235,8 +234,8 @@ export async function fetchAppointmentsFromApi(
   const total = totalHeader
     ? parseInt(totalHeader, 10)
     : Array.isArray(items)
-    ? items.length
-    : 0;
+      ? items.length
+      : 0;
 
   return { items, total };
 }
@@ -258,7 +257,7 @@ export default function AppointmentsTable({
   appointments?: Appointment[];
 }) {
   const [appointments, setAppointments] = useState<Appointment[]>(
-    initialAppointments ?? data
+    initialAppointments ?? data,
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
@@ -284,7 +283,7 @@ export default function AppointmentsTable({
       const res = await fetchAppointmentsFromApi(
         "/api/appointments",
         pg,
-        limit
+        limit,
       );
       if (res && Array.isArray(res.items)) {
         setAppointments(res.items);
@@ -307,9 +306,9 @@ export default function AppointmentsTable({
   const openMenu = (id: string) => {
     setMenuOpenId((prev) => (prev === id ? null : id));
   };
-    const pageSize = 5;
-    const totalPages = Math.max(1, Math.ceil(appointments.length / pageSize));
-    const getPages = () => {
+  const pageSize = 5;
+  const totalPages = Math.max(1, Math.ceil(appointments.length / pageSize));
+  const getPages = () => {
     const pages: (number | string)[] = [];
 
     if (totalPages <= 3) {
@@ -338,93 +337,101 @@ export default function AppointmentsTable({
         ? appointments
         : data;
   }, [appointments, initialAppointments]);
-    const paginated = datas.slice((page - 1) * pageSize, page * pageSize);
+  const paginated = datas.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="bg-(--card-bg) rounded-2xl p-5 shadow-sm border border-(--card-border) w-full">
-      
+    <div className="bg-(--card-bg) rounded-2xl p-4 shadow-[var(--shadow-soft)] border border-(--card-border) w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-(--text-primary)">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base font-semibold text-(--text-primary)">
           أحدث المواعيد
         </h2>
       </div>
 
       {/* Table */}
       <div className="overflow-hidden rounded-xl border border-(--card-border)">
-        <div className=" sm:block overflow-x-auto">
-          <table className="w-full min-w-max text-sm text-right">
-
-            <thead className="bg-(--hover-bg) text-center text-(--text-secondary)">
-              <tr>
-                <th className="px-4 py-3"></th>
-                <th className="px-4 py-3">التاريخ والوقت</th>
-                <th className="px-4 py-3">الحالة</th>
-                <th className="px-4 py-3">اسم الطبيب</th>
-                <th className="px-4 py-3">نوع الجلسة</th>
-                <th className="px-4 py-3">اسم المريض</th>
-                <th className="px-4 py-3">رقم المريض</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {paginated.map((item, index) => (
-                <tr
-                  key={index}
-                  className="border-t border-(--card-border) hover:bg-(--hover-bg)  text-center"
-                >
-                  <td className="px-4 py-3 text-(--text-secondary) relative">
-                    <button
-                      onClick={() => openMenu(item.id)}
-                      className="p-1 rounded hover:bg-(--hover-bg)"
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                  </td>
-
-                  <td className="px-4 py-3 text-(--text-secondary)">
-                    {item.date}
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        item.status
-                      )}`}
-                    >
-                      {item.status}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3 text-(--text-secondary)">
-                    {item.doctor}
-                  </td>
-
-                  <td className="px-4 py-3 text-(--text-secondary)">
-                    {item.type}
-                  </td>
-
-                  <td className="px-4 py-3 font-medium text-(--text-primary)">
-                    {item.name}
-                  </td>
-
-                  <td className="px-4 py-3 text-(--text-secondary)">
-                    {item.id}
-                  </td>
+        <div className="sm:block overflow-x-auto">
+          {paginated.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-10 text-center">
+              <p className="text-sm font-semibold text-(--text-primary)">
+                لا توجد مواعيد بعد
+              </p>
+              <p className="text-xs text-(--text-secondary)">
+                سيتم عرض الحجوزات الجديدة هنا فور إضافتها.
+              </p>
+            </div>
+          ) : (
+            <table className="w-full min-w-max text-xs sm:text-sm text-right">
+              <thead className="bg-(--hover-bg) text-center text-(--text-secondary) text-[11px] sm:text-xs">
+                <tr>
+                  <th className="px-3 py-2"></th>
+                  <th className="px-3 py-2">التاريخ والوقت</th>
+                  <th className="px-3 py-2">الحالة</th>
+                  <th className="px-3 py-2">اسم الطبيب</th>
+                  <th className="px-3 py-2">نوع الجلسة</th>
+                  <th className="px-3 py-2">اسم المريض</th>
+                  <th className="px-3 py-2">رقم المريض</th>
                 </tr>
-              ))}
-            </tbody>
+              </thead>
 
-          </table>
+              <tbody>
+                {paginated.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="border-t border-(--card-border) hover:bg-(--hover-bg) text-center"
+                  >
+                    <td className="px-3 py-2 text-(--text-secondary) relative">
+                      <button
+                        onClick={() => openMenu(item.id)}
+                        className="p-1 rounded hover:bg-(--hover-bg)"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+                    </td>
+
+                    <td className="px-3 py-2 text-(--text-secondary)">
+                      {item.date}
+                    </td>
+
+                    <td className="px-3 py-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          item.status,
+                        )}`}
+                      >
+                        {item.status}
+                      </span>
+                    </td>
+
+                    <td className="px-3 py-2 text-(--text-secondary)">
+                      {item.doctor}
+                    </td>
+
+                    <td className="px-3 py-2 text-(--text-secondary)">
+                      {item.type}
+                    </td>
+
+                    <td className="px-3 py-2 font-medium text-(--text-primary)">
+                      {item.name}
+                    </td>
+
+                    <td className="px-3 py-2 text-(--text-secondary)">
+                      {item.id}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
       {/* Pagination */}
       <div className="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-            <button
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className=" cursor-pointer text-2xl flex items-center justify-center border border-(--input-border) rounded-md p-1 hover:bg-(--semi-card-bg) transition"
+            className="cursor-pointer text-lg flex items-center justify-center border border-(--input-border) rounded-md p-1 hover:bg-(--semi-card-bg) transition"
           >
             <ChevronLeft size={19} />
           </button>
@@ -434,9 +441,9 @@ export default function AppointmentsTable({
               key={i}
               onClick={() => typeof p === "number" && setPage(p)}
               disabled={p === "..."}
-              className={`px-2 py-1 rounded cursor-pointer ${
+              className={`px-2 py-1 rounded text-xs cursor-pointer ${
                 p === page
-                  ? "bg-[#1F2B6C] text-white"
+                  ? "bg-[color:var(--primary)] text-white"
                   : p === "..."
                     ? "cursor-default text-gray-400"
                     : "border border-(--input-border) hover:bg-(--semi-card-bg)"
@@ -446,16 +453,16 @@ export default function AppointmentsTable({
             </button>
           ))}
 
-         <button
+          <button
             onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-            className=" cursor-pointer text-2xl flex items-center justify-center border border-(--input-border) rounded-md p-1 hover:bg-(--semi-card-bg) transition"
+            className="cursor-pointer text-lg flex items-center justify-center border border-(--input-border) rounded-md p-1 hover:bg-(--semi-card-bg) transition"
           >
             <ChevronRight size={19} />
           </button>
         </div>
 
-        <p className="text-sm text-(--text-secondary)">
-          عرض {page} -{" "} {totalPages} من أصل {datas.length} مريض
+        <p className="text-xs text-(--text-secondary)">
+          عرض {page} - {totalPages} من أصل {datas.length} مريض
         </p>
       </div>
     </div>

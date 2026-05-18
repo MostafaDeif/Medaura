@@ -71,33 +71,39 @@ export default function PatientsTable({ patients }: { patients?: Patient[] }) {
   const rows = patients ?? data;
 
   return (
-    <div className="bg-(--card-bg) rounded-2xl shadow-sm border border-(--card-border) w-full">
-
+    <div className="bg-(--card-bg) rounded-2xl shadow-[var(--shadow-soft)] border border-(--card-border) w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b-2 border-(--card-border) mb-6 p-6 gap-4">
-        
-        <button className="w-full sm:w-auto border-2 border-(--card-border) px-3 py-2 rounded-[5px] text-sm text-(--text-primary) font-normal cursor-pointer hover:text-white hover:bg-indigo-600 transition-colors duration-500">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-(--card-border) mb-4 p-4 gap-3">
+        <button className="w-full sm:w-auto border border-(--card-border) px-3 py-1.5 rounded-xl text-xs text-(--text-primary) font-medium cursor-pointer hover:text-white hover:bg-[color:var(--primary)] transition-colors duration-300">
           عرض الكل
         </button>
 
-        <h1 className="text-2xl font-bold text-(--text-primary)">
+        <h1 className="text-lg font-semibold text-(--text-primary)">
           سجل المريض
         </h1>
       </div>
 
       {/* Table */}
-      <div className="p-6">
+      <div className="p-4">
         <div className="overflow-hidden rounded-xl border border-(--card-border)">
-
           {/* Mobile */}
-          <div className="sm:hidden space-y-4 p-4">
+          <div className="sm:hidden space-y-3 p-4">
+            {rows.length === 0 && (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-(--card-border) p-6 text-center">
+                <p className="text-sm font-semibold text-(--text-primary)">
+                  لا يوجد سجلات مرضى بعد
+                </p>
+                <p className="text-xs text-(--text-secondary)">
+                  أضف أول سجل ليظهر هنا.
+                </p>
+              </div>
+            )}
             {rows.map((item, index) => (
               <div
                 key={`${item.name}-${index}`}
                 className="rounded-2xl border border-(--card-border) bg-(--card-bg) p-4 shadow-sm"
               >
                 <div className="flex flex-col gap-3">
-                  
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-(--text-primary)">
                       {item.name}
@@ -105,15 +111,14 @@ export default function PatientsTable({ patients }: { patients?: Patient[] }) {
 
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${getDeptColor(
-                        item.department
+                        item.department,
                       )}`}
                     >
                       {item.department}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-sm text-(--text-secondary)">
-                    
+                  <div className="grid grid-cols-2 gap-3 text-xs text-(--text-secondary)">
                     <span className="font-medium text-(--text-primary)">
                       الجنس
                     </span>
@@ -123,7 +128,6 @@ export default function PatientsTable({ patients }: { patients?: Patient[] }) {
                       آخر زيارة
                     </span>
                     <span>{item.date}</span>
-
                   </div>
                 </div>
               </div>
@@ -132,51 +136,59 @@ export default function PatientsTable({ patients }: { patients?: Patient[] }) {
 
           {/* Desktop */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full min-w-max p-6 text-sm text-right">
-
-              <thead className="bg-(--hover-bg) text-(--text-secondary)">
-                <tr>
-                  <th className="px-4 py-3">آخر زيارة</th>
-                  <th className="px-4 py-3">الأقسام</th>
-                  <th className="px-4 py-3">التشخيص</th>
-                  <th className="px-4 py-3">اسم المريض</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {rows.map((item, index) => (
-                  <tr
-                    key={index}
-                    className="border-t border-(--card-border) hover:bg-(--hover-bg) transition"
-                  >
-                    <td className="px-4 py-3 text-(--text-secondary)">
-                      {item.date}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getDeptColor(
-                          item.department
-                        )}`}
-                      >
-                        {item.department}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3 text-(--text-secondary)">
-                      {item.gender}
-                    </td>
-
-                    <td className="px-4 py-3 font-medium text-(--text-primary)">
-                      {item.name}
-                    </td>
+            {rows.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-10 text-center">
+                <p className="text-sm font-semibold text-(--text-primary)">
+                  لا يوجد سجلات مرضى بعد
+                </p>
+                <p className="text-xs text-(--text-secondary)">
+                  أضف أول سجل ليظهر هنا.
+                </p>
+              </div>
+            ) : (
+              <table className="w-full min-w-max text-xs sm:text-sm text-right">
+                <thead className="bg-(--hover-bg) text-(--text-secondary) text-[11px] sm:text-xs">
+                  <tr>
+                    <th className="px-3 py-2">آخر زيارة</th>
+                    <th className="px-3 py-2">الأقسام</th>
+                    <th className="px-3 py-2">التشخيص</th>
+                    <th className="px-3 py-2">اسم المريض</th>
                   </tr>
-                ))}
-              </tbody>
+                </thead>
 
-            </table>
+                <tbody>
+                  {rows.map((item, index) => (
+                    <tr
+                      key={index}
+                      className="border-t border-(--card-border) hover:bg-(--hover-bg) transition"
+                    >
+                      <td className="px-3 py-2 text-(--text-secondary)">
+                        {item.date}
+                      </td>
+
+                      <td className="px-3 py-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getDeptColor(
+                            item.department,
+                          )}`}
+                        >
+                          {item.department}
+                        </span>
+                      </td>
+
+                      <td className="px-3 py-2 text-(--text-secondary)">
+                        {item.gender}
+                      </td>
+
+                      <td className="px-3 py-2 font-medium text-(--text-primary)">
+                        {item.name}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-
         </div>
       </div>
     </div>
