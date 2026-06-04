@@ -27,6 +27,7 @@ const SPECIALTIES = [
   "نسا و توليد",
 ];
 
+
 const WORK_DAYS = [
   { id: "sat", label: "السبت" },
   { id: "sun", label: "الأحد" },
@@ -71,6 +72,7 @@ export default function DoctorRegisterPage() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       nextErrors.email = "صيغة البريد الإلكتروني غير صحيحة";
     }
+    if (!specialist) nextErrors.specialist = "التخصص مطلوب";
     if (!password) nextErrors.password = "كلمة المرور مطلوبة";
     else if (password.length < 6) {
       nextErrors.password = "يجب أن تكون كلمة المرور 6 أحرف على الأقل";
@@ -93,7 +95,7 @@ export default function DoctorRegisterPage() {
     try {
       const profile: DoctorSignupProfile = {
         full_name: fullName.trim(),
-        specialist: "",
+        specialist: specialist,
         work_days: "",
         work_from: "",
         work_to: "",
@@ -210,7 +212,32 @@ export default function DoctorRegisterPage() {
         )}
       </div>
 
-
+      <div>
+        <label htmlFor="specialist" className="block text-sm font-medium text-zinc-700 mb-1">
+          التخصص
+        </label>
+        <select
+          id="specialist"
+          name="specialist"
+          value={specialist}
+          onChange={(e) => setSpecialist(e.target.value)}
+          aria-invalid={!!errors.specialist}
+          aria-describedby={errors.specialist ? "specialist-error" : undefined}
+          className={`w-full text-sm sm:text-base border rounded-md px-3 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:scale-[1.01] ${
+            errors.specialist ? "border-red-300" : "border-zinc-200"
+          }`}
+        >
+          <option value="">اختر التخصص...</option>
+          {SPECIALTIES.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        {errors.specialist && (
+          <p id="specialist-error" role="alert" className="text-sm text-red-700 mt-1">
+            {errors.specialist}
+          </p>
+        )}
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-zinc-700 mb-1">
