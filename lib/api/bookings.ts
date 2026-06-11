@@ -39,7 +39,7 @@ export const bookingService = {
     return extractBookingList(response);
   },
 
-  async getClinicBookings(token: string, clinicId?: number) {
+  async getClinicBookings(token: string, clinicId?: string | number) {
     const endpoint = clinicId
       ? `/api/book/clinic-bookings?clinic_id=${clinicId}`
       : "/api/book/clinic-bookings";
@@ -59,13 +59,13 @@ export const bookingService = {
     );
   },
 
-  async cancelBooking(bookingId: number, token: string) {
+  async cancelBooking(bookingId: string | number, token: string) {
     return apiClient.patch(`/api/book/${bookingId}/cancel`, undefined, {
       token,
     });
   },
 
-  async cancelClinicBooking(bookingId: number, token: string) {
+  async cancelClinicBooking(bookingId: string | number, token: string) {
     return apiClient.patch(
       `/api/book/clinic-bookings/${bookingId}/cancel`,
       undefined,

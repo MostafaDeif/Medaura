@@ -289,7 +289,7 @@ function RatingStars({
 export default function DoctorProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const doctorId = Number(params.id);
+  const doctorId = params.id;
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);

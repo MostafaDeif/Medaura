@@ -103,9 +103,9 @@ interface DoctorDrawerProps {
   doctor: StaffMember | null;
   open: boolean;
   onClose: () => void;
-  onVerify: (id: number) => Promise<void>;
-  onUnverify: (id: number) => Promise<void>;
-  onDelete: (id: number) => Promise<void>;
+  onVerify: (id: string | number) => Promise<void>;
+  onUnverify: (id: string | number) => Promise<void>;
+  onDelete: (id: string | number) => Promise<void>;
 }
 
 /* ── Main Component ─────────────────────────────────────────────────────────── */
@@ -303,7 +303,7 @@ function DrawerContent({
   onDeleteClick,
 }: {
   doctor: StaffMember;
-  staffId: number | null;
+  staffId: string | number | null;
   verified: boolean;
   active: boolean | null;
   actionLoading: string | null;
@@ -375,7 +375,7 @@ function DrawerContent({
         <InfoRow
           icon={<Hash size={15} className="text-(--text-secondary)" />}
           label="رقم الموظف"
-          value={staffId ? `#${staffId}` : "—"}
+          value={staffId ? `#${String(staffId)}` : "—"}
         />
         {doctor.email && (
           <InfoRow

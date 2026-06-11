@@ -19,7 +19,7 @@ export const clinicService = {
     return apiClient.post<ClinicProfile>("/clinic/create", data, { token });
   },
 
-  async getProfile(clinicId: number) {
+  async getProfile(clinicId: string | number) {
     return apiClient.get<ClinicProfile>(`/api/clinic/${clinicId}/profile`);
   },
 
@@ -27,7 +27,7 @@ export const clinicService = {
     return apiClient.get<ClinicProfile[]>("/api/clinic/best");
   },
 
-  async updateProfile(clinicId: number, data: Partial<ClinicRequest>, token: string) {
+  async updateProfile(clinicId: string | number, data: Partial<ClinicRequest>, token: string) {
     return apiClient.put<ClinicProfile>(
       `/clinic/${clinicId}`,
       data,
@@ -47,7 +47,7 @@ export const clinicService = {
     return apiClient.get<StaffProfile[]>("/clinic/staff", { token });
   },
 
-  async getBookings(token: string, clinicId?: number) {
+  async getBookings(token: string, clinicId?: string | number) {
     const endpoint = clinicId
       ? `/clinic/bookings?clinic_id=${clinicId}`
       : "/clinic/bookings";

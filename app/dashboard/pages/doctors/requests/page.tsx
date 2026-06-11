@@ -27,8 +27,8 @@ type RequestStatus = "pending" | "approved" | "rejected";
 type FilterStatus = "all" | RequestStatus;
 
 type AdminDoctor = {
-  doctor_id: number;
-  user_id?: number;
+  doctor_id: number | string;
+  user_id?: number | string;
   email: string;
   full_name: string;
   specialist: string;
@@ -53,7 +53,7 @@ type DoctorsApiResponse = {
 };
 
 type DoctorRequest = {
-  id: number;
+  id: string | number;
   name: string;
   specialty: string;
   city: string;
@@ -98,14 +98,14 @@ const filters: { key: FilterStatus; label: string }[] = [
 
 function normalizeDoctor(rawDoctor: unknown): AdminDoctor {
   const doctor = rawDoctor as Partial<AdminDoctor> & {
-    id?: number;
+    id?: number | string;
     name?: string;
     specialty?: string;
     verified?: boolean;
   };
 
   return {
-    doctor_id: Number(doctor.doctor_id ?? doctor.id),
+    doctor_id: doctor.doctor_id ?? doctor.id ?? "",
     user_id: doctor.user_id,
     email: doctor.email ?? "",
     full_name: doctor.full_name ?? doctor.name ?? "طبيب بدون اسم",
@@ -198,11 +198,11 @@ export default function DoctorRequestsPage() {
   const [doctors, setDoctors] = useState<AdminDoctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [verifyingId, setVerifyingId] = useState<number | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | number | null>(null);
   const [localStatuses, setLocalStatuses] = useState<
-    Record<number, RequestStatus>
+    Record<string | number, RequestStatus>
   >({});
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | number | null>(null);
   const [filter, setFilter] = useState<FilterStatus>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -290,7 +290,7 @@ export default function DoctorRequestsPage() {
     return filteredRequests.slice(start, start + pageSize);
   }, [filteredRequests, page]);
 
-  const updateStatus = async (id: number, status: RequestStatus) => {
+  const updateStatus = async (id: string | number, status: RequestStatus) => {
     setSelectedId(id);
 
     if (status === "approved") {

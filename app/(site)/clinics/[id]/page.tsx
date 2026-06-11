@@ -274,7 +274,7 @@ function RatingStars({
 
 export default function ClinicDetailsPage() {
   const params = useParams();
-  const clinicId = Number(params.id);
+  const clinicId = params.id;
 
   const [visibleDoctors, setVisibleDoctors] = useState(3);
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
@@ -350,7 +350,7 @@ export default function ClinicDetailsPage() {
           ? (unwrapped.doctors ?? unwrapped.staff ?? [])
           : [];
 
-        setClinicProfile(normalizeClinic(clinicSource, clinicId));
+        setClinicProfile(normalizeClinic(clinicSource, Number(clinicId)));
         setDoctors(normalizeDoctors(doctorsSource));
       } catch (error: unknown) {
         console.error("Clinic profile fetch error:", error);

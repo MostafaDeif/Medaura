@@ -35,8 +35,8 @@ async function fetchPending(): Promise<PendingStaffMember[]> {
   }
 }
 
-async function verifyStaff(id: number): Promise<void> {
-  if (!Number.isInteger(id) || id <= 0) {
+async function verifyStaff(id: string | number): Promise<void> {
+  if (!id) {
     throw new Error("Invalid staff ID");
   }
 
@@ -51,7 +51,7 @@ async function verifyStaff(id: number): Promise<void> {
 export default function PendingPage() {
   const [pending, setPending] = useState<PendingStaffMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const [verifyingId, setVerifyingId] = useState<number | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const load = useCallback(async () => {
@@ -66,7 +66,7 @@ export default function PendingPage() {
     });
   }, [load, refreshKey]);
 
-  const handleVerify = async (id: number) => {
+  const handleVerify = async (id: string | number) => {
     const staffId = getStaffId({ id });
 
     if (staffId === null) {

@@ -121,7 +121,7 @@ export default function FinancialPage() {
   }, [filters, fetchTransactions]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleSavePercentage = async (doctorId: number, percentage: number) => {
+  const handleSavePercentage = async (doctorId: string | number, percentage: number) => {
     await fetch("/api/clinic/financial/profit-sharing", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -132,7 +132,7 @@ export default function FinancialPage() {
     fetchTransactions(filters);
   };
 
-  const handleMarkPaid = async (doctorId: number, p: string, paid: boolean) => {
+  const handleMarkPaid = async (doctorId: string | number, p: string, paid: boolean) => {
     await fetch("/api/clinic/financial/mark-paid", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

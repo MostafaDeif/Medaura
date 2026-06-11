@@ -6,7 +6,7 @@ import type { FinancialFilters } from "../lib/types";
 
 interface Props {
   specialists: string[];
-  doctorOptions: { id: number; name: string }[];
+  doctorOptions: { id: string | number; name: string }[];
   filters: FinancialFilters;
   onFiltersChange: (filters: FinancialFilters) => void;
   onReset: () => void;

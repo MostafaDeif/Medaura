@@ -74,7 +74,7 @@ export default function AdminNotificationsPage() {
     }
   };
 
-  const markNotificationRead = useCallback(async (notificationId: number) => {
+  const markNotificationRead = useCallback(async (notificationId: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
     );

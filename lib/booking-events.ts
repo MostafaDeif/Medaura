@@ -9,8 +9,8 @@
  */
 
 export type BookingEvent = {
-  clinic_id?: number | null;
-  doctor_id?: number | null;
+  clinic_id?: string | number | null;
+  doctor_id?: string | number | null;
   patient_name?: string | null;
   booking_date?: string | null;
   booking_from?: string | null;
@@ -18,7 +18,7 @@ export type BookingEvent = {
 };
 
 type Subscriber = {
-  clinic_id?: number;
+  clinic_id?: string | number;
   callback: (event: BookingEvent) => void;
 };
 
@@ -42,7 +42,7 @@ export const bookingEventBus = {
   /**
    * Register a listener. Returns an unsubscribe function.
    */
-  subscribe(callback: Subscriber["callback"], clinic_id?: number): () => void {
+  subscribe(callback: Subscriber["callback"], clinic_id?: string | number): () => void {
     const sub: Subscriber = { clinic_id, callback };
     subscribers.add(sub);
     console.log(`[BookingBus] subscriber added — total: ${subscribers.size}`);

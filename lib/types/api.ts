@@ -169,7 +169,7 @@ export interface DoctorProfile {
 
 export interface DoctorQuery {
   specialist?: string;
-  clinic_id?: number;
+  clinic_id?: string | number;
   limit?: number;
 }
 
@@ -234,7 +234,7 @@ export interface BookingSlot {
 }
 
 export interface SlotsQuery {
-  staff_id: number;
+  staff_id: string | number;
   booking_date: string;
 }
 
@@ -253,8 +253,8 @@ export interface RatingResponse {
 
 // Notification Types
 export interface Notification {
-  id: number;
-  user_id: number;
+  id: string;
+  user_id: string;
   title: string;
   message: string;
   read: boolean;

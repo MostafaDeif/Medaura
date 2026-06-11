@@ -143,7 +143,7 @@ export default function DoctorCard({ doctor, index, onClick }: DoctorCardProps) 
           <div className="text-xs text-(--text-secondary)">
             <span className="font-medium">رقم الموظف:</span>{" "}
             <span className="font-bold text-(--text-primary) tabular-nums">
-              #{staffId ?? "—"}
+              #{String(staffId ?? "—")}
             </span>
           </div>
 

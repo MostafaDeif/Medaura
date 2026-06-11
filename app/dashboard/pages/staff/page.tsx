@@ -21,8 +21,8 @@ import {
 } from "lucide-react";
 
 type AdminUser = {
-  admin_id: number;
-  user_id: number;
+  admin_id: number | string;
+  user_id: string | number;
   email: string;
   full_name: string | null;
   photo: string | null;
@@ -64,8 +64,8 @@ function getWhatsAppUrl(phone: string): string {
 function normalizeAdmin(raw: unknown): AdminUser {
   const r = raw as Partial<AdminUser> & { id?: number | string; name?: string; role?: string; phone?: string; profile?: { phone?: string } };
   return {
-    admin_id: Number(r.admin_id ?? r.id ?? 0),
-    user_id: Number(r.user_id ?? r.id ?? 0),
+    admin_id: r.admin_id ?? r.id ?? "",
+    user_id: r.user_id ?? r.id ?? "",
     email: r.email ?? "",
     full_name: r.full_name ?? r.name ?? null,
     photo: r.photo ?? null,
@@ -105,7 +105,7 @@ export default function StaffAdminsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pendingAction, setPendingAction] = useState<Record<number, boolean>>({});
+  const [pendingAction, setPendingAction] = useState<Record<string | number, boolean>>({});
 
   const handleToggleActive = useCallback(
     async (admin: AdminUser, activate: boolean) => {

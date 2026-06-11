@@ -4,7 +4,7 @@ export type PaymentStatus = "paid" | "pending";
 
 export interface DoctorFinancialRecord {
   /** Doctor's numeric ID (from staff record) */
-  doctorId: number;
+  doctorId: string | number;
   doctorName: string;
   specialist: string;
   /** Consultation fee per appointment */
@@ -47,8 +47,8 @@ export interface MonthlyRevenue {
 
 export interface FinancialTransaction {
   id: string;
-  bookingId: number;
-  doctorId: number;
+  bookingId: string | number;
+  doctorId: string | number;
   doctorName: string;
   bookingDate: string;
   totalAmount: number;
@@ -62,7 +62,7 @@ export interface FinancialTransaction {
 export interface FinancialFilters {
   dateFrom?: string;    // "YYYY-MM-DD"
   dateTo?: string;      // "YYYY-MM-DD"
-  doctorId?: number;
+  doctorId?: string | number;
   specialist?: string;
   period?: "today" | "week" | "month" | "year" | "custom";
 }
@@ -76,10 +76,10 @@ export type ProfitSharingStore = Record<string, ProfitSharingConfig>;
 
 /** Raw booking from the backend */
 export interface RawBooking {
-  id: number;
-  doctor_id?: number;
-  staff_id?: number;
-  patient_id?: number;
+  id: string | number;
+  doctor_id?: string | number;
+  staff_id?: string | number;
+  patient_id?: string | number;
   booking_date?: string;
   booking_from?: string;
   status?: string;
