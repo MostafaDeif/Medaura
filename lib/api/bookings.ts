@@ -39,7 +39,7 @@ export const bookingService = {
     return extractBookingList(response);
   },
 
-  async getClinicBookings(token: string, clinicId?: number) {
+  async getClinicBookings(token: string, clinicId?: string | number) {
     const endpoint = clinicId
       ? `/api/book/clinic-bookings?clinic_id=${clinicId}`
       : "/api/book/clinic-bookings";

@@ -47,7 +47,7 @@ async function fetchMyStaff(): Promise<StaffMember[]> {
   }
 }
 
-async function verifyStaff(id: number): Promise<void> {
+async function verifyStaff(id: string | number): Promise<void> {
   if (!id) {
     throw new Error("Invalid staff ID");
   }
@@ -60,7 +60,7 @@ async function verifyStaff(id: number): Promise<void> {
   if (!res.ok || !json.success) throw new Error(json.error || "فشل التوثيق");
 }
 
-async function unverifyStaff(id: number): Promise<void> {
+async function unverifyStaff(id: string | number): Promise<void> {
   if (!id) {
     throw new Error("Invalid staff ID");
   }
@@ -126,7 +126,7 @@ export default function StaffPage() {
   }, [load, refreshKey]);
 
   /* ── Actions ──────────────────────────────────────────────────────────────── */
-  const handleVerify = async (id: number) => {
+  const handleVerify = async (id: string | number) => {
     const staffId = getStaffId({ id });
     if (staffId === null) return;
 
@@ -146,7 +146,7 @@ export default function StaffPage() {
     );
   };
 
-  const handleUnverify = async (id: number) => {
+  const handleUnverify = async (id: string | number) => {
     const staffId = getStaffId({ id });
     if (staffId === null) return;
 
@@ -165,7 +165,7 @@ export default function StaffPage() {
     );
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string | number) => {
     const staffId = getStaffId({ id });
     if (staffId === null) return;
     console.warn(

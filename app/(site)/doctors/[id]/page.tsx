@@ -156,7 +156,7 @@ function normalizeRatingItem(entry: unknown, index: number): RatingItem {
   }
 
   return {
-    rating_id: entry.rating_id ?? entry.id ?? index + 1,
+    rating_id: Number(entry.rating_id ?? entry.id ?? index + 1),
     rating: Number(entry.rating ?? 0),
     comment: typeof entry.comment === "string" ? entry.comment : "",
     patient_name:

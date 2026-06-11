@@ -22,7 +22,7 @@ import {
 
 type AdminUser = {
   admin_id: number | string;
-  user_id: number;
+  user_id: string | number;
   email: string;
   full_name: string | null;
   photo: string | null;
@@ -105,7 +105,7 @@ export default function StaffAdminsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pendingAction, setPendingAction] = useState<Record<number, boolean>>({});
+  const [pendingAction, setPendingAction] = useState<Record<string | number, boolean>>({});
 
   const handleToggleActive = useCallback(
     async (admin: AdminUser, activate: boolean) => {

@@ -18,7 +18,7 @@ import {
 } from "./staffIdentity";
 
 export interface StaffMember {
-  id?: number;
+  id?: string | number;
   staff_id?: number | string;
   staffId?: number | string;
   user_id?: number | string;
@@ -43,9 +43,9 @@ export interface StaffMember {
 interface StaffTableProps {
   staff: StaffMember[];
   loading: boolean;
-  onVerify: (id: number) => Promise<void>;
-  onUnverify: (id: number) => Promise<void>;
-  onDelete: (id: number) => Promise<void>;
+  onVerify: (id: string | number) => Promise<void>;
+  onUnverify: (id: string | number) => Promise<void>;
+  onDelete: (id: string | number) => Promise<void>;
 }
 
 function toBooleanFlag(value: unknown) {
@@ -154,8 +154,8 @@ function StaffCard({
 }: {
   member: StaffMember;
   idx: number;
-  verifyingId: number | null;
-  onVerify: (id: number) => void;
+  verifyingId: string | number | null;
+  onVerify: (id: string | number) => void;
   onUnverifyClick: (member: StaffMember) => void;
 }) {
   const staffId = getStaffId(member);
@@ -238,14 +238,14 @@ function StaffCard({
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function StaffTable({ staff, loading, onVerify, onUnverify, onDelete }: StaffTableProps) {
-  const [verifyingId, setVerifyingId] = useState<number | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | number | null>(null);
   const [confirmMember, setConfirmMember] = useState<StaffMember | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   // Keep onDelete in props signature for compatibility but don't render the button
   void onDelete;
 
-  const handleVerify = async (id: number) => {
+  const handleVerify = async (id: string | number) => {
     setVerifyingId(id);
     try { await onVerify(id); } finally { setVerifyingId(null); }
   };

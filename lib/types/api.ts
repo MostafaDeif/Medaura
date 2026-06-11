@@ -169,7 +169,7 @@ export interface DoctorProfile {
 
 export interface DoctorQuery {
   specialist?: string;
-  clinic_id?: number;
+  clinic_id?: string | number;
   limit?: number;
 }
 
@@ -234,7 +234,7 @@ export interface BookingSlot {
 }
 
 export interface SlotsQuery {
-  staff_id: number;
+  staff_id: string | number;
   booking_date: string;
 }
 

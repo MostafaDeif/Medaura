@@ -9,7 +9,7 @@ import {
 } from "./staffIdentity";
 
 export interface PendingStaffMember {
-  id?: number;
+  id?: string | number;
   staff_id?: number | string;
   staffId?: number | string;
   user_id?: number | string;
@@ -26,8 +26,8 @@ export interface PendingStaffMember {
 interface PendingRequestsProps {
   pending: PendingStaffMember[];
   loading: boolean;
-  onVerify: (id: number) => Promise<void>;
-  verifyingId: number | null;
+  onVerify: (id: string | number) => Promise<void>;
+  verifyingId: string | number | null;
 }
 
 export default function PendingRequests({

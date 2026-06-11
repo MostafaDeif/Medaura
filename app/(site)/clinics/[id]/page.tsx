@@ -100,7 +100,7 @@ function normalizeRatingItem(entry: unknown, index: number): RatingItem {
   }
 
   return {
-    rating_id: entry.rating_id ?? entry.id ?? index + 1,
+    rating_id: toNumber(entry.rating_id ?? entry.id, index + 1),
     rating: toNumber(entry.rating, 0),
     comment: typeof entry.comment === "string" ? entry.comment : "",
     patient_name:
@@ -155,7 +155,7 @@ function normalizeClinic(
 ): ClinicProfileData | null {
   if (!isRecord(value)) return null;
 
-  const clinicId = value.clinic_id ?? value.id ?? fallbackId;
+  const clinicId = toNumber(value.clinic_id ?? value.id, fallbackId);
   const name = typeof value.name === "string" ? value.name : "";
   const location = typeof value.location === "string" ? value.location : "";
   const phone = typeof value.phone === "string" ? value.phone : "";
@@ -206,7 +206,7 @@ function normalizeDoctors(value: unknown): ClinicDoctor[] {
     const yearsOfExperience = toNumber(entry.years_of_experience, 0);
 
     doctors.push({
-      staff_id: entry.staff_id ?? entry.id ?? index + 1,
+      staff_id: toNumber(entry.staff_id ?? entry.id, index + 1),
       full_name:
         typeof entry.full_name === "string"
           ? entry.full_name
@@ -350,7 +350,7 @@ export default function ClinicDetailsPage() {
           ? (unwrapped.doctors ?? unwrapped.staff ?? [])
           : [];
 
-        setClinicProfile(normalizeClinic(clinicSource, clinicId));
+        setClinicProfile(normalizeClinic(clinicSource, Number(clinicId)));
         setDoctors(normalizeDoctors(doctorsSource));
       } catch (error: unknown) {
         console.error("Clinic profile fetch error:", error);

@@ -47,7 +47,7 @@ export const clinicService = {
     return apiClient.get<StaffProfile[]>("/clinic/staff", { token });
   },
 
-  async getBookings(token: string, clinicId?: number) {
+  async getBookings(token: string, clinicId?: string | number) {
     const endpoint = clinicId
       ? `/clinic/bookings?clinic_id=${clinicId}`
       : "/clinic/bookings";

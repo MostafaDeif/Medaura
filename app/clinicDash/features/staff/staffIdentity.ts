@@ -26,15 +26,14 @@ type StaffIdentityRecord = {
   };
 };
 
-function toPositiveNumber(value: unknown) {
-  const numeric = value;
-
-  return !!numeric
-    ? numeric
-    : null;
+function toPositiveNumber(value: unknown): string | number | null {
+  if (typeof value === "string" || typeof value === "number") {
+    return value;
+  }
+  return null;
 }
 
-export function getStaffId(value: unknown) {
+export function getStaffId(value: unknown): string | number | null {
   const record = value as StaffIdentityRecord;
   const candidates = [
     record.id,

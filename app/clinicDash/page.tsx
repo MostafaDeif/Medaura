@@ -80,21 +80,21 @@ async function fetchPendingStaff(): Promise<PendingStaffMember[]> {
   }
 }
 
-async function verifyStaff(id: number): Promise<void> {
+async function verifyStaff(id: string | number): Promise<void> {
   if (!id) throw new Error("Invalid staff ID");
   const res = await fetch(`/api/staff/${id}/verify`, { method: "PATCH", credentials: "include" });
   const json = await res.json();
   if (!res.ok || !json.success) throw new Error(json.error || "فشل توثيق الطبيب");
 }
 
-async function unverifyStaff(id: number): Promise<void> {
+async function unverifyStaff(id: string | number): Promise<void> {
   if (!id) throw new Error("Invalid staff ID");
   const res = await fetch(`/api/staff/${id}/unverify`, { method: "PATCH", credentials: "include" });
   const json = await res.json();
   if (!res.ok || !json.success) throw new Error(json.error || "فشل إلغاء توثيق الطبيب");
 }
 
-async function deleteStaffById(id: number): Promise<void> {
+async function deleteStaffById(id: string | number): Promise<void> {
   if (!id) throw new Error("Invalid staff ID");
   const res = await fetch(`/api/staff/${id}/delete`, { method: "DELETE", credentials: "include" });
   const json = await res.json();
@@ -122,7 +122,7 @@ export default function ClinicDashPage() {
   const [staffLoading, setStaffLoading] = useState(true);
   const [pendingLoading, setPendingLoading] = useState(true);
 
-  const [verifyingId, setVerifyingId] = useState<number | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | number | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -182,7 +182,7 @@ export default function ClinicDashPage() {
   };
 
   // ── Verify handler ──────────────────────────────────────────────────────────
-  const handleVerify = async (id: number) => {
+  const handleVerify = async (id: string | number) => {
     const staffId = getStaffId({ id });
     if (staffId === null) return;
     setVerifyingId(staffId);
@@ -204,7 +204,7 @@ export default function ClinicDashPage() {
   };
 
   // ── Unverify handler ────────────────────────────────────────────────────────
-  const handleUnverify = async (id: number) => {
+  const handleUnverify = async (id: string | number) => {
     const staffId = getStaffId({ id });
     if (staffId === null) return;
     try {
@@ -222,7 +222,7 @@ export default function ClinicDashPage() {
   };
 
   // ── Delete handler ──────────────────────────────────────────────────────────
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string | number) => {
     const staffId = getStaffId({ id });
     if (staffId === null) return;
     try {

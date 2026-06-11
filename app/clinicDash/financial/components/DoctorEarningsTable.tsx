@@ -10,7 +10,7 @@ interface Props {
   loading: boolean;
   period: string;
   onEditPercentage: (record: DoctorFinancialRecord) => void;
-  onMarkPaid: (doctorId: number, period: string, paid: boolean) => Promise<void>;
+  onMarkPaid: (doctorId: string | number, period: string, paid: boolean) => Promise<void>;
 }
 
 type SortKey = "doctorName" | "totalRevenue" | "completedAppointments" | "doctorShare" | "clinicShare";
@@ -28,7 +28,7 @@ function Skeleton() {
 export default function DoctorEarningsTable({ records, loading, period, onEditPercentage, onMarkPaid }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("totalRevenue");
   const [sortAsc, setSortAsc] = useState(false);
-  const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [togglingId, setTogglingId] = useState<string | number | null>(null);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {

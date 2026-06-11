@@ -35,10 +35,10 @@ export function formatCurrencyCompact(amount: number): string {
 }
 
 /** Extract the numeric ID from a staff/booking record */
-export function getDoctorId(member: RawStaffMember): number | null {
+export function getDoctorId(member: RawStaffMember): string | number | null {
   const raw = member.id ?? member.staff_id ?? member.user_id;
-  const n = typeof raw === "string" ? parseInt(raw, 10) : Number(raw);
-  return Number.isFinite(n) && n > 0 ? n : null;
+  if (typeof raw === "string" || typeof raw === "number") return raw;
+  return null;
 }
 
 /** Return today's date as "YYYY-MM-DD" */
@@ -82,7 +82,7 @@ export function computeDoctorRecords(
   period?: string // current period key for paid check e.g. "2025-06"
 ): DoctorFinancialRecord[] {
   // Build a lookup: doctor_id → staff member
-  const staffMap = new Map<number, RawStaffMember>();
+  const staffMap = new Map<string | number, RawStaffMember>();
   for (const s of staff) {
     const id = getDoctorId(s);
     if (id !== null) staffMap.set(id, s);
@@ -106,7 +106,7 @@ export function computeDoctorRecords(
   });
 
   // Aggregate per doctor
-  const agg = new Map<number, { count: number; member: RawStaffMember }>();
+  const agg = new Map<string | number, { count: number; member: RawStaffMember }>();
 
   for (const b of filteredBookings) {
     const docId = b.doctor_id ?? b.staff_id;
@@ -168,7 +168,7 @@ export function computeSummary(
   const monthStr = currentMonthStr();
   const yearStr = currentYearStr();
 
-  const staffMap = new Map<number, RawStaffMember>();
+  const staffMap = new Map<string | number, RawStaffMember>();
   for (const s of staff) {
     const id = getDoctorId(s);
     if (id !== null) staffMap.set(id, s);
@@ -220,7 +220,7 @@ export function computeDailyRevenue(
   staff: RawStaffMember[],
   days = 30
 ): DailyRevenue[] {
-  const staffMap = new Map<number, RawStaffMember>();
+  const staffMap = new Map<string | number, RawStaffMember>();
   for (const s of staff) {
     const id = getDoctorId(s);
     if (id !== null) staffMap.set(id, s);
@@ -257,7 +257,7 @@ export function computeMonthlyRevenue(
   staff: RawStaffMember[],
   months = 12
 ): MonthlyRevenue[] {
-  const staffMap = new Map<number, RawStaffMember>();
+  const staffMap = new Map<string | number, RawStaffMember>();
   for (const s of staff) {
     const id = getDoctorId(s);
     if (id !== null) staffMap.set(id, s);
@@ -298,7 +298,7 @@ export function computeTransactions(
   profitStore: ProfitSharingStore,
   filters?: FinancialFilters
 ): FinancialTransaction[] {
-  const staffMap = new Map<number, RawStaffMember>();
+  const staffMap = new Map<string | number, RawStaffMember>();
   for (const s of staff) {
     const id = getDoctorId(s);
     if (id !== null) staffMap.set(id, s);

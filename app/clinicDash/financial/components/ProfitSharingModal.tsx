@@ -7,7 +7,7 @@ import type { DoctorFinancialRecord } from "../lib/types";
 interface Props {
   record: DoctorFinancialRecord | null;
   onClose: () => void;
-  onSave: (doctorId: number, percentage: number) => Promise<void>;
+  onSave: (doctorId: string | number, percentage: number) => Promise<void>;
 }
 
 export default function ProfitSharingModal({ record, onClose, onSave }: Props) {
