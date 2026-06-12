@@ -2,12 +2,15 @@ import type {
   RawBooking,
   RawStaffMember,
   DoctorFinancialRecord,
+  AppointmentRecord,
   FinancialSummary,
   DailyRevenue,
   MonthlyRevenue,
   FinancialTransaction,
   FinancialFilters,
   ProfitSharingStore,
+  AppointmentPaymentStore,
+  PaymentStatus,
 } from "./types";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -61,61 +64,167 @@ function getBookingDate(b: RawBooking): string {
   return b.booking_date ?? b.created_at?.slice(0, 10) ?? "";
 }
 
-/** Check whether a booking counts as revenue-generating */
-export function isCompleted(b: RawBooking): boolean {
-  const s = (b.status ?? "").toLowerCase();
-  // Accept "completed" or "confirmed" — adjust if backend uses different value
-  return s === "completed" || s === "confirmed";
+/**
+ * Returns the appointment's scheduled DateTime as a Date object.
+ * Uses booking_date + booking_from (time). Falls back to midnight.
+ */
+function getBookingDateTime(b: RawBooking): Date | null {
+  const date = getBookingDate(b);
+  if (!date) return null;
+  const time = b.booking_from ?? "00:00";
+  // Normalise to HH:MM (handle "HH:MM:SS" from backend)
+  const normalised = time.slice(0, 5).padEnd(5, "0");
+  return new Date(`${date}T${normalised}:00`);
+}
+
+/**
+ * Returns true when the appointment's scheduled date+time is in the past.
+ * Expired + unpaid → auto-cancelled.
+ */
+export function isBookingExpired(b: RawBooking): boolean {
+  const dt = getBookingDateTime(b);
+  if (!dt) return false;
+  return dt < new Date();
+}
+
+/**
+ * Derives the effective per-appointment payment status:
+ *  "paid"      — explicitly marked paid in the store
+ *  "cancelled" — explicitly cancelled OR past schedule without payment
+ *  "pending"   — upcoming appointment, not yet marked
+ */
+export function getAppointmentPaymentStatus(
+  b: RawBooking,
+  apptStore: AppointmentPaymentStore
+): PaymentStatus {
+  const stored = apptStore[String(b.id)];
+  if (stored === "paid") return "paid";
+  if (stored === "cancelled") return "cancelled";
+  // Auto-cancel when the appointment time has passed without being paid
+  if (isBookingExpired(b)) return "cancelled";
+  return "pending";
 }
 
 // ── Core Calculations ──────────────────────────────────────────────────────────
 
 /**
- * Join bookings + staff into DoctorFinancialRecord[].
- * Applies filters if provided.
+ * Build per-appointment records for the Doctor Earnings Table.
+ * Includes ALL appointments in the date range (paid, pending, and auto-cancelled).
+ * Revenue fields (doctorShare / clinicShare) are non-zero only for paid appointments.
  */
-export function computeDoctorRecords(
+export function computeAppointmentRecords(
   bookings: RawBooking[],
   staff: RawStaffMember[],
   profitStore: ProfitSharingStore,
-  filters?: FinancialFilters,
-  period?: string // current period key for paid check e.g. "2025-06"
-): DoctorFinancialRecord[] {
-  // Build a lookup: doctor_id → staff member
+  apptStore: AppointmentPaymentStore,
+  filters?: FinancialFilters
+): AppointmentRecord[] {
   const staffMap = new Map<string | number, RawStaffMember>();
   for (const s of staff) {
     const id = getDoctorId(s);
     if (id !== null) staffMap.set(id, s);
   }
 
-  // Apply date filters
-  const filteredBookings = bookings.filter((b) => {
-    if (!isCompleted(b)) return false;
+  const records: AppointmentRecord[] = [];
 
+  for (const b of bookings) {
     const date = getBookingDate(b);
 
+    // Apply date range filters
+    if (filters?.dateFrom && date < filters.dateFrom) continue;
+    if (filters?.dateTo && date > filters.dateTo) continue;
+
+    const docId = b.doctor_id ?? b.staff_id;
+    if (!docId) continue;
+
+    const member = staffMap.get(docId);
+    if (!member) continue;
+
+    // Apply specialty / doctor filters
+    if (filters?.specialist && member.specialist !== filters.specialist) continue;
+    if (filters?.doctorId && String(docId) !== String(filters.doctorId)) continue;
+
+    const paymentStatus = getAppointmentPaymentStatus(b, apptStore);
+
+    const config = profitStore[String(docId)] ?? { doctorPercentage: DEFAULT_DOCTOR_PCT, paid: [] };
+    const fee = member.consultation_price ?? b.consultation_price ?? 0;
+    const docPct = config.doctorPercentage;
+    const clinicPct = 100 - docPct;
+
+    // Revenue is only realised on paid appointments
+    const isPaid = paymentStatus === "paid";
+    const docShare = isPaid ? (fee * docPct) / 100 : 0;
+    const clinicShare = isPaid ? (fee * clinicPct) / 100 : 0;
+
+    records.push({
+      bookingId: b.id,
+      doctorId: docId,
+      doctorName: member.full_name,
+      specialist: member.specialist ?? "—",
+      patientName: b.patient_name ?? `مريض #${b.patient_id ?? b.id}`,
+      bookingDate: date,
+      bookingFrom: b.booking_from ? b.booking_from.slice(0, 5) : "—",
+      consultationFee: fee,
+      doctorPercentage: docPct,
+      clinicPercentage: clinicPct,
+      doctorShare: docShare,
+      clinicShare: clinicShare,
+      paymentStatus,
+    });
+  }
+
+  // Sort: paid first → pending → cancelled; within group, newest date first
+  const statusOrder: Record<PaymentStatus, number> = { paid: 0, pending: 1, cancelled: 2 };
+  return records.sort((a, b) => {
+    const order = statusOrder[a.paymentStatus] - statusOrder[b.paymentStatus];
+    if (order !== 0) return order;
+    return b.bookingDate.localeCompare(a.bookingDate);
+  });
+}
+
+/**
+ * Join bookings + staff into DoctorFinancialRecord[] (per-doctor aggregates).
+ * ONLY counts appointments whose paymentStatus === "paid".
+ * Used by RevenueCharts, ExportButtons, and FinancialOverviewCards.
+ */
+export function computeDoctorRecords(
+  bookings: RawBooking[],
+  staff: RawStaffMember[],
+  profitStore: ProfitSharingStore,
+  apptStore: AppointmentPaymentStore,
+  filters?: FinancialFilters,
+  period?: string
+): DoctorFinancialRecord[] {
+  const staffMap = new Map<string | number, RawStaffMember>();
+  for (const s of staff) {
+    const id = getDoctorId(s);
+    if (id !== null) staffMap.set(id, s);
+  }
+
+  // Only aggregate paid bookings
+  const paidBookings = bookings.filter((b) => {
+    const date = getBookingDate(b);
     if (filters?.dateFrom && date < filters.dateFrom) return false;
     if (filters?.dateTo && date > filters.dateTo) return false;
 
-    if (filters?.doctorId) {
-      const bid = b.doctor_id ?? b.staff_id;
-      if (bid !== filters.doctorId) return false;
-    }
+    const docId = b.doctor_id ?? b.staff_id;
+    if (!docId) return false;
 
-    return true;
+    const member = staffMap.get(docId);
+    if (!member) return false;
+
+    if (filters?.specialist && member.specialist !== filters.specialist) return false;
+    if (filters?.doctorId && String(docId) !== String(filters.doctorId)) return false;
+
+    return getAppointmentPaymentStatus(b, apptStore) === "paid";
   });
 
-  // Aggregate per doctor
   const agg = new Map<string | number, { count: number; member: RawStaffMember }>();
-
-  for (const b of filteredBookings) {
+  for (const b of paidBookings) {
     const docId = b.doctor_id ?? b.staff_id;
     if (!docId) continue;
     const member = staffMap.get(docId);
     if (!member) continue;
-
-    if (filters?.specialist && member.specialist !== filters.specialist) continue;
-
     const existing = agg.get(docId);
     if (existing) {
       existing.count++;
@@ -124,7 +233,6 @@ export function computeDoctorRecords(
     }
   }
 
-  // Build records
   const records: DoctorFinancialRecord[] = [];
   const now = period ?? currentMonthStr();
 
@@ -152,17 +260,19 @@ export function computeDoctorRecords(
     });
   }
 
-  // Sort by total revenue descending
   return records.sort((a, b) => b.totalRevenue - a.totalRevenue);
 }
 
 /**
  * Compute the six financial summary KPIs.
+ * Revenue figures are derived from PAID appointments only.
+ * pendingPayments accumulates unpaid-but-pending doctor shares.
  */
 export function computeSummary(
   bookings: RawBooking[],
   staff: RawStaffMember[],
-  profitStore: ProfitSharingStore
+  profitStore: ProfitSharingStore,
+  apptStore: AppointmentPaymentStore
 ): FinancialSummary {
   const today = todayStr();
   const monthStr = currentMonthStr();
@@ -182,8 +292,7 @@ export function computeSummary(
   let pendingPayments = 0;
 
   for (const b of bookings) {
-    if (!isCompleted(b)) continue;
-
+    const apptStatus = getAppointmentPaymentStatus(b, apptStore);
     const docId = b.doctor_id ?? b.staff_id;
     if (!docId) continue;
 
@@ -195,9 +304,16 @@ export function computeSummary(
     const config = profitStore[String(docId)] ?? { doctorPercentage: DEFAULT_DOCTOR_PCT, paid: [] };
     const docPct = config.doctorPercentage;
     const clinicPct = 100 - docPct;
+
+    if (apptStatus === "pending" && date.startsWith(yearStr)) {
+      // Count pending doctor share for the "pending payments" KPI
+      pendingPayments += (fee * docPct) / 100;
+    }
+
+    if (apptStatus !== "paid") continue;
+
     const docShare = (fee * docPct) / 100;
     const clinicShare = (fee * clinicPct) / 100;
-    const period = date.slice(0, 7); // YYYY-MM
 
     if (date === today) todayRevenue += fee;
     if (date.startsWith(monthStr)) monthlyRevenue += fee;
@@ -205,7 +321,6 @@ export function computeSummary(
       yearlyRevenue += fee;
       clinicProfit += clinicShare;
       doctorsTotalEarnings += docShare;
-      if (!config.paid.includes(period)) pendingPayments += docShare;
     }
   }
 
@@ -213,11 +328,12 @@ export function computeSummary(
 }
 
 /**
- * Generate daily revenue data for the last N days.
+ * Generate daily revenue data for the last N days (paid appointments only).
  */
 export function computeDailyRevenue(
   bookings: RawBooking[],
   staff: RawStaffMember[],
+  apptStore: AppointmentPaymentStore,
   days = 30
 ): DailyRevenue[] {
   const staffMap = new Map<string | number, RawStaffMember>();
@@ -236,7 +352,7 @@ export function computeDailyRevenue(
   }
 
   for (const b of bookings) {
-    if (!isCompleted(b)) continue;
+    if (getAppointmentPaymentStatus(b, apptStore) !== "paid") continue;
     const docId = b.doctor_id ?? b.staff_id;
     if (!docId) continue;
     const fee = staffMap.get(docId)?.consultation_price ?? 0;
@@ -250,11 +366,12 @@ export function computeDailyRevenue(
 }
 
 /**
- * Generate monthly revenue for the last N months.
+ * Generate monthly revenue for the last N months (paid appointments only).
  */
 export function computeMonthlyRevenue(
   bookings: RawBooking[],
   staff: RawStaffMember[],
+  apptStore: AppointmentPaymentStore,
   months = 12
 ): MonthlyRevenue[] {
   const staffMap = new Map<string | number, RawStaffMember>();
@@ -277,7 +394,7 @@ export function computeMonthlyRevenue(
   const monthMap = new Map(result.map((r) => [r.month, r]));
 
   for (const b of bookings) {
-    if (!isCompleted(b)) continue;
+    if (getAppointmentPaymentStatus(b, apptStore) !== "paid") continue;
     const docId = b.doctor_id ?? b.staff_id;
     if (!docId) continue;
     const fee = staffMap.get(docId)?.consultation_price ?? 0;
@@ -290,12 +407,13 @@ export function computeMonthlyRevenue(
 }
 
 /**
- * Build FinancialTransaction[] from completed bookings.
+ * Build FinancialTransaction[] from PAID bookings only.
  */
 export function computeTransactions(
   bookings: RawBooking[],
   staff: RawStaffMember[],
   profitStore: ProfitSharingStore,
+  apptStore: AppointmentPaymentStore,
   filters?: FinancialFilters
 ): FinancialTransaction[] {
   const staffMap = new Map<string | number, RawStaffMember>();
@@ -307,7 +425,8 @@ export function computeTransactions(
   const txns: FinancialTransaction[] = [];
 
   for (const b of bookings) {
-    if (!isCompleted(b)) continue;
+    // Only include paid appointments in transaction log
+    if (getAppointmentPaymentStatus(b, apptStore) !== "paid") continue;
 
     const docId = b.doctor_id ?? b.staff_id;
     if (!docId) continue;
@@ -318,7 +437,7 @@ export function computeTransactions(
     const date = getBookingDate(b);
     if (filters?.dateFrom && date < filters.dateFrom) continue;
     if (filters?.dateTo && date > filters.dateTo) continue;
-    if (filters?.doctorId && docId !== filters.doctorId) continue;
+    if (filters?.doctorId && String(docId) !== String(filters.doctorId)) continue;
     if (filters?.specialist && member.specialist !== filters.specialist) continue;
 
     const fee = member.consultation_price ?? 0;
@@ -344,10 +463,10 @@ export function computeTransactions(
   return txns.sort((a, b) => b.bookingDate.localeCompare(a.bookingDate));
 }
 
-/** Export data to CSV string */
+/** Export data to CSV string (only paid appointments appear in doctor records) */
 export function exportToCSV(records: DoctorFinancialRecord[], period: string): string {
   const headers = [
-    "الطبيب", "التخصص", "سعر الاستشارة", "عدد المواعيد",
+    "الطبيب", "التخصص", "سعر الاستشارة", "عدد المواعيد المدفوعة",
     "إجمالي الإيرادات", "نسبة الطبيب%", "نسبة العيادة%",
     "حصة الطبيب", "حصة العيادة", "حالة الدفع"
   ];
@@ -362,7 +481,7 @@ export function exportToCSV(records: DoctorFinancialRecord[], period: string): s
     r.clinicPercentage,
     r.doctorShare.toFixed(2),
     r.clinicShare.toFixed(2),
-    r.paymentStatus === "paid" ? "مدفوع" : "معلق",
+    r.paymentStatus === "paid" ? "مدفوع" : r.paymentStatus === "cancelled" ? "ملغي" : "معلق",
   ]);
 
   const content = [

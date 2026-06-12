@@ -7,15 +7,30 @@ import path from "path";
 import {
   computeDoctorRecords,
   computeTransactions,
+  computeAppointmentRecords,
 } from "@/app/clinicDash/financial/lib/calculations";
-import type { RawBooking, RawStaffMember, ProfitSharingStore, FinancialFilters } from "@/app/clinicDash/financial/lib/types";
+import type {
+  RawBooking,
+  RawStaffMember,
+  ProfitSharingStore,
+  AppointmentPaymentStore,
+  FinancialFilters,
+} from "@/app/clinicDash/financial/lib/types";
 
-const DATA_FILE = path.join(process.cwd(), "data", "profit-sharing.json");
+const DATA_FILE      = path.join(process.cwd(), "data", "profit-sharing.json");
+const APPT_DATA_FILE = path.join(process.cwd(), "data", "appointment-payments.json");
 
 function readStore(): ProfitSharingStore {
   try {
     if (!fs.existsSync(DATA_FILE)) return {};
     return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8")) as ProfitSharingStore;
+  } catch { return {}; }
+}
+
+function readApptStore(): AppointmentPaymentStore {
+  try {
+    if (!fs.existsSync(APPT_DATA_FILE)) return {};
+    return JSON.parse(fs.readFileSync(APPT_DATA_FILE, "utf-8")) as AppointmentPaymentStore;
   } catch { return {}; }
 }
 
@@ -39,15 +54,15 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const filters: FinancialFilters = {};
-  const dateFrom = searchParams.get("date_from");
-  const dateTo = searchParams.get("date_to");
-  const doctorId = searchParams.get("doctor_id");
+  const dateFrom   = searchParams.get("date_from");
+  const dateTo     = searchParams.get("date_to");
+  const doctorId   = searchParams.get("doctor_id");
   const specialist = searchParams.get("specialist");
-  const period = searchParams.get("period") ?? undefined;
+  const period     = searchParams.get("period") ?? undefined;
 
-  if (dateFrom) filters.dateFrom = dateFrom;
-  if (dateTo) filters.dateTo = dateTo;
-  if (doctorId) filters.doctorId = doctorId;
+  if (dateFrom)   filters.dateFrom   = dateFrom;
+  if (dateTo)     filters.dateTo     = dateTo;
+  if (doctorId)   filters.doctorId   = doctorId;
   if (specialist) filters.specialist = specialist;
 
   try {
@@ -56,17 +71,25 @@ export async function GET(request: NextRequest) {
       apiClient.get<unknown>("/api/staff/my-clinic", { token }),
     ]);
 
-    const bookings = (Array.isArray(bookingsRaw) ? bookingsRaw : []) as RawBooking[];
-    const staff = extractList<RawStaffMember>(staffRaw);
-    const store = readStore();
+    const bookings  = (Array.isArray(bookingsRaw) ? bookingsRaw : []) as RawBooking[];
+    const staff     = extractList<RawStaffMember>(staffRaw);
+    const store     = readStore();
+    const apptStore = readApptStore();
 
-    const doctorRecords = computeDoctorRecords(bookings, staff, store, filters, period);
-    const transactions = computeTransactions(bookings, staff, store, filters);
+    // Doctor-level aggregates (paid appointments only) — used by charts & export
+    const doctorRecords = computeDoctorRecords(bookings, staff, store, apptStore, filters, period);
+
+    // Per-appointment rows (all statuses) — drives the earnings table
+    const appointmentRecords = computeAppointmentRecords(bookings, staff, store, apptStore, filters);
+
+    // Transaction log (paid only)
+    const transactions = computeTransactions(bookings, staff, store, apptStore, filters);
+
     const specialties = [...new Set(staff.map((s) => s.specialist).filter(Boolean))];
 
     return NextResponse.json({
       success: true,
-      data: { doctorRecords, transactions, specialties },
+      data: { doctorRecords, appointmentRecords, transactions, specialties },
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
