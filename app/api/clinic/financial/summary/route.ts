@@ -9,14 +9,27 @@ import {
   computeMonthlyRevenue,
   computeDailyRevenue,
 } from "@/app/clinicDash/financial/lib/calculations";
-import type { RawBooking, RawStaffMember, ProfitSharingStore } from "@/app/clinicDash/financial/lib/types";
+import type {
+  RawBooking,
+  RawStaffMember,
+  ProfitSharingStore,
+  AppointmentPaymentStore,
+} from "@/app/clinicDash/financial/lib/types";
 
-const DATA_FILE = path.join(process.cwd(), "data", "profit-sharing.json");
+const DATA_FILE      = path.join(process.cwd(), "data", "profit-sharing.json");
+const APPT_DATA_FILE = path.join(process.cwd(), "data", "appointment-payments.json");
 
 function readStore(): ProfitSharingStore {
   try {
     if (!fs.existsSync(DATA_FILE)) return {};
     return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8")) as ProfitSharingStore;
+  } catch { return {}; }
+}
+
+function readApptStore(): AppointmentPaymentStore {
+  try {
+    if (!fs.existsSync(APPT_DATA_FILE)) return {};
+    return JSON.parse(fs.readFileSync(APPT_DATA_FILE, "utf-8")) as AppointmentPaymentStore;
   } catch { return {}; }
 }
 
@@ -44,13 +57,15 @@ export async function GET(request: NextRequest) {
       apiClient.get<unknown>("/api/staff/my-clinic", { token }),
     ]);
 
-    const bookings = (Array.isArray(bookingsRaw) ? bookingsRaw : []) as RawBooking[];
-    const staff = extractList<RawStaffMember>(staffRaw);
-    const store = readStore();
+    const bookings  = (Array.isArray(bookingsRaw) ? bookingsRaw : []) as RawBooking[];
+    const staff     = extractList<RawStaffMember>(staffRaw);
+    const store     = readStore();
+    const apptStore = readApptStore();
 
-    const summary = computeSummary(bookings, staff, store);
-    const monthly = computeMonthlyRevenue(bookings, staff, 12);
-    const daily = computeDailyRevenue(bookings, staff, 30);
+    // All summary KPIs now reflect paid appointments only
+    const summary = computeSummary(bookings, staff, store, apptStore);
+    const monthly = computeMonthlyRevenue(bookings, staff, apptStore, 12);
+    const daily   = computeDailyRevenue(bookings, staff, apptStore, 30);
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,6 @@
 // ── Financial Management Types ─────────────────────────────────────────────
 
-export type PaymentStatus = "paid" | "pending";
+export type PaymentStatus = "paid" | "pending" | "cancelled";
 
 export interface DoctorFinancialRecord {
   /** Doctor's numeric ID (from staff record) */
@@ -9,9 +9,9 @@ export interface DoctorFinancialRecord {
   specialist: string;
   /** Consultation fee per appointment */
   consultationFee: number;
-  /** Total completed appointments */
+  /** Total PAID appointments only */
   completedAppointments: number;
-  /** Total revenue from completed appointments */
+  /** Total revenue from paid appointments */
   totalRevenue: number;
   /** Doctor's profit percentage (0–100) */
   doctorPercentage: number;
@@ -21,7 +21,27 @@ export interface DoctorFinancialRecord {
   doctorShare: number;
   /** Clinic's monetary share */
   clinicShare: number;
-  /** Payment status for the current period */
+  /** Doctor salary payment status for the current period */
+  paymentStatus: PaymentStatus;
+}
+
+/** Per-appointment revenue record — drives the Doctor Earnings Table */
+export interface AppointmentRecord {
+  bookingId: string | number;
+  doctorId: string | number;
+  doctorName: string;
+  specialist: string;
+  /** Patient who booked the appointment */
+  patientName: string;
+  bookingDate: string;   // "YYYY-MM-DD"
+  bookingFrom: string;   // "HH:MM" or "—"
+  consultationFee: number;
+  doctorPercentage: number;
+  clinicPercentage: number;
+  /** Non-zero only when paymentStatus === "paid" */
+  doctorShare: number;
+  /** Non-zero only when paymentStatus === "paid" */
+  clinicShare: number;
   paymentStatus: PaymentStatus;
 }
 
@@ -74,14 +94,25 @@ export interface ProfitSharingConfig {
 
 export type ProfitSharingStore = Record<string, ProfitSharingConfig>;
 
+/**
+ * Per-appointment payment tracking store.
+ * Key = bookingId, Value = "paid" | "cancelled"
+ * Absence of a key means the booking is "pending".
+ */
+export type AppointmentPaymentStore = Record<string, "paid" | "cancelled">;
+
 /** Raw booking from the backend */
 export interface RawBooking {
   id: string | number;
   doctor_id?: string | number;
   staff_id?: string | number;
   patient_id?: string | number;
+  /** Patient's full name — returned by the backend clinic-bookings endpoint */
+  patient_name?: string;
   booking_date?: string;
+  /** Appointment start time, e.g. "10:00" */
   booking_from?: string;
+  booking_to?: string;
   status?: string;
   created_at?: string;
   consultation_price?: number;

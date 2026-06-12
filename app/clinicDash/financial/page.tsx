@@ -13,6 +13,7 @@ import type {
   DailyRevenue,
   MonthlyRevenue,
   DoctorFinancialRecord,
+  AppointmentRecord,
   FinancialFilters as FiltersType,
 } from "./lib/types";
 import { currentMonthStr } from "./lib/calculations";
@@ -34,6 +35,8 @@ interface SummaryData {
 
 interface TransactionData {
   doctorRecords: DoctorFinancialRecord[];
+  /** Per-appointment rows for the earnings table */
+  appointmentRecords: AppointmentRecord[];
   specialties: string[];
 }
 
@@ -70,15 +73,12 @@ function lastEgypt9PMTimestamp(): number {
   const day   = parseInt(parts.find((p) => p.type === "day")!.value, 10);
 
   // Build today's 9 PM in Egypt → convert to UTC ms
-  // We approximate by using the Egypt offset from current Date diff
   const egyptOffsetMinutes = getEgyptOffsetMinutes();
   const todayEgypt9PM = Date.UTC(year, month, day, DAILY_REFRESH_HOUR, 0, 0) - egyptOffsetMinutes * 60_000;
 
   if (egyptHour >= DAILY_REFRESH_HOUR) {
-    // We're past 9 PM today — last snapshot was today at 9 PM
     return todayEgypt9PM;
   } else {
-    // We're before 9 PM — last snapshot was yesterday at 9 PM
     return todayEgypt9PM - 24 * 60 * 60 * 1000;
   }
 }
@@ -86,7 +86,6 @@ function lastEgypt9PMTimestamp(): number {
 /** Get Egypt UTC offset in minutes by comparing formatted UTC vs local */
 function getEgyptOffsetMinutes(): number {
   const now = new Date();
-  // Format a reference time in Egypt and UTC, then compute the diff
   const fmtEgypt = new Intl.DateTimeFormat("en-US", {
     hour: "numeric", minute: "numeric", hour12: false, timeZone: EGYPT_TZ,
   }).format(now);
@@ -182,7 +181,7 @@ export default function FinancialPage() {
   const [lastUpdatedTs, setLastUpdatedTs]   = useState<number | null>(null);
   const [, forceRender]                     = useState(0); // to update "منذ X" text
 
-  const [filters, setFilters]     = useState<FiltersType>({ period: "month" });
+  const [filters, setFilters]      = useState<FiltersType>({ period: "month" });
   const [editRecord, setEditRecord] = useState<DoctorFinancialRecord | null>(null);
 
   const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -191,7 +190,7 @@ export default function FinancialPage() {
   const period = currentMonthStr();
 
   /**
-   * FIX 4: activePeriod reflects the selected filter so paid-status is accurate.
+   * activePeriod reflects the selected filter so paid-status is accurate.
    */
   const activePeriod = (() => {
     if (filters.period === "today" || filters.period === "week") return currentMonthStr();
@@ -203,7 +202,6 @@ export default function FinancialPage() {
   // ── Fetch Summary (KPI cards + charts) — respects Egypt 9 PM schedule ───────
   const fetchSummary = useCallback(async (force = false) => {
     if (!force) {
-      // Use cache if it was fetched AFTER the last 9 PM Egypt checkpoint
       const cached = readCachedSummary();
       if (cached && !isCacheStale(cached.ts)) {
         setSummaryData(cached.data);
@@ -259,20 +257,17 @@ export default function FinancialPage() {
     }
   }, [activePeriod]);
 
-  // ── On mount: load summary (from cache or fetch) + set up 24h auto-refresh ─
+  // ── On mount: load summary (from cache or fetch) + set up auto-refresh ─────
   useEffect(() => {
-    // Initial load (uses cache if fresh)
     fetchSummary(false);
 
-    // Check every hour if 24h have passed
     checkIntervalRef.current = setInterval(() => {
       const cached = readCachedSummary();
-      if (!cached || Date.now() - cached.ts >= REFRESH_INTERVAL_MS) {
+      if (!cached || isCacheStale(cached.ts)) {
         void fetchSummary(true);
       }
     }, CHECK_INTERVAL_MS);
 
-    // Update "منذ X دقيقة" display every minute
     minuteTickRef.current = setInterval(() => forceRender((n) => n + 1), 60_000);
 
     return () => {
@@ -298,12 +293,20 @@ export default function FinancialPage() {
     void fetchTransactions(filters);
   };
 
-  const handleMarkPaid = async (doctorId: string | number, p: string, paid: boolean) => {
-    await fetch("/api/clinic/financial/mark-paid", {
+  /**
+   * Per-appointment payment toggle.
+   * Calls the new mark-booking-paid endpoint and refreshes both summary + table.
+   */
+  const handleMarkPaid = async (
+    bookingId: string | number,
+    status: "paid" | "cancelled"
+  ) => {
+    await fetch("/api/clinic/financial/mark-booking-paid", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ doctor_id: doctorId, period: p, paid }),
+      body: JSON.stringify({ booking_id: bookingId, status }),
     });
+    // Payment change affects KPI cards, charts, and the table
     void fetchSummary(true);
     void fetchTransactions(filters);
   };
@@ -404,13 +407,13 @@ export default function FinancialPage() {
         onReset={handleReset}
       />
 
-      {/* ── Doctor Earnings Table ── */}
+      {/* ── Doctor Earnings Table (per-appointment) ── */}
       <div className="rounded-2xl border border-(--card-border) bg-(--card-bg) p-5 shadow-[var(--shadow-soft)]">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div>
             <h2 className="text-sm font-bold text-(--text-primary)">إيرادات الأطباء</h2>
             <p className="text-xs text-(--text-secondary) mt-0.5">
-              {txData?.doctorRecords.length ?? 0} طبيب — قابل للتعديل والفرز
+              {txData?.appointmentRecords.length ?? 0} موعد — قابل للتعديل والفرز
             </p>
           </div>
           <span className="text-xs text-(--text-secondary) bg-(--semi-card-bg) px-3 py-1 rounded-full border border-(--card-border)">
@@ -419,7 +422,8 @@ export default function FinancialPage() {
         </div>
 
         <DoctorEarningsTable
-          records={txData?.doctorRecords ?? []}
+          records={txData?.appointmentRecords ?? []}
+          doctorRecords={txData?.doctorRecords ?? []}
           loading={txLoading}
           period={activePeriod}
           onEditPercentage={setEditRecord}
@@ -436,5 +440,3 @@ export default function FinancialPage() {
     </div>
   );
 }
-
-
