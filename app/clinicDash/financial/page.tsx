@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { TrendingUp, RefreshCw, Clock } from "lucide-react";
 import FinancialOverviewCards from "./components/FinancialOverviewCards";
 import RevenueCharts from "./components/RevenueCharts";
-import FinancialFilters from "./components/FinancialFilters";
 import ExportButtons from "./components/ExportButtons";
 import type {
   FinancialSummary,
@@ -450,15 +449,6 @@ export default function FinancialPage() {
         clinicProfit={summaryData?.summary.clinicProfit ?? 0}
         doctorsTotalEarnings={summaryData?.summary.doctorsTotalEarnings ?? 0}
         loading={summaryLoading}
-      />
-
-      {/* ── Filters ── */}
-      <FinancialFilters
-        specialists={specialists}
-        doctorOptions={doctorOptions}
-        filters={filters}
-        onFiltersChange={setFilters}
-        onReset={handleReset}
       />
 
     </div>

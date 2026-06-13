@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { CheckSquare, RefreshCw, Clock } from "lucide-react";
 import PendingAppointmentsTable from "../components/PendingAppointmentsTable";
-import type { AppointmentRecord } from "../lib/types";
+import FinancialFilters from "../components/FinancialFilters";
+import type { AppointmentRecord, FinancialFilters as FiltersType, DoctorFinancialRecord } from "../lib/types";
 
 // Helper to format last updated time
 function formatLastUpdated(ts: number): string {
@@ -18,11 +20,17 @@ function formatLastUpdated(ts: number): string {
 
 export default function PendingPaymentsPage() {
   const [allApptData, setAllApptData] = useState<AppointmentRecord[]>([]);
+  const [doctorOptions, setDoctorOptions] = useState<{ id: string | number; name: string }[]>([]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [filters, setFilters] = useState<FiltersType>({ period: "month" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedTs, setLastUpdatedTs] = useState<number | null>(null);
   const [refreshCountdown, setRefreshCountdown] = useState<number | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error"; visible: boolean }>({ msg: "", type: "success", visible: false });
+
+  const searchParams = useSearchParams();
+  const searchQuery = (searchParams.get("q") ?? "").trim().toLowerCase();
 
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -31,14 +39,45 @@ export default function PendingPaymentsPage() {
     setTimeout(() => setToast({ msg: "", type: "success", visible: false }), 3000);
   };
 
-  const fetchAllAppointments = useCallback(async () => {
+  const fetchAllAppointments = useCallback(async (f: FiltersType = filters) => {
     setLoading(true);
     setError(null);
     try {
-      const res  = await fetch("/api/clinic/financial/transactions");
-      const json = await res.json() as { success: boolean; data: { appointmentRecords: AppointmentRecord[] }; error?: string };
+      const params = new URLSearchParams();
+      if (f.period && f.period !== "custom") {
+        const today = new Date();
+        const fmt = (d: Date) => d.toISOString().slice(0, 10);
+        let dateFrom, dateTo;
+        switch (f.period) {
+          case "today": dateFrom = fmt(today); dateTo = fmt(today); break;
+          case "week": {
+            const s = new Date(today); s.setDate(today.getDate() - 6);
+            dateFrom = fmt(s); dateTo = fmt(today); break;
+          }
+          case "month": {
+            const s = new Date(today.getFullYear(), today.getMonth(), 1);
+            dateFrom = fmt(s); dateTo = fmt(today); break;
+          }
+          case "year": {
+            const s = new Date(today.getFullYear(), 0, 1);
+            dateFrom = fmt(s); dateTo = fmt(today); break;
+          }
+        }
+        if (dateFrom) params.set("date_from", dateFrom);
+        if (dateTo)   params.set("date_to",   dateTo);
+      } else {
+        if (f.dateFrom) params.set("date_from", f.dateFrom);
+        if (f.dateTo)   params.set("date_to",   f.dateTo);
+      }
+      if (f.doctorId)   params.set("doctor_id",  String(f.doctorId));
+      if (f.specialist) params.set("specialist",  f.specialist);
+
+      const res  = await fetch(`/api/clinic/financial/transactions?${params}`);
+      const json = await res.json() as { success: boolean; data: { appointmentRecords: AppointmentRecord[]; doctorRecords: DoctorFinancialRecord[]; specialties: string[] }; error?: string };
       if (json.success) {
         setAllApptData(json.data.appointmentRecords ?? []);
+        setDoctorOptions(json.data.doctorRecords?.map((r) => ({ id: r.doctorId, name: r.doctorName })) ?? []);
+        setSpecialties(json.data.specialties ?? []);
         setLastUpdatedTs(Date.now());
       } else {
         setError(json.error ?? "خطأ في تحميل البيانات");
@@ -48,14 +87,14 @@ export default function PendingPaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
-    void fetchAllAppointments();
+    void fetchAllAppointments(filters);
     return () => {
       if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
     };
-  }, [fetchAllAppointments]);
+  }, [filters, fetchAllAppointments]);
 
   // Handle the 15-second countdown timer UI
   useEffect(() => {
@@ -104,6 +143,15 @@ export default function PendingPaymentsPage() {
       void fetchAllAppointments(); // Revert on failure
     }
   };
+
+  const filteredApptData = useMemo(() => {
+    if (!searchQuery) return allApptData;
+    return allApptData.filter(
+      (rec) =>
+        rec.patientName.toLowerCase().includes(searchQuery) ||
+        rec.doctorName.toLowerCase().includes(searchQuery)
+    );
+  }, [allApptData, searchQuery]);
 
   return (
     <div className="space-y-6 p-4 sm:p-6" dir="rtl">
@@ -167,6 +215,14 @@ export default function PendingPaymentsPage() {
         </div>
       )}
 
+      <FinancialFilters
+        specialists={specialties}
+        doctorOptions={doctorOptions}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onReset={() => setFilters({ period: "month" })}
+      />
+
       {/* ── Pending Patient Payments Table ── */}
       <div className="rounded-2xl border border-(--card-border) bg-(--card-bg) p-5 shadow-[var(--shadow-soft)]">
         <div className="flex justify-end mb-4 gap-2 text-xs">
@@ -185,7 +241,7 @@ export default function PendingPaymentsPage() {
         </div>
 
         <PendingAppointmentsTable
-          records={allApptData}
+          records={filteredApptData}
           loading={loading}
           onMarkPayment={handleAppointmentPayment}
         />

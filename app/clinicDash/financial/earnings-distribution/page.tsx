@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { PieChart, RefreshCw, Stethoscope, Info } from "lucide-react";
 import DoctorEarningsTable from "../components/DoctorEarningsTable";
 import ProfitSharingModal from "../components/ProfitSharingModal";
@@ -44,6 +45,9 @@ export default function EarningsDistributionPage() {
   const [txData, setTxData] = useState<TransactionData | null>(null);
   const [txLoading, setTxLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+  const searchQuery = (searchParams.get("q") ?? "").trim().toLowerCase();
   
   const [filters, setFilters] = useState<FiltersType>({ period: "month" });
   const [editRecord, setEditRecord] = useState<DoctorFinancialRecord | null>(null);
@@ -117,12 +121,18 @@ export default function EarningsDistributionPage() {
     if (!txData?.appointmentRecords) return [];
     const groups = new Map<string, AppointmentRecord[]>();
     for (const rec of txData.appointmentRecords) {
+      if (searchQuery) {
+        const matchPatient = rec.patientName.toLowerCase().includes(searchQuery);
+        const matchDoctor = rec.doctorName.toLowerCase().includes(searchQuery);
+        if (!matchPatient && !matchDoctor) continue;
+      }
+
       const docId = String(rec.doctorId);
       if (!groups.has(docId)) groups.set(docId, []);
       groups.get(docId)!.push(rec);
     }
     return Array.from(groups.values());
-  }, [txData?.appointmentRecords]);
+  }, [txData?.appointmentRecords, searchQuery]);
 
   return (
     <div className="space-y-6 p-4 sm:p-6" dir="rtl">
